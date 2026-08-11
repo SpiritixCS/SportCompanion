@@ -23,6 +23,9 @@
   --text-32: 32px;
   --text-44: 44px;
   --text-96: 96px;
+
+  --font-archivo: var(--font-archivo);
+  --font-inter-tight: var(--font-inter-tight);
 }
 
 html, body {

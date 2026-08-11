@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { archivo, interTight } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,8 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr">
-      <body>{children}</body>
+    <html lang="fr" className={`${archivo.variable} ${interTight.variable}`}>
+      <body className="font-[family-name:var(--font-inter-tight)]">
+        {children}
+      </body>
     </html>
   );
 }
