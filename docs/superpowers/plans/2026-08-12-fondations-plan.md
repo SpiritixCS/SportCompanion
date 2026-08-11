@@ -816,10 +816,24 @@ const LABELS: Record<PastilleState, string> = {
 export type PastilleState = "upcoming" | "today" | "done" | "skipped" | "restOrWalk";
 export type Accent = "cobalt" | "sage" | "brass";
 
+// Class names must be literal strings, not template interpolation:
+// Tailwind's build-time scanner reads source text, it never executes JS,
+// so `border-${accent}` would never generate real CSS in production.
+export const ACCENT_BORDER: Record<Accent, string> = {
+  cobalt: "border-cobalt",
+  sage: "border-sage",
+  brass: "border-brass",
+};
+export const ACCENT_BG: Record<Accent, string> = {
+  cobalt: "bg-cobalt",
+  sage: "bg-sage",
+  brass: "bg-brass",
+};
+
 const STATE_CLASSES: Record<PastilleState, (accent: Accent) => string> = {
   upcoming: () => "border border-hairline bg-transparent",
-  today: (accent) => `border-2 border-${accent} bg-transparent`,
-  done: (accent) => `bg-${accent} border border-${accent}`,
+  today: (accent) => `border-2 ${ACCENT_BORDER[accent]} bg-transparent`,
+  done: (accent) => `${ACCENT_BG[accent]} border ${ACCENT_BORDER[accent]}`,
   skipped: () => "bg-hairline border border-hairline",
   restOrWalk: () => "border border-hairline bg-transparent relative",
 };
@@ -840,7 +854,7 @@ export function Pastille({ state, accent }: { state: PastilleState; accent: Acce
 Run: `npx vitest run src/components/Pastille.test.tsx`
 Expected: PASS.
 
-> Note: Tailwind v4 needs to see full class strings at build time to generate them — `border-${accent}` template interpolation works for tests (jsdom just checks the class attribute string) but **will not generate real CSS** in production unless those exact class names appear literally somewhere Tailwind scans. Task 12 (`/dev/design-system`) renders every `accent` × every `state` combination explicitly, which guarantees `border-cobalt`, `bg-cobalt`, `border-sage`, `bg-sage`, `border-brass`, `bg-brass` all appear literally in the codebase. No action needed in this task beyond knowing why Task 12 matters for more than visual QA.
+> Note: `ACCENT_BORDER`/`ACCENT_BG` are exported because Task 9 (`Button`) needs the same literal-class pattern for its own accent-driven background — reuse these maps instead of redefining them.
 
 - [ ] **Step 5: Commit**
 
@@ -937,6 +951,7 @@ git commit -m "feat: add LigneNiveau component (signature progress grid row)"
 - Test: `src/components/Button.test.tsx`
 
 **Interfaces:**
+- Consumes: `ACCENT_BG`, `Accent` from `src/components/Pastille.tsx` (Task 7) — reuse the literal class-name map, do not redefine `` `bg-${accent}` `` inline (Tailwind's scanner reads source text, never executes JS, so a template-interpolated class name never generates real CSS).
 - Produces: `Button` — props `{ children: React.ReactNode; variant: "primary" | "secondary"; accent?: Accent; onClick?: () => void; disabled?: boolean }`. `variant="primary"` requires `accent` (filled pill, 56px tall); `variant="secondary"` ignores `accent` (outline, `--color-ink` text). Consumed by every later product screen.
 
 - [ ] **Step 1: Write the failing test**
@@ -991,7 +1006,7 @@ Expected: FAIL — `Button.tsx` does not exist.
 - [ ] **Step 4: Create `src/components/Button.tsx`**
 
 ```tsx
-import type { Accent } from "./Pastille";
+import { ACCENT_BG, type Accent } from "./Pastille";
 
 export function Button({
   children,
@@ -1009,8 +1024,8 @@ export function Button({
   const base =
     "h-14 w-full rounded-pill font-archivo text-15 font-semibold disabled:opacity-40";
   const variantClasses =
-    variant === "primary"
-      ? `bg-${accent} text-paper`
+    variant === "primary" && accent
+      ? `${ACCENT_BG[accent]} text-paper`
       : "bg-paper border border-hairline text-ink";
 
   return (
@@ -1403,6 +1418,8 @@ Run: `npm run dev`, open `http://localhost:3000/dev/design-system`.
 Expected: every component/state/accent combination renders, no console errors. Compare against the Claude Design prototype (`Suivi Entrainement.dc.html`, project `26278c39-f837-45df-9871-0aba27003ad2`) for colors/spacing/radii.
 
 - [ ] **Step 6: Verify the accent utility classes actually made it into the production CSS**
+
+Regression guard for the literal-class-name requirement in Tasks 7/9 (`ACCENT_BORDER`/`ACCENT_BG` in `Pastille.tsx`) — catches it immediately if a future edit reintroduces template-interpolated class names (`` `bg-${accent}` ``), which Tailwind's scanner silently drops.
 
 Run: `npm run build`
 Then: `grep -o "bg-cobalt\|border-cobalt\|bg-sage\|border-sage\|bg-brass\|border-brass" .next/static/css/*.css | sort -u`
@@ -1819,3 +1836,4 @@ Expected: "Fondations OK — écrans produit arrivent en phase 3." renders.
 - **Spec coverage**: structure ✓ (Task 1), Tailwind tokens ✓ (Task 3), fonts ✓ (Task 4), all 6 listed components + icons ✓ (Tasks 5–11), `/dev/design-system` ✓ (Task 12), DB socle without business tables ✓ (Tasks 13–14), pipeline data ✓ (Task 15), Vitest smoke + migration tests ✓ (throughout, esp. Task 14), deploy validation ✓ (Task 16).
 - **Placeholder scan**: none found — every step has literal file contents or literal commands.
 - **Type consistency**: `PastilleState` and `Accent` are defined once in `Pastille.tsx` (Task 7) and imported everywhere else (`LigneNiveau.tsx` Task 8, `Button.tsx` Task 9, `/dev/design-system/page.tsx` Task 12) — no redefinition drift.
+- **Pre-flight fix (2026-08-12, before dispatch)**: Tasks 7 and 9 originally built accent class names via template interpolation (`` `border-${accent}` ``, `` `bg-${accent}` ``) — Tailwind v4's scanner reads source text and never executes JS, so those classes would never have shipped in production CSS despite passing every test in the plan (jsdom only checks the string, not whether Tailwind generated it). Fixed by exporting literal `ACCENT_BORDER`/`ACCENT_BG` maps from `Pastille.tsx` and having `Button.tsx` reuse them. Task 12 Step 6 remains as a regression guard against this class of bug recurring.
