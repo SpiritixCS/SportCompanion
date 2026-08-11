@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+workout_raw.json
+workout_curated.json
+# Source HTML from the user's own paid account — contains personal data
+# (email embedded in page JS). Kept locally only, never committed.
+# Needed to re-run Parser.py if the extraction pipeline is revisited.
+caliathletics_backup/

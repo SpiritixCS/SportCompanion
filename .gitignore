@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+.next/
+data/
+*.db
+*.db.bak-*
+.env
+.env.local
+Caliathletics/.venv/
+Caliathletics/__pycache__/
