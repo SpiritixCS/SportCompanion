@@ -1,11 +1,43 @@
 @import "tailwindcss";
 
+@theme {
+  --color-paper: #FFFFFF;
+  --color-canvas: #F6F7F4;
+  --color-ink: #111310;
+  --color-graphite: #6E736B;
+  --color-hairline: #E5E7E1;
+  --color-cobalt: #1F3BE0;
+  --color-sage: #2E7D63;
+  --color-brass: #A9782C;
+  --color-alert: #B3402E;
+
+  --radius-card: 20px;
+  --radius-field: 14px;
+  --radius-pill: 999px;
+
+  --text-11: 11px;
+  --text-13: 13px;
+  --text-15: 15px;
+  --text-18: 18px;
+  --text-24: 24px;
+  --text-32: 32px;
+  --text-44: 44px;
+  --text-96: 96px;
+}
+
 html, body {
   margin: 0;
   padding: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
 }
