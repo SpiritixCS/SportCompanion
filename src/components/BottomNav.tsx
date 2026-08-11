@@ -1,0 +1,24 @@
+import Link from "next/link";
+
+export function BottomNav({
+  items,
+}: {
+  items: { label: string; icon: React.ReactNode; active: boolean; href: string }[];
+}) {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 flex justify-around bg-paper border-t border-hairline py-2 lg:static lg:flex-col lg:justify-start lg:border-t-0 lg:border-r lg:h-screen lg:w-20 lg:py-6 lg:gap-6">
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={`flex flex-col items-center gap-1 text-11 font-archivo uppercase tracking-wide ${
+            item.active ? "text-ink" : "text-graphite"
+          }`}
+        >
+          {item.icon}
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
