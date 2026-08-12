@@ -4,6 +4,8 @@ import { loadTodayState } from "@/lib/programme/loadTodayState";
 import { PARCOURS } from "@/lib/programme/parcours";
 import { AujourdhuiScreen } from "@/components/today/AujourdhuiScreen";
 
+export const dynamic = "force-dynamic";
+
 function dbPath(): string {
   return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
 }
