@@ -107,7 +107,7 @@ Dimanche : `buildDosDay` n'est pas appelé, pas de `TrainDay`, pas de lancement 
 
 Nouveau composant, affiché après `SummaryView` du player (phase 2, non modifié) et avant l'action « Valider la séance ». N'entre pas dans le player lui-même.
 
-Pour chaque arbre travaillé ce jour : **« Il te restait combien de répétitions en réserve après la dernière série ? »** (ou « combien de secondes » pour les arbres à tenue), boutons `0` / `1` / `2` / `3` / `4 ou +`. Converti en RPE selon §2 avant l'appel au moteur (0→10, 1→9, 2→8, 3→7, 4 ou +→6) — jamais affiché à l'utilisateur.
+Pour chaque arbre travaillé ce jour : **« Il te restait combien de répétitions en réserve après la dernière série ? »** (ou « combien de secondes » pour les arbres à tenue), boutons `0` / `1` / `2` / `3` / `4` / `5 ou +`. Converti en RPE selon §2 avant l'appel au moteur (0→10, 1→9, 2→8, 3→7, 4→6, 5 ou +→5) — jamais affiché à l'utilisateur. Six boutons, pas cinq : la réserve 4 correspond à une RPE 6 précise, distincte de « 5 ou plus » (RPE ≤ 5) — les confondre casserait la comparaison au bloc 1 dont la cible est exactement RPE 6.
 
 Puis une question de gêne pendant la séance pour l'ensemble (0-10) → `genePendant`.
 
