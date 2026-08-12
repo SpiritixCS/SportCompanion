@@ -16,7 +16,7 @@ Un utilisateur peut, chaque jour de la semaine (lundi à samedi) : voir sur Aujo
 
 ## Portée de cette phase
 
-- **Composition de séance + player + Bilan + écran `/dos` réel.** Le player (phase 2, `src/lib/player/*`, `src/components/player/*`) n'est pas modifié — consommé via un adaptateur qui produit un `TrainDay` standard.
+- **Composition de séance + player + Bilan + écran `/dos` réel.** Le player (phase 2, `src/lib/player/*`, `src/components/player/*`) n'est **pas modifié dans son comportement** — consommé via un adaptateur qui produit un `TrainDay` standard. `ExerciseView`/`RestView` acceptent déjà un prop `accent` (phase 2 l'avait anticipé, valeur par défaut `cobalt`). Deux endroits restent câblés en dur et doivent devenir des props avec valeur par défaut identique au comportement actuel — exactement ce que la phase 2 avait explicitement isolé pour ça (« codées en dur cette phase, mais isolées pour être branchées... sans toucher au reste du player ») : `PlayerScreen` (accent non transmis à ses enfants, constantes de repos importées en dur, `completeSeanceAction` importé en dur au lieu d'un callback injectable) et `SummaryView` (accent du bouton en dur). Aucun autre fichier du player n'est touché ; le comportement Programme reste identique bit-à-bit via les valeurs par défaut.
 - **Pas de `geneLendemain`, pas de mobilité quotidienne, pas de marche, pas de transitions assis-debout, pas de rappels bureau, pas de métriques hebdomadaires, pas de charge cumulée** (§7 second volet, §8-§13 de `BackPainProgram.md`) — tout ça est 4c.
 - **Pas d'écran « programme terminé »** au-delà de la semaine 16 (§15, entretien). `computeWeek` reste borné à 16 indéfiniment ; aucun écran dédié cette phase.
 - **Aucune modification de `src/lib/backpain/*`** (4a) — consommé tel quel.
@@ -152,4 +152,4 @@ Un arbre sauté entièrement (`dos_skipped_exercises`) : aucune ligne `dos_evalu
 
 ## Hors scope de cette phase
 
-`geneLendemain`, mobilité quotidienne, marche, transitions assis-debout, rappels bureau, métriques hebdomadaires, charge cumulée (4c). Écran de fin de protocole / entretien post-semaine-16 (§15). Toute modification de `src/lib/player/*`, `src/components/player/*`, ou `src/lib/backpain/*` (4a).
+`geneLendemain`, mobilité quotidienne, marche, transitions assis-debout, rappels bureau, métriques hebdomadaires, charge cumulée (4c). Écran de fin de protocole / entretien post-semaine-16 (§15). Toute modification de `src/lib/backpain/*` (4a). Toute modification du **comportement** Programme du player — seule sa surface (props avec défauts identiques) s'ouvre, `ExerciseView`/`RestView`/`Sheet`/`RepsSheet` restent inchangés.
