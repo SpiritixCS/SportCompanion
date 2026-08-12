@@ -25,18 +25,21 @@ function set(overrides: Partial<SetLoggedRecord>): SetLoggedRecord {
 }
 
 describe("SummaryView", () => {
-  it("shows duration in minutes, exercise count, and total reps", () => {
+  it("shows duration as m:ss, exercise count, and total reps", () => {
     const setsLogged = [
       set({ exerciseOrder: 0, setNumber: 1, repsActual: 10 }),
       set({ exerciseOrder: 0, setNumber: 2, repsActual: 10 }),
       set({ exerciseOrder: 1, setNumber: 1, repsActual: 15 }),
     ];
     render(
-      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={600} onFinish={() => {}} />,
+      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={630} onFinish={() => {}} />,
     );
-    expect(screen.getByText("10")).toBeInTheDocument(); // minutes
+    expect(screen.getByText("10:30")).toBeInTheDocument(); // durée
     expect(screen.getByText("2")).toBeInTheDocument(); // exercices
     expect(screen.getByText("35")).toBeInTheDocument(); // reps
+    expect(screen.getByText("Durée")).toBeInTheDocument();
+    expect(screen.getByText("Exercices")).toBeInTheDocument();
+    expect(screen.getByText("Répétitions")).toBeInTheDocument();
   });
 
   it("lists only exercises with at least one logged set, each with its summed reps", () => {

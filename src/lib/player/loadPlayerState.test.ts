@@ -53,6 +53,7 @@ describe("loadPlayerState — reload resilience (CLAUDE.md §2 lesson)", () => {
     const first = loadPlayerState(db, "beginner", 0, 0, DAY);
     expect(first.phase).toBe("in-progress");
     if (first.phase !== "in-progress") throw new Error("unreachable");
+    expect(typeof first.startedAt).toBe("string");
     expect(first.next).toEqual({
       exerciseOrder: 0,
       setNumber: 1,
@@ -83,6 +84,7 @@ describe("loadPlayerState — reload resilience (CLAUDE.md §2 lesson)", () => {
       isLastExerciseOfDay: false,
     });
     expect(second.seanceId).toBe(first.seanceId);
+    expect(second.startedAt).toBe(first.startedAt);
   });
 
   it("shows pending-validation once every set is logged, without requiring completeSeance", () => {

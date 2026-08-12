@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { ExerciseView } from "./ExerciseView";
 import { RestView } from "./RestView";
 import { SummaryView } from "./SummaryView";
+import { Sheet } from "@/components/Sheet";
 import { logSetAction, skipExerciseAction, completeSeanceAction } from "@/lib/player/actions";
 import { REST_BETWEEN_SETS_SECONDS, REST_BETWEEN_EXERCISES_SECONDS } from "@/lib/player/constants";
 import type { TrainDay } from "@/lib/workout/types";
@@ -28,6 +29,27 @@ function findNextLabel(day: TrainDay, fromExerciseOrder: number, skippedExercise
   return "Fin de séance";
 }
 
+function elapsedSecondsSince(startedAt: string): number {
+  return Math.max(0, Math.floor((Date.now() - Date.parse(startedAt)) / 1000));
+}
+
+// Anchored on the seance's DB `startedAt`, never a client-only counter —
+// a full reload still shows the real elapsed time (CLAUDE.md §2 lesson).
+// Seeded at 0 (not computed from Date.now()) so SSR and hydration agree;
+// the real value lands a tick later, client-side only, via the effect below.
+function useElapsedSeconds(startedAt: string | null): number {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!startedAt) return;
+    setElapsed(elapsedSecondsSince(startedAt));
+    const id = setInterval(() => setElapsed(elapsedSecondsSince(startedAt)), 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  return elapsed;
+}
+
 export function PlayerScreen({
   day,
   state,
@@ -39,13 +61,15 @@ export function PlayerScreen({
 }) {
   const router = useRouter();
   const [localPhase, setLocalPhase] = useState<LocalPhase>({ kind: "exercise" });
+  const [quitOpen, setQuitOpen] = useState(false);
+  const elapsedSeconds = useElapsedSeconds(state.phase !== "completed" ? state.startedAt : null);
 
   if (state.phase === "pending-validation") {
     return (
       <SummaryView
         exercises={day.exercises}
         setsLogged={setsLogged}
-        durationSeconds={0}
+        durationSeconds={elapsedSeconds}
         onFinish={async () => {
           await completeSeanceAction(state.seanceId);
           router.refresh();
@@ -106,13 +130,38 @@ export function PlayerScreen({
   }
 
   return (
-    <ExerciseView
-      exercise={exercise}
-      exerciseIndex={exerciseOrder}
-      totalExercises={day.exercises.length}
-      setNumber={setNumber}
-      onCompleteSet={handleCompleteSet}
-      onSkipExercise={handleSkipExercise}
-    />
+    <>
+      <ExerciseView
+        exercise={exercise}
+        exerciseIndex={exerciseOrder}
+        totalExercises={day.exercises.length}
+        setNumber={setNumber}
+        elapsedSeconds={elapsedSeconds}
+        onCompleteSet={handleCompleteSet}
+        onSkipExercise={handleSkipExercise}
+        onQuit={() => setQuitOpen(true)}
+      />
+      <Sheet open={quitOpen} onClose={() => setQuitOpen(false)} title="Quitter la séance ?">
+        <p className="text-15 text-graphite leading-relaxed">
+          Elle est enregistrée où tu t&apos;es arrêté. Tu pourras la reprendre depuis Aujourd&apos;hui.
+        </p>
+        <div className="flex flex-col gap-2.5 mt-6">
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold"
+          >
+            Quitter et reprendre plus tard
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuitOpen(false)}
+            className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
+          >
+            Continuer la séance
+          </button>
+        </div>
+      </Sheet>
+    </>
   );
 }

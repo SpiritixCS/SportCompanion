@@ -6,8 +6,9 @@ import type { TrainDay } from "@/lib/workout/types";
 import type { PlayerState } from "@/lib/player/loadPlayerState";
 
 const refresh = vi.fn();
+const push = vi.fn();
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh }),
+  useRouter: () => ({ refresh, push }),
 }));
 
 const logSetAction = vi.fn().mockResolvedValue(undefined);
@@ -28,29 +29,35 @@ const DAY: TrainDay = {
   ],
 };
 
+const STARTED_AT = new Date(Date.now() - 65_000).toISOString();
+
 beforeEach(() => {
   refresh.mockClear();
+  push.mockClear();
   logSetAction.mockClear();
   skipExerciseAction.mockClear();
   completeSeanceAction.mockClear();
 });
 
 describe("PlayerScreen", () => {
-  it("renders ExerciseView for an in-progress state", () => {
+  it("renders ExerciseView for an in-progress state, chronometer anchored on startedAt", () => {
     const state: PlayerState = {
       phase: "in-progress",
       seanceId: 1,
+      startedAt: STARTED_AT,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
     render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
     expect(screen.getByText("Push ups")).toBeInTheDocument();
+    expect(screen.getByText("1:05")).toBeInTheDocument();
   });
 
   it("logs the set then shows RestView with the betweenExercises variant when it was the last set", async () => {
     const state: PlayerState = {
       phase: "in-progress",
       seanceId: 1,
+      startedAt: STARTED_AT,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -70,6 +77,7 @@ describe("PlayerScreen", () => {
     const state: PlayerState = {
       phase: "in-progress",
       seanceId: 1,
+      startedAt: STARTED_AT,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -81,8 +89,42 @@ describe("PlayerScreen", () => {
     expect(refresh).toHaveBeenCalledOnce();
   });
 
+  it("opens the quit sheet and navigates home on confirm", async () => {
+    const state: PlayerState = {
+      phase: "in-progress",
+      seanceId: 1,
+      startedAt: STARTED_AT,
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
+      skippedExerciseOrders: [],
+    };
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
+    expect(screen.getByText("Quitter la séance ?")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Quitter et reprendre plus tard" }));
+    expect(push).toHaveBeenCalledWith("/");
+  });
+
+  it("closing the quit sheet via Continuer la séance keeps the player open", async () => {
+    const state: PlayerState = {
+      phase: "in-progress",
+      seanceId: 1,
+      startedAt: STARTED_AT,
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
+      skippedExerciseOrders: [],
+    };
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
+    await userEvent.click(screen.getByRole("button", { name: "Continuer la séance" }));
+
+    expect(screen.queryByText("Quitter la séance ?")).not.toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
   it("renders SummaryView for pending-validation and completes on Terminer", async () => {
-    const state: PlayerState = { phase: "pending-validation", seanceId: 1 };
+    const state: PlayerState = { phase: "pending-validation", seanceId: 1, startedAt: STARTED_AT };
     render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));

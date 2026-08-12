@@ -31,7 +31,7 @@ describe("RestView", () => {
     expect(onComplete).toHaveBeenCalledOnce();
   });
 
-  it("+15s extends the countdown without completing", () => {
+  it("+15 s extends the countdown without completing", () => {
     const onComplete = vi.fn();
     render(
       <RestView durationSeconds={5} nextLabel="Push ups" variant="betweenSets" onComplete={onComplete} />,
@@ -40,7 +40,7 @@ describe("RestView", () => {
       vi.advanceTimersByTime(1000);
     });
     act(() => {
-      screen.getByRole("button", { name: "+15s" }).click();
+      screen.getByRole("button", { name: "+15 s" }).click();
     });
     act(() => {
       vi.advanceTimersByTime(5100);
@@ -64,6 +64,7 @@ describe("RestView", () => {
       <RestView durationSeconds={90} nextLabel="Squats" variant="betweenSets" onComplete={() => {}} />,
     );
     expect(screen.queryByText("Exercice suivant")).not.toBeInTheDocument();
+    expect(screen.getByText("Repos entre séries")).toBeInTheDocument();
 
     rerender(
       <RestView durationSeconds={120} nextLabel="Squats" variant="betweenExercises" onComplete={() => {}} />,
