@@ -53,14 +53,21 @@ def main():
         '// Ne pas éditer à la main — corriger la source (curate_workout.py) et régénérer.',
         'import type { WorkoutProgram } from "./types";',
         "",
-        "export const WORKOUT_PROGRAM: WorkoutProgram = {",
     ]
+
+    # Export individual tiers
     for tier in ["beginner", "intermediate", "advanced"]:
-        lines.append(f"  {tier}: [")
+        lines.append(f"export const {tier} = [")
         for level in curated[tier]:
-            slots_ts = ",\n      ".join(ts_slot(s) for s in level)
-            lines.append(f"    [\n      {slots_ts}\n    ],")
-        lines.append("  ],")
+            slots_ts = ",\n    ".join(ts_slot(s) for s in level)
+            lines.append(f"  [\n    {slots_ts}\n  ],")
+        lines.append("];")
+        lines.append("")
+
+    # Export WORKOUT_PROGRAM for backwards compatibility
+    lines.append("export const WORKOUT_PROGRAM: WorkoutProgram = {")
+    for tier in ["beginner", "intermediate", "advanced"]:
+        lines.append(f"  {tier},")
     lines.append("};")
 
     OUTPUT_TS.write_text("\n".join(lines) + "\n", encoding="utf-8")
