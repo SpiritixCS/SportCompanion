@@ -115,9 +115,13 @@ export function evaluateProgression(input: {
 `src/lib/backpain/douleur.ts` — pur, §7, avisory uniquement (jamais appliqué automatiquement) :
 
 ```ts
-export function checkPainEscalation(recentSeances: { gene: number; date: string }[]):
-  "normal" | "repeter_cran" | "redescendre_cran" | "arret_bloc";
+export function checkPainEscalation(recentSeances: { genePendant: number; geneLendemain: number }[]):
+  "normal" | "repeter_cran" | "redescendre_cran";
 ```
+
+**Ne couvre que les 3 premiers paliers de §7, mécaniques et déterministes** (fonction pure d'entiers déjà saisis). Le 4ᵉ palier ("aggravation progressive sur 2 semaines → arrêt du bloc, consultation") est un jugement de tendance, pas une règle déterministe — CLAUDE.md §5 l'exclut explicitement de toute évaluation automatique ("les critères d'alerte peuvent être affichés comme rappels, jamais évalués automatiquement"). Il n'a pas de fonction dans 4a : la tendance de gêne brute (§12, déjà prévue en 4c) s'affiche pour que l'utilisateur juge lui-même, jamais un verdict calculé.
+
+`recentSeances` : les séances Dos les plus récentes pour un arbre donné, **ordonnées chronologiquement (plus ancienne en premier)**, la dernière de la liste étant la séance qui vient d'être enregistrée. Une séance est "gênante" si `genePendant > 3` ou `geneLendemain > 3` (persistance au-delà de 24h, §7). `redescendre_cran` si les deux dernières séances de la liste sont toutes deux gênantes ; `repeter_cran` si seule la dernière l'est ; `normal` sinon.
 
 `src/lib/backpain/db.ts` — persistance minimale :
 
@@ -135,7 +139,7 @@ Vitest, convention établie en phase 3 (`syncPosition.test.ts` etc.) — un fich
 - `periode.test.ts` — table de cas semaine/bloc/décharge/calibrage, bornes exactes (jour du changement de semaine, semaine 16 clampée, semaine 17+ clampée à 16).
 - `progression.test.ts` — un cas par ligne de la table §6, plus l'ordre d'évaluation exact (plusieurs conditions en échec simultané → le message correspond à la première dans l'ordre). Cas `sommet` sur un arbre court (I, 4 crans) et un long (A, 8 crans). Cas semaine 1 : plusieurs `calibrage` d'affilée autorisés, `dejaMonteeCetteSemaine` ignoré.
 - `progression.test.ts` (dérivations) — `getCurrentCran` sans historique (défaut 1), dernière ligne `calibrage` vs `montee`. `checkStagnation` : `maintien,maintien,maintien` → vrai ; `maintien,montee,maintien` → faux (reset) ; `calibrage`/`decharge` intercalés ne comptent ni ne cassent la séquence.
-- `douleur.test.ts` — table §7 complète : gêne ≤3 revenue <24h → normal ; gêne isolée >3 → repeter_cran ; deux séances consécutives >3 → redescendre_cran ; aggravation progressive 2 semaines → arret_bloc.
+- `douleur.test.ts` — les 3 paliers mécaniques de §7 : gêne ≤3 revenue <24h → normal ; gêne isolée >3 (pendant ou lendemain) → repeter_cran ; deux séances consécutives gênantes → redescendre_cran.
 - `db.test.ts` — migration + persistance : round-trip write/read, `dos_start_date` singleton (`CHECK id=1`), `dos_evaluations` append-only.
 
 Pas de test d'intégration "enregistrer → naviguer → revenir" cette sous-phase (pas de player/UI) — ce test arrive en 4b sur la vraie séance loggée.
