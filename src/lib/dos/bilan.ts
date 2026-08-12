@@ -26,7 +26,7 @@ export type ArbreEvaluationInput = {
   dejaMonteeCetteSemaine: boolean;
 };
 
-const ARBRE_EXERCISE_ID = /^([A-J])-(\d+)$/;
+export const ARBRE_EXERCISE_ID = /^([A-J])-(\d+)$/;
 
 export function buildArbreEvaluationInputs(params: {
   day: TrainDay;
