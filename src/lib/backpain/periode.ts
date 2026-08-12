@@ -17,3 +17,5 @@ export function isDechargeWeek(week: number): boolean {
 export function isCalibrageWeek(week: number): boolean {
   return week === 1;
 }
+
+export const RPE_CIBLE: readonly [number, number, number, number] = [6, 7, 8, 8];

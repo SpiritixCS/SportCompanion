@@ -52,32 +52,48 @@ describe("hasAlreadyRisenThisWeek", () => {
 });
 
 describe("checkStagnation", () => {
-  it("is false with fewer than 3 eligible evaluations", () => {
-    const evaluations = [row({ resultat: "maintien" }), row({ resultat: "maintien" })];
+  it("is false with fewer than 3 distinct eligible weeks", () => {
+    const evaluations = [row({ semaine: 1, resultat: "maintien" }), row({ semaine: 1, resultat: "maintien" })];
     expect(checkStagnation(evaluations, "A")).toBe(false);
   });
 
-  it("is true when the last 3 eligible evaluations are all maintien", () => {
-    const evaluations = [row({ resultat: "maintien" }), row({ resultat: "maintien" }), row({ resultat: "maintien" })];
-    expect(checkStagnation(evaluations, "A")).toBe(true);
+  it("is true for a twice-weekly tree with 2 maintien rows in each of 3 consecutive weeks (3 real weeks)", () => {
+    const evaluations = [
+      row({ arbre: "B", semaine: 1, resultat: "maintien" }),
+      row({ arbre: "B", semaine: 1, resultat: "maintien" }),
+      row({ arbre: "B", semaine: 2, resultat: "maintien" }),
+      row({ arbre: "B", semaine: 2, resultat: "maintien" }),
+      row({ arbre: "B", semaine: 3, resultat: "maintien" }),
+      row({ arbre: "B", semaine: 3, resultat: "maintien" }),
+    ];
+    expect(checkStagnation(evaluations, "B")).toBe(true);
   });
 
-  it("resets when a montee appears among the last 3", () => {
+  it("is false for a twice-weekly tree with 3 maintien rows spanning only 2 distinct weeks (the bug this fixes)", () => {
     const evaluations = [
-      row({ resultat: "maintien" }),
-      row({ resultat: "montee", cranApres: 2 }),
-      row({ resultat: "maintien", cranApres: 2 }),
+      row({ arbre: "B", semaine: 1, resultat: "maintien" }),
+      row({ arbre: "B", semaine: 1, resultat: "maintien" }),
+      row({ arbre: "B", semaine: 2, resultat: "maintien" }),
+    ];
+    expect(checkStagnation(evaluations, "B")).toBe(false);
+  });
+
+  it("resets the streak when a week contains a montee, even among otherwise-maintien weeks", () => {
+    const evaluations = [
+      row({ semaine: 1, resultat: "maintien" }),
+      row({ semaine: 2, resultat: "montee", cranApres: 2 }),
+      row({ semaine: 3, resultat: "maintien", cranApres: 2 }),
     ];
     expect(checkStagnation(evaluations, "A")).toBe(false);
   });
 
   it("does not count calibrage or decharge rows toward the window, and they don't break it", () => {
     const evaluations = [
-      row({ resultat: "maintien" }),
-      row({ resultat: "calibrage" }),
-      row({ resultat: "decharge" }),
-      row({ resultat: "maintien" }),
-      row({ resultat: "maintien" }),
+      row({ semaine: 1, resultat: "maintien" }),
+      row({ semaine: 1, resultat: "calibrage" }),
+      row({ semaine: 2, resultat: "decharge" }),
+      row({ semaine: 2, resultat: "maintien" }),
+      row({ semaine: 3, resultat: "maintien" }),
     ];
     expect(checkStagnation(evaluations, "A")).toBe(true);
   });
@@ -90,12 +106,12 @@ describe("evaluateProgression", () => {
     currentCran: 3,
     seriesAuHaut: true,
     rpeAuCibleOuMoins: true,
-    gene: 0,
+    genePendant: 0,
     dejaMonteeCetteSemaine: false,
   };
 
   it("returns decharge on a decharge week, regardless of other inputs", () => {
-    const result = evaluateProgression({ ...base, semaine: 8, gene: 9 });
+    const result = evaluateProgression({ ...base, semaine: 8, genePendant: 9 });
     expect(result).toEqual({
       resultat: "decharge",
       message: "Semaine de décharge : pas de test de cran.",
@@ -103,8 +119,8 @@ describe("evaluateProgression", () => {
     });
   });
 
-  it("returns douleur when gene exceeds 3, before checking anything else", () => {
-    const result = evaluateProgression({ ...base, gene: 4, dejaMonteeCetteSemaine: true });
+  it("returns douleur when genePendant exceeds 3, before checking anything else", () => {
+    const result = evaluateProgression({ ...base, genePendant: 4, dejaMonteeCetteSemaine: true });
     expect(result).toEqual({
       resultat: "douleur",
       message: "Gêne au-delà de 3/10 : répéter le même cran la prochaine fois.",
@@ -164,17 +180,51 @@ describe("evaluateProgression", () => {
   });
 
   it("evaluates decharge before douleur when both would fail", () => {
-    const result = evaluateProgression({ ...base, semaine: 4, gene: 8 });
+    const result = evaluateProgression({ ...base, semaine: 4, genePendant: 8 });
     expect(result.resultat).toBe("decharge");
   });
 
   it("evaluates douleur before plafond when both would fail", () => {
-    const result = evaluateProgression({ ...base, gene: 5, dejaMonteeCetteSemaine: true });
+    const result = evaluateProgression({ ...base, genePendant: 5, dejaMonteeCetteSemaine: true });
     expect(result.resultat).toBe("douleur");
   });
 
-  it("allows repeated calibrage in week 1 regardless of dejaMonteeCetteSemaine (caller always passes false)", () => {
-    const result = evaluateProgression({ ...base, semaine: 1, dejaMonteeCetteSemaine: false });
+  it("ignores the plafond in week 1 (calibrage) even when the caller passes dejaMonteeCetteSemaine: true", () => {
+    // §1 : en semaine 1, la condition « déjà monté cette semaine » ne s'applique pas — l'engine
+    // doit lever le plafond lui-même, sans dépendre de l'appelant pour toujours passer false.
+    const result = evaluateProgression({ ...base, semaine: 1, dejaMonteeCetteSemaine: true });
+    expect(result.resultat).toBe("montee");
+  });
+
+  it("keeps Arbre I at cran 1 through week 2, even when every other condition allows a montee", () => {
+    const result = evaluateProgression({
+      ...base,
+      arbre: "I",
+      currentCran: 1,
+      semaine: 2,
+      seriesAuHaut: true,
+      rpeAuCibleOuMoins: true,
+      genePendant: 0,
+      dejaMonteeCetteSemaine: false,
+    });
+    expect(result).toEqual({
+      resultat: "maintien",
+      message: "Arbre I : reste au cran 1 deux semaines minimum.",
+      cranApres: 1,
+    });
+  });
+
+  it("lets Arbre I rise from cran 1 starting week 3", () => {
+    const result = evaluateProgression({
+      ...base,
+      arbre: "I",
+      currentCran: 1,
+      semaine: 3,
+      seriesAuHaut: true,
+      rpeAuCibleOuMoins: true,
+      genePendant: 0,
+      dejaMonteeCetteSemaine: false,
+    });
     expect(result.resultat).toBe("montee");
   });
 });

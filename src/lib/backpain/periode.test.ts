@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeWeek, computeBlock, isDechargeWeek, isCalibrageWeek } from "./periode";
+import { computeWeek, computeBlock, isDechargeWeek, isCalibrageWeek, RPE_CIBLE } from "./periode";
 
 describe("computeWeek", () => {
   it("is week 1 on the start date itself", () => {
@@ -43,5 +43,14 @@ describe("isCalibrageWeek", () => {
   it("is true only for week 1", () => {
     expect(isCalibrageWeek(1)).toBe(true);
     expect(isCalibrageWeek(2)).toBe(false);
+  });
+});
+
+describe("RPE_CIBLE", () => {
+  it("gives the target RPE for each block per week (§1: 6, 7, 8, 8)", () => {
+    expect(RPE_CIBLE[computeBlock(2) - 1]).toBe(6);
+    expect(RPE_CIBLE[computeBlock(6) - 1]).toBe(7);
+    expect(RPE_CIBLE[computeBlock(10) - 1]).toBe(8);
+    expect(RPE_CIBLE[computeBlock(14) - 1]).toBe(8);
   });
 });

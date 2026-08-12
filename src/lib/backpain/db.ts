@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import type { EvalRow, Resultat } from "./progression";
+import type { EvalRow } from "./progression";
 import type { ArbreId } from "./arbres";
 
 export function getStartDate(db: Database.Database): string | null {
@@ -37,6 +37,6 @@ export function getEvaluations(db: Database.Database, arbre?: ArbreId): EvalRow[
              FROM dos_evaluations ORDER BY id ASC`,
           )
           .all()
-  ) as { arbre: ArbreId; semaine: number; cranApres: number; resultat: Resultat; horodatage: string }[];
+  ) as EvalRow[];
   return rows;
 }

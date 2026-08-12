@@ -157,3 +157,5 @@ Pas d'écran cette sous-phase → pas d'état erreur/vide/chargement à couvrir 
 ## Hors scope de cette phase
 
 Tout ce qui touche à une séance réelle (composition dynamique J1-J6, saisie de sets, saisie de gêne, timer/repos variable, écran `/dos`) — 4b. Mobilité quotidienne, marche, transitions assis-debout, rappels bureau, métriques hebdomadaires, charge cumulée hors-programme (§8-§13) — 4c. Aucune modification du player (phase 2) ou de la navigation (phase 3).
+
+L'exception Arbre A du §1 (la première séance où le cran 5 est atteint est limitée à 2 séries de 3, quelle que soit la semaine) n'est pas implémentée dans `evaluateProgression` : c'est une contrainte de volume/prescription au sein d'une séance, pas une règle de montée de cran — propriété de 4b, pas de ce moteur. À ne pas perdre entre les deux sous-projets.
