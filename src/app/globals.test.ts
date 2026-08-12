@@ -27,7 +27,7 @@ describe("design tokens", () => {
     expect(css).toMatch(new RegExp(`${name}:\\s*${value};`));
   });
 
-  it.each([11, 13, 15, 18, 24, 32, 44, 96])(
+  it.each([11, 13, 15, 18, 24, 32, 44, 72, 96])(
     "declares --text-%i",
     (size) => {
       expect(css).toMatch(new RegExp(`--text-${size}:\\s*${size}px;`));
