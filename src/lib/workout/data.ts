@@ -1,7 +1,9 @@
 // Généré par Caliathletics/generate_data_ts.py depuis workout_curated.json.
 // Ne pas éditer à la main — corriger la source (curate_workout.py) et régénérer.
 
-export const beginner = [
+import type { Program } from "./types";
+
+export const beginner: Program = [
   [
     { kind: "train", label: "Day 1", exercises: [
         { id: "push-ups-on-knees-negatives", name: "Push ups on knees negatives", movementFamily: "push", countsInStats: false, videoId: "404721962", sets: 3, target: { unit: "reps", value: 6, maxEffort: false, eachSide: false } },
@@ -338,7 +340,7 @@ export const beginner = [
   ],
 ];
 
-export const intermediate = [
+export const intermediate: Program = [
   [
     { kind: "train", label: "Day 1", exercises: [
         { id: "pull-ups", name: "Pull ups", movementFamily: "pull", countsInStats: true, videoId: "404352232", sets: 4, target: { unit: "reps", value: 10, maxEffort: false, eachSide: false } },
@@ -620,7 +622,7 @@ export const intermediate = [
   ],
 ];
 
-export const advanced = [
+export const advanced: Program = [
   [
     { kind: "train", label: "Day 1", exercises: [
         { id: "impossible-dip-negative", name: "Impossible Dip negative", movementFamily: "dip", countsInStats: false, videoId: "414755632", sets: 3, target: { unit: "reps", value: 1, maxEffort: false, eachSide: false } },

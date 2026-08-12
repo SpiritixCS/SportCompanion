@@ -52,11 +52,13 @@ def main():
         '// Généré par Caliathletics/generate_data_ts.py depuis workout_curated.json.',
         '// Ne pas éditer à la main — corriger la source (curate_workout.py) et régénérer.',
         "",
+        'import type { Program } from "./types";',
+        "",
     ]
 
     # Export individual tiers
     for tier in ["beginner", "intermediate", "advanced"]:
-        lines.append(f"export const {tier} = [")
+        lines.append(f"export const {tier}: Program = [")
         for level in curated[tier]:
             slots_ts = ",\n    ".join(ts_slot(s) for s in level)
             lines.append(f"  [\n    {slots_ts}\n  ],")
