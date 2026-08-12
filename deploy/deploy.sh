@@ -28,6 +28,10 @@ ssh -i "$SSH_KEY" "$REMOTE" "
   cd $REMOTE_DIR
   npm ci
   npm run build
+  cp -r public .next/standalone/public
+  cp -r .next/static .next/standalone/.next/static
+  cp data/sportcompanion.db data/sportcompanion.db.bak-\$(date +%s) 2>/dev/null || true
+  npm run db:migrate
 "
 
 echo "==> Ensuring systemd unit is up to date"
