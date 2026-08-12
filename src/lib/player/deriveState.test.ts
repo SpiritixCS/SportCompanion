@@ -27,6 +27,40 @@ const DAY: TrainDay = {
   ],
 };
 
+const DAY_3_EXERCISES: TrainDay = {
+  kind: "train",
+  label: "Day 2",
+  exercises: [
+    {
+      id: "push-ups",
+      name: "Push ups",
+      movementFamily: "push",
+      countsInStats: true,
+      videoId: null,
+      sets: 2,
+      target: { unit: "reps", value: 10, maxEffort: false, eachSide: false },
+    },
+    {
+      id: "squats",
+      name: "Squats",
+      movementFamily: "legs",
+      countsInStats: true,
+      videoId: null,
+      sets: 2,
+      target: { unit: "reps", value: 15, maxEffort: false, eachSide: false },
+    },
+    {
+      id: "pull-ups",
+      name: "Pull ups",
+      movementFamily: "pull",
+      countsInStats: true,
+      videoId: null,
+      sets: 3,
+      target: { unit: "reps", value: 8, maxEffort: false, eachSide: false },
+    },
+  ],
+};
+
 describe("deriveState", () => {
   it("points to the first set of the first exercise when nothing is logged", () => {
     const result = deriveState(DAY, []);
@@ -80,5 +114,44 @@ describe("deriveState", () => {
       new Set([1]),
     );
     expect(result).toEqual({ allSetsDone: true, next: null });
+  });
+
+  // Tests for remainingAfterAreAllSkipped multi-iteration lookahead (3+ exercise scenarios)
+  it("returns isLastExerciseOfDay: false when next exercise is skipped but a further one is not", () => {
+    // At exercise 0, exercise 1 is skipped, but exercise 2 is not
+    // Loop must iterate past index 1 and find index 2 is unskipped
+    const result = deriveState(DAY_3_EXERCISES, [], new Set([1]));
+    expect(result).toEqual({
+      allSetsDone: false,
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: false, isLastExerciseOfDay: false },
+    });
+  });
+
+  it("returns isLastExerciseOfDay: true when all trailing exercises are skipped", () => {
+    // At exercise 0, exercises 1 and 2 are both skipped
+    // Loop must iterate through both before returning true
+    const result = deriveState(DAY_3_EXERCISES, [], new Set([1, 2]));
+    expect(result).toEqual({
+      allSetsDone: false,
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: false, isLastExerciseOfDay: true },
+    });
+  });
+
+  it("correctly handles non-contiguous skip pattern when scanning ahead", () => {
+    // At exercise 0, exercise 1 is skipped but exercise 2 is not
+    // The loop must skip index 1, then find 2 is not skipped, returning false
+    // Complete first exercise and move to next
+    const result = deriveState(
+      DAY_3_EXERCISES,
+      [
+        { exerciseOrder: 0, setNumber: 1 },
+        { exerciseOrder: 0, setNumber: 2 },
+      ],
+      new Set([1]),
+    );
+    expect(result).toEqual({
+      allSetsDone: false,
+      next: { exerciseOrder: 2, setNumber: 1, isLastSetOfExercise: false, isLastExerciseOfDay: true },
+    });
   });
 });
