@@ -75,6 +75,17 @@ export async function completeDosSeanceAction(
 ): Promise<{ arbre: ArbreId; nom: string; message: string }[]> {
   const database = db();
   const seance = getDosSeanceById(database, seanceId)!;
+
+  // Idempotency guard against a double-tap (or a slow network + impatient
+  // second tap) on "Valider la séance": without this, a second pass would
+  // re-run recordEvaluation and see the first pass's own "montee" row via
+  // hasAlreadyRisenThisWeek, flipping the result to a misleading "plafond"
+  // message. The user already saw the real messages on the first submit,
+  // so an empty result list here is fine — nothing new to re-evaluate.
+  if (seance.completedAt) {
+    return [];
+  }
+
   const bloc = computeBlock(seance.semaine);
 
   const cranCourant = {} as Record<ArbreId, number>;

@@ -39,6 +39,24 @@ describe("BilanDos", () => {
     expect(onValidate).toHaveBeenCalledWith({ A: 0, B: 5 }, 2);
   });
 
+  it("disables Valider immediately after one click, before onValidate resolves", async () => {
+    const onValidate = vi.fn();
+    render(<BilanDos arbres={ARBRES} onValidate={onValidate} />);
+
+    const zeroButtons = screen.getAllByRole("button", { name: "0" });
+    await userEvent.click(zeroButtons[0]!);
+    const fiveOrMoreButtons = screen.getAllByRole("button", { name: "5 ou +" });
+    await userEvent.click(fiveOrMoreButtons[1]!);
+
+    const validerButton = screen.getByRole("button", { name: "Valider la séance" });
+    expect(validerButton).not.toBeDisabled();
+
+    await userEvent.click(validerButton);
+
+    expect(onValidate).toHaveBeenCalledTimes(1);
+    expect(validerButton).toBeDisabled();
+  });
+
   it("shows all 6 reserve options per arbre", () => {
     render(<BilanDos arbres={[ARBRES[0]!]} onValidate={() => {}} />);
     for (const label of ["0", "1", "2", "3", "4", "5 ou +"]) {

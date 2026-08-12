@@ -24,6 +24,7 @@ export function BilanDos({
 }) {
   const [reserves, setReserves] = useState<Partial<Record<ArbreId, Reserve>>>({});
   const [genePendant, setGenePendant] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
   const allAnswered = arbres.every((a) => reserves[a.arbre] !== undefined);
 
@@ -72,7 +73,15 @@ export function BilanDos({
       </div>
 
       <div className="flex-none px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-paper border-t border-hairline shadow-[0_-12px_24px_rgba(17,19,16,0.04)]">
-        <Button variant="primary" accent="sage" disabled={!allAnswered} onClick={() => onValidate(reserves, genePendant)}>
+        <Button
+          variant="primary"
+          accent="sage"
+          disabled={submitting || !allAnswered}
+          onClick={() => {
+            setSubmitting(true);
+            onValidate(reserves, genePendant);
+          }}
+        >
           Valider la séance
         </Button>
       </div>
