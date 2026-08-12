@@ -28,7 +28,7 @@ describe("EXERCICES_FIXES", () => {
     }
   });
 
-  it("bird dog uses a seconds range target, matching §5's '3 × 8 tenue 6-10 s'", () => {
+  it("bird dog uses a seconds range target for the tenue duration (6-10 s per set — rep count not separately modeled)", () => {
     const birdDog = EXERCICES_FIXES.mardi.find((e) => e.nom === "Bird dog");
     expect(birdDog?.sets).toBe(3);
     expect(birdDog?.target).toEqual({ unit: "s", value: [6, 10], maxEffort: false, eachSide: false });
