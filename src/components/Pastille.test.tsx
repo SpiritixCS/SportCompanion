@@ -23,4 +23,22 @@ describe("Pastille", () => {
     expect(upcoming.firstChild).not.toHaveClass("border-sage");
     expect(upcoming.firstChild).not.toHaveClass("bg-sage");
   });
+
+  it("renders a center dot for restOrWalk but not for upcoming", () => {
+    const { container: restOrWalk } = render(<Pastille state="restOrWalk" accent="cobalt" />);
+    expect(restOrWalk.firstChild?.childNodes).toHaveLength(1);
+
+    const { container: upcoming } = render(<Pastille state="upcoming" accent="cobalt" />);
+    expect(upcoming.firstChild?.childNodes).toHaveLength(0);
+  });
+
+  it("applies a halo ring only for the today state", () => {
+    const { container: today } = render(<Pastille state="today" accent="brass" />);
+    expect(today.firstChild).toHaveClass("ring-2", "ring-brass/20");
+
+    for (const state of ["upcoming", "done", "skipped", "restOrWalk"] as const) {
+      const { container } = render(<Pastille state={state} accent="brass" />);
+      expect(container.firstChild).not.toHaveClass("ring-2");
+    }
+  });
 });
