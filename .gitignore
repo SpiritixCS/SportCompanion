@@ -8,3 +8,4 @@ data/
 .env.local
 Caliathletics/.venv/
 Caliathletics/__pycache__/
+*.tsbuildinfo

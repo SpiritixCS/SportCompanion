@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,75..125,400..700&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  html, body { margin:0; padding:0; background:#F6F7F4; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  button { font:inherit; color:inherit; background:none; border:none; padding:0; cursor:pointer; }
+  a { color:#1F3BE0; text-decoration:none; }
+  a:hover { color:#111310; }
+  ::-webkit-scrollbar { width:0; height:0; }
+  :focus-visible { outline:2px solid #111310; outline-offset:2px; border-radius:6px; }
+  @keyframes shimmer { 0% { opacity:.55 } 50% { opacity:1 } 100% { opacity:.55 } }
+</style>
+</helmet>
+<div style="font-family:'Inter Tight',system-ui,sans-serif;color:#111310;background:#F6F7F4;height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative;margin:0 auto;max-width:520px;">
+
+  <div style="flex:1;overflow-y:auto;overflow-x:hidden;">
+
+    <!-- ======================= AUJOURD'HUI ======================= -->
+    <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:24px 20px 132px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:32px;">
+          <div>
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;">{{ dateLabel }}</div>
+            <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;line-height:1.05;margin-top:8px;">Salut Thomas.</div>
+          </div>
+          <button onClick="{{ openSettings }}" aria-label="Réglages" style="width:44px;height:44px;border-radius:999px;border:1px solid #E5E7E1;background:#FFFFFF;display:flex;align-items:center;justify-content:center;flex:none;">
+            <span style="width:16px;height:16px;border-radius:999px;border:1.5px solid #111310;display:block;"></span>
+          </button>
+        </div>
+
+        <sc-if value="{{ showLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:32px;">
+            <div style="height:286px;border-radius:20px;background:#FFFFFF;border:1px solid #E5E7E1;animation:shimmer 1.4s ease-in-out infinite;"></div>
+            <div style="height:186px;border-radius:20px;background:#FFFFFF;border:1px solid #E5E7E1;animation:shimmer 1.4s ease-in-out infinite .2s;"></div>
+            <div style="height:20px;width:180px;border-radius:999px;background:#E5E7E1;animation:shimmer 1.4s ease-in-out infinite .4s;"></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showError }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:24px;">
+            <div style="font-family:Archivo;font-size:18px;font-weight:600;">La séance du jour n'a pas pu être chargée.</div>
+            <div style="font-size:15px;line-height:1.5;color:#6E736B;margin-top:8px;">Le programme est stocké sur l'appareil. Relance le chargement, ta progression est intacte.</div>
+            <button onClick="{{ retry }}" style="margin-top:20px;height:56px;width:100%;border-radius:999px;background:#111310;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Réessayer</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:24px;">
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;">Premier jour</div>
+            <div style="font-family:Archivo;font-size:24px;font-weight:600;line-height:1.15;margin-top:12px;">Choisis ton point de départ pour commencer à suivre le programme.</div>
+            <div style="font-size:15px;line-height:1.5;color:#6E736B;margin-top:12px;">Parcours, niveau, jour. Trois choix, modifiables à tout moment.</div>
+            <button onClick="{{ openSetup }}" style="margin-top:24px;height:56px;width:100%;border-radius:999px;background:#1F3BE0;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Définir mon point de départ</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showNormal }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:32px;">
+
+            <sc-if value="{{ hasResume }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ resumeSession }}" style="width:100%;text-align:left;background:#FFFFFF;border:1px solid #1F3BE0;border-radius:20px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <span>
+                  <span style="display:block;font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#1F3BE0;">Séance interrompue</span>
+                  <span style="display:block;font-size:15px;margin-top:6px;">Reprendre à {{ resumeLabel }}</span>
+                </span>
+                <span style="font-family:Archivo;font-size:24px;color:#1F3BE0;">→</span>
+              </button>
+            </sc-if>
+
+            <!-- Carte programme -->
+            <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#1F3BE0;">Programme</div>
+                <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;font-variant-numeric:tabular-nums;">{{ progDuration }}</div>
+              </div>
+              <div style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;line-height:1.1;margin-top:14px;">{{ progPosition }}</div>
+              <div style="font-size:15px;color:#6E736B;margin-top:6px;">{{ progDayTitle }}</div>
+
+              <div style="display:flex;gap:8px;margin-top:20px;">
+                <sc-for list="{{ todayPastilles }}" as="p" hint-placeholder-count="7">
+                  <div style="{{ p.outer }}"><i style="{{ p.inner }}"></i></div>
+                </sc-for>
+              </div>
+
+              <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ progExPreview }}" as="e" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;">
+                    <span style="font-size:15px;">{{ e.nom }}</span>
+                    <span style="font-family:Archivo;font-size:15px;font-weight:500;color:#6E736B;font-variant-numeric:tabular-nums;white-space:nowrap;">{{ e.dose }}</span>
+                  </div>
+                </sc-for>
+                <div style="font-size:13px;color:#6E736B;">{{ progExRest }}</div>
+              </div>
+
+              <sc-if value="{{ progDone }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:20px;border-top:1px solid #E5E7E1;padding-top:20px;display:flex;align-items:center;gap:16px;">
+                  <span style="width:36px;height:36px;border-radius:999px;background:#1F3BE0;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;">✓</span>
+                  <span>
+                    <span style="display:block;font-family:Archivo;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;">{{ progDoneReps }} répétitions</span>
+                    <span style="display:block;font-size:13px;color:#6E736B;margin-top:2px;">Séance terminée en {{ progDoneTime }}</span>
+                  </span>
+                </div>
+                <button onClick="{{ reviewSession }}" style="margin-top:20px;height:56px;width:100%;border-radius:999px;border:1px solid #E5E7E1;background:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Revoir la séance</button>
+              </sc-if>
+
+              <sc-if value="{{ progNotDone }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ startProg }}" style="margin-top:20px;height:56px;width:100%;border-radius:999px;background:#1F3BE0;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Commencer la séance</button>
+              </sc-if>
+            </div>
+
+            <!-- Carte BackPain -->
+            <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#2E7D63;">Dos · Jour {{ backDayNum }}</div>
+                <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;font-variant-numeric:tabular-nums;">{{ backDuration }}</div>
+              </div>
+              <div style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;line-height:1.1;margin-top:14px;">{{ backTitle }}</div>
+              <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ backExPreview }}" as="e" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;">
+                    <span style="font-size:15px;">{{ e.nom }}</span>
+                    <span style="font-family:Archivo;font-size:15px;font-weight:500;color:#6E736B;font-variant-numeric:tabular-nums;white-space:nowrap;">{{ e.dose }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <button onClick="{{ startBack }}" style="margin-top:20px;height:56px;width:100%;border-radius:999px;border:1px solid #2E7D63;color:#2E7D63;background:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">{{ backCta }}</button>
+            </div>
+
+            <div style="display:flex;align-items:baseline;gap:10px;padding:0 4px;">
+              <span style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;font-variant-numeric:tabular-nums;">{{ streak }}</span>
+              <span style="font-size:13px;color:#6E736B;">jours consécutifs · dernière pause le 2 août</span>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ======================= PROGRAMME ======================= -->
+    <sc-if value="{{ isProgram }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 20px 132px;">
+        <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;line-height:1.05;">Programme</div>
+        <div style="font-size:15px;color:#6E736B;margin-top:8px;">Consultation libre. Ta progression ne bouge pas.</div>
+
+        <div style="display:flex;gap:4px;background:#FFFFFF;border:1px solid #E5E7E1;border-radius:999px;padding:4px;margin-top:24px;">
+          <sc-for list="{{ parcoursTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.nom }}</button>
+          </sc-for>
+        </div>
+
+        <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;margin:32px 0 12px;">{{ parcoursMeta }}</div>
+
+        <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;overflow:hidden;">
+          <sc-for list="{{ levelRows }}" as="r" hint-placeholder-count="8">
+            <div style="{{ r.wrap }}">
+              <button onClick="{{ r.onClick }}" style="width:100%;text-align:left;display:flex;align-items:center;gap:16px;padding:16px 20px;">
+                <span style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:125%;font-variant-numeric:tabular-nums;width:32px;flex:none;color:#111310;">{{ r.n }}</span>
+                <span style="flex:1;min-width:0;">
+                  <span style="display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ r.titre }}</span>
+                  <span style="display:flex;gap:6px;margin-top:8px;">
+                    <sc-for list="{{ r.pastilles }}" as="p" hint-placeholder-count="7">
+                      <span style="{{ p.outer }}"><i style="{{ p.inner }}"></i></span>
+                    </sc-for>
+                  </span>
+                </span>
+                <span style="font-family:Archivo;font-size:13px;font-weight:500;color:#6E736B;font-variant-numeric:tabular-nums;flex:none;">{{ r.pct }}</span>
+              </button>
+              <sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:4px 20px 16px;display:flex;flex-direction:column;">
+                  <sc-for list="{{ r.days }}" as="d" hint-placeholder-count="7">
+                    <button onClick="{{ d.onClick }}" style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid #E5E7E1;text-align:left;min-height:44px;">
+                      <span style="{{ d.pastille }}"><i style="{{ d.inner }}"></i></span>
+                      <span style="flex:1;min-width:0;">
+                        <span style="display:block;font-size:15px;">{{ d.titre }}</span>
+                        <span style="display:block;font-size:13px;color:#6E736B;margin-top:2px;">{{ d.meta }}</span>
+                      </span>
+                      <span style="color:#6E736B;font-size:15px;">›</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ======================= DOS ======================= -->
+    <sc-if value="{{ isBack }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 20px 132px;">
+        <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#2E7D63;">BackPain</div>
+        <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;line-height:1.05;margin-top:8px;">Cycle {{ backCycleNum }}</div>
+
+        <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:20px;margin-top:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#2E7D63;white-space:nowrap;">Jour {{ backDayNum }} · aujourd'hui</div>
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;white-space:nowrap;flex:none;">{{ backDuration }}</div>
+          </div>
+          <div style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;line-height:1.1;margin-top:14px;">{{ backTitle }}</div>
+          <div style="font-size:15px;color:#6E736B;line-height:1.5;margin-top:8px;">{{ backNote }}</div>
+          <button onClick="{{ startBack }}" style="margin-top:20px;height:56px;width:100%;border-radius:999px;background:#2E7D63;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">{{ backCta }}</button>
+        </div>
+
+        <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;margin:32px 0 12px;">Le cycle en 7 jours</div>
+        <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:20px;">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;justify-items:center;">
+            <sc-for list="{{ backPastilles }}" as="p" hint-placeholder-count="7">
+              <div style="{{ p.outer }}"><i style="{{ p.inner }}"></i></div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;justify-items:center;margin-top:10px;">
+            <sc-for list="{{ backDayLabels }}" as="l" hint-placeholder-count="7">
+              <span style="font-family:Archivo;font-size:11px;font-weight:500;color:#6E736B;">{{ l.t }}</span>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;margin:32px 0 12px;">Paliers des exercices</div>
+        <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;overflow:hidden;">
+          <sc-for list="{{ backProgress }}" as="b" hint-placeholder-count="6">
+            <div style="{{ b.wrap }}">
+              <div style="display:flex;align-items:center;gap:16px;">
+                <span style="flex:1;min-width:0;">
+                  <span style="display:block;font-size:15px;">{{ b.nom }}</span>
+                  <span style="display:block;font-size:13px;color:#6E736B;margin-top:2px;">{{ b.meta }}</span>
+                </span>
+                <span style="display:flex;gap:3px;align-items:flex-end;height:24px;flex:none;">
+                  <sc-for list="{{ b.steps }}" as="s" hint-placeholder-count="6">
+                    <i style="{{ s.style }}"></i>
+                  </sc-for>
+                </span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ======================= TROPHÉES ======================= -->
+    <sc-if value="{{ isTrophies }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:24px 20px 132px;">
+        <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#A9782C;">Trophées</div>
+        <div style="font-family:Archivo;font-size:44px;font-weight:600;font-stretch:125%;line-height:1.05;font-variant-numeric:tabular-nums;margin-top:10px;">{{ trophyTotal }}</div>
+        <div style="font-size:15px;color:#6E736B;margin-top:6px;">répétitions cumulées · {{ trophySub }}</div>
+
+        <div style="position:sticky;top:0;z-index:5;background:#F6F7F4;padding:20px 0 12px;margin-top:12px;display:flex;gap:8px;overflow-x:auto;">
+          <sc-for list="{{ trophyChips }}" as="c" hint-placeholder-count="5">
+            <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;">
+          <sc-for list="{{ trophyCards }}" as="t" hint-placeholder-count="8">
+            <button onClick="{{ t.onClick }}" style="text-align:left;background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:12px;display:flex;flex-direction:column;">
+              <span style="display:block;aspect-ratio:1;border-radius:14px;background-image:repeating-linear-gradient(135deg,#F1F2EE 0 6px,#FFFFFF 6px 12px);border:1px solid #E5E7E1;display:flex;align-items:flex-end;padding:8px;">
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#6E736B;">{{ t.slug }}</span>
+              </span>
+              <span style="display:block;font-size:13px;line-height:1.3;margin-top:12px;min-height:34px;">{{ t.nom }}</span>
+              <span style="display:block;font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;font-variant-numeric:tabular-nums;margin-top:4px;">{{ t.count }}</span>
+              <span style="{{ t.tier }}">{{ t.tierLabel }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ trophyEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px dashed #E5E7E1;border-radius:20px;padding:24px;text-align:center;">
+            <div style="font-family:Archivo;font-size:18px;font-weight:600;">Rien à compter pour l'instant.</div>
+            <div style="font-size:15px;color:#6E736B;margin-top:8px;">Termine une séance : chaque répétition atterrit ici.</div>
+            <button onClick="{{ goToday }}" style="margin-top:20px;height:56px;width:100%;border-radius:999px;background:#A9782C;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Aller à aujourd'hui</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- ======================= BARRE D'ONGLETS ======================= -->
+  <div style="flex:none;background:#FFFFFF;border-top:1px solid #E5E7E1;box-shadow:0 -12px 24px rgba(17,19,16,0.04);padding:10px 8px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
+    <button onClick="{{ goToday }}" style="height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+      <span style="{{ ic1 }}"></span>
+      <span style="{{ lb1 }}">Aujourd'hui</span>
+    </button>
+    <button onClick="{{ goProgram }}" style="height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+      <span style="{{ ic2 }}"></span>
+      <span style="{{ lb2 }}">Programme</span>
+    </button>
+    <button onClick="{{ goBack }}" style="height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+      <span style="{{ ic3 }}"></span>
+      <span style="{{ lb3 }}">Dos</span>
+    </button>
+    <button onClick="{{ goTrophies }}" style="height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+      <span style="{{ ic4 }}"></span>
+      <span style="{{ lb4 }}">Trophées</span>
+    </button>
+  </div>
+
+  <!-- ======================= FICHE JOUR ======================= -->
+  <sc-if value="{{ showDaySheet }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(17,19,16,0.28);display:flex;align-items:flex-end;z-index:40;">
+      <div style="background:#FFFFFF;width:100%;max-height:88%;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="padding:20px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+          <div>
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#1F3BE0;">{{ sheetEyebrow }}</div>
+            <div style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;line-height:1.1;margin-top:10px;">{{ sheetTitle }}</div>
+          </div>
+          <button onClick="{{ closeOverlay }}" aria-label="Fermer" style="width:44px;height:44px;flex:none;border-radius:999px;border:1px solid #E5E7E1;font-size:18px;">×</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:20px;">
+          <sc-for list="{{ sheetExercises }}" as="e" hint-placeholder-count="5">
+            <div style="{{ e.wrap }}">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;">
+                <span style="font-size:15px;">{{ e.nom }}</span>
+                <span style="font-family:Archivo;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;">{{ e.dose }}</span>
+              </div>
+              <div style="font-size:13px;color:#6E736B;margin-top:4px;">{{ e.note }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:none;padding:16px 20px calc(20px + env(safe-area-inset-bottom));border-top:1px solid #E5E7E1;display:flex;flex-direction:column;gap:10px;">
+          <button onClick="{{ startSheetDay }}" style="height:56px;border-radius:999px;background:#1F3BE0;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Démarrer ce jour</button>
+          <button onClick="{{ moveStart }}" style="height:44px;border-radius:999px;font-family:Archivo;font-size:15px;font-weight:500;color:#6E736B;">Reprendre ici</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ======================= FICHE TROPHÉE ======================= -->
+  <sc-if value="{{ showTrophySheet }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#FFFFFF;z-index:50;display:flex;flex-direction:column;">
+      <div style="flex:none;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#A9782C;">Fiche exercice</div>
+        <button onClick="{{ closeOverlay }}" aria-label="Fermer" style="width:44px;height:44px;border-radius:999px;border:1px solid #E5E7E1;font-size:18px;">×</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:0 20px 40px;">
+        <div style="aspect-ratio:4/3;border-radius:20px;background-image:repeating-linear-gradient(135deg,#F1F2EE 0 8px,#FFFFFF 8px 16px);border:1px solid #E5E7E1;display:flex;align-items:flex-end;padding:14px;">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#6E736B;">{{ detailSlug }}</span>
+        </div>
+        <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;line-height:1.05;margin-top:24px;">{{ detailNom }}</div>
+        <div style="font-family:Archivo;font-size:44px;font-weight:600;font-stretch:125%;font-variant-numeric:tabular-nums;margin-top:24px;">{{ detailTotal }}</div>
+        <div style="font-size:15px;color:#6E736B;margin-top:4px;">répétitions depuis toujours</div>
+        <div style="margin-top:32px;border-top:1px solid #E5E7E1;">
+          <sc-for list="{{ detailRows }}" as="r" hint-placeholder-count="4">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #E5E7E1;">
+              <span style="font-size:15px;color:#6E736B;">{{ r.k }}</span>
+              <span style="font-family:Archivo;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;">{{ r.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:24px;border:1px solid #A9782C;border-radius:20px;padding:20px;">
+          <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#A9782C;">Prochain palier</div>
+          <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;font-variant-numeric:tabular-nums;margin-top:10px;">{{ detailNext }}</div>
+          <div style="font-size:15px;color:#6E736B;margin-top:4px;">{{ detailRemain }}</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ======================= RÉGLAGES ======================= -->
+  <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#F6F7F4;z-index:50;display:flex;flex-direction:column;">
+      <div style="flex:none;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;">Réglages</div>
+        <button onClick="{{ closeOverlay }}" aria-label="Fermer" style="width:44px;height:44px;border-radius:999px;border:1px solid #E5E7E1;background:#FFFFFF;font-size:18px;">×</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:0 20px 40px;display:flex;flex-direction:column;gap:32px;">
+        <sc-for list="{{ settingsGroups }}" as="g" hint-placeholder-count="4">
+          <div>
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;margin-bottom:12px;">{{ g.titre }}</div>
+            <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;overflow:hidden;">
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                <button onClick="{{ r.onClick }}" style="{{ r.wrap }}">
+                  <span style="flex:1;min-width:0;text-align:left;">
+                    <span style="{{ r.labelStyle }}">{{ r.k }}</span>
+                    <span style="display:block;font-size:13px;color:#6E736B;margin-top:2px;">{{ r.sub }}</span>
+                  </span>
+                  <span style="font-family:Archivo;font-size:15px;font-weight:500;color:#6E736B;font-variant-numeric:tabular-nums;flex:none;">{{ r.v }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+        <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;text-align:center;">Écrans de démonstration</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:-20px;">
+          <sc-for list="{{ devChips }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ======================= POINT DE DÉPART ======================= -->
+  <sc-if value="{{ showSetup }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#F6F7F4;z-index:60;display:flex;flex-direction:column;">
+      <div style="flex:none;padding:20px 20px 0;">
+        <div style="height:2px;background:#E5E7E1;border-radius:999px;overflow:hidden;">
+          <div style="{{ setupBar }}"></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;">
+          <button onClick="{{ setupBackStep }}" style="font-family:Archivo;font-size:15px;font-weight:500;color:#6E736B;height:44px;">{{ setupBackLabel }}</button>
+          <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;">{{ setupStepLabel }}</div>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:24px 20px 40px;">
+        <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;line-height:1.05;">{{ setupTitle }}</div>
+        <div style="font-size:15px;color:#6E736B;margin-top:8px;">{{ setupSub }}</div>
+
+        <sc-if value="{{ setupIs1 }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:32px;">
+            <sc-for list="{{ setupParcours }}" as="p" hint-placeholder-count="3">
+              <button onClick="{{ p.onClick }}" style="{{ p.wrap }}">
+                <span style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;">
+                  <span style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;">{{ p.nom }}</span>
+                  <span style="font-family:Archivo;font-size:13px;font-weight:500;color:#6E736B;font-variant-numeric:tabular-nums;">{{ p.meta }}</span>
+                </span>
+                <span style="display:block;font-size:15px;color:#6E736B;margin-top:8px;text-align:left;">{{ p.desc }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ setupIs2 }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;overflow:hidden;margin-top:32px;">
+            <sc-for list="{{ setupLevels }}" as="l" hint-placeholder-count="8">
+              <button onClick="{{ l.onClick }}" style="{{ l.wrap }}">
+                <span style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:125%;font-variant-numeric:tabular-nums;width:32px;flex:none;">{{ l.n }}</span>
+                <span style="flex:1;min-width:0;text-align:left;">
+                  <span style="display:block;font-size:15px;">{{ l.titre }}</span>
+                  <span style="display:flex;gap:6px;margin-top:8px;">
+                    <sc-for list="{{ l.pastilles }}" as="p" hint-placeholder-count="7">
+                      <span style="{{ p.outer }}"><i style="{{ p.inner }}"></i></span>
+                    </sc-for>
+                  </span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ setupIs3 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:32px;">
+            <sc-for list="{{ setupDays }}" as="d" hint-placeholder-count="7">
+              <button onClick="{{ d.onClick }}" style="{{ d.wrap }}">
+                <span style="{{ d.pastille }}">{{ d.n }}</span>
+                <span style="flex:1;min-width:0;text-align:left;">
+                  <span style="display:block;font-size:15px;">{{ d.titre }}</span>
+                  <span style="display:block;font-size:13px;color:#6E736B;margin-top:2px;">{{ d.meta }}</span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ setupIs4 }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px solid #1F3BE0;border-radius:20px;padding:24px;margin-top:32px;">
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#1F3BE0;">Point de départ</div>
+            <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;line-height:1.1;margin-top:12px;">{{ setupChoice }}</div>
+            <div style="font-size:15px;color:#6E736B;line-height:1.5;margin-top:12px;">Tu peux le changer à tout moment dans les réglages. Ta progression repart de là.</div>
+          </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ setupCanGo }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:16px 20px calc(20px + env(safe-area-inset-bottom));border-top:1px solid #E5E7E1;background:#FFFFFF;box-shadow:0 -12px 24px rgba(17,19,16,0.04);">
+          <button onClick="{{ setupConfirm }}" style="height:56px;width:100%;border-radius:999px;background:#1F3BE0;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">C'est parti</button>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ======================= PLAYER ======================= -->
+  <sc-if value="{{ showPlayer }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#F6F7F4;z-index:70;display:flex;flex-direction:column;">
+
+      <sc-if value="{{ phaseExercise }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:none;padding:16px 20px 0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+            <button onClick="{{ askQuit }}" aria-label="Quitter la séance" style="width:44px;height:44px;border-radius:999px;border:1px solid #E5E7E1;background:#FFFFFF;font-size:18px;">×</button>
+            <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;font-variant-numeric:tabular-nums;">{{ pIndexLabel }}</div>
+            <div style="font-family:Archivo;font-size:15px;font-weight:500;color:#6E736B;font-variant-numeric:tabular-nums;width:44px;text-align:right;">{{ pElapsed }}</div>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:16px;">
+            <sc-for list="{{ pSegments }}" as="s" hint-placeholder-count="6">
+              <div style="{{ s.style }}"></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:24px 20px 24px;">
+          <div style="aspect-ratio:4/3;border-radius:20px;background-color:#FFFFFF;background-image:repeating-linear-gradient(135deg,#F1F2EE 0 8px,#FFFFFF 8px 16px);border:1px solid #E5E7E1;display:flex;align-items:flex-end;padding:14px;">
+            <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#6E736B;">{{ pSlug }}</span>
+          </div>
+          <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;line-height:1.05;margin-top:24px;">{{ pNom }}</div>
+          <div style="font-family:Archivo;font-size:72px;font-weight:600;font-stretch:125%;line-height:1;font-variant-numeric:tabular-nums;margin-top:16px;">{{ pDose }}</div>
+          <div style="font-size:15px;color:#6E736B;margin-top:8px;">{{ pNote }}</div>
+          <div style="display:flex;gap:8px;margin-top:24px;">
+            <sc-for list="{{ pSets }}" as="s" hint-placeholder-count="3">
+              <div style="{{ s.style }}"></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:none;padding:12px 20px calc(16px + env(safe-area-inset-bottom));background:#FFFFFF;border-top:1px solid #E5E7E1;box-shadow:0 -12px 24px rgba(17,19,16,0.04);">
+          <button onClick="{{ setDone }}" style="{{ pPrimaryStyle }}">Série terminée</button>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;">
+            <button onClick="{{ skipExercise }}" style="height:44px;padding:0 8px;font-size:15px;color:#6E736B;">Passer l'exercice</button>
+            <button onClick="{{ openAdjust }}" style="height:44px;padding:0 8px;font-size:15px;color:#6E736B;">Ajuster les reps</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ phaseRest }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+          <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;">{{ restKind }}</div>
+          <div style="position:relative;width:240px;height:240px;margin-top:32px;display:flex;align-items:center;justify-content:center;">
+            <svg width="240" height="240" viewBox="0 0 240 240" style="position:absolute;inset:0;transform:rotate(-90deg);">
+              <circle cx="120" cy="120" r="112" fill="none" stroke="#E5E7E1" stroke-width="2"></circle>
+              <circle cx="120" cy="120" r="112" fill="none" stroke="{{ restColor }}" stroke-width="3" stroke-linecap="round" stroke-dasharray="{{ restDash }}" stroke-dashoffset="{{ restOffset }}"></circle>
+            </svg>
+            <div style="font-family:Archivo;font-size:96px;font-weight:600;font-stretch:125%;line-height:1;font-variant-numeric:tabular-nums;">{{ restLeft }}</div>
+          </div>
+          <div style="font-size:15px;color:#6E736B;margin-top:32px;text-align:center;">Ensuite → {{ restNext }}</div>
+          <div style="display:flex;gap:10px;margin-top:24px;">
+            <button onClick="{{ addRest }}" style="height:52px;padding:0 24px;border-radius:999px;border:1px solid #E5E7E1;font-family:Archivo;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;">+15 s</button>
+            <button onClick="{{ skipRest }}" style="height:52px;padding:0 24px;border-radius:999px;background:#111310;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Passer le repos</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ phaseDone }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow-y:auto;padding:40px 20px 24px;">
+          <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:{{ pAccent }};">{{ pModuleLabel }}</div>
+          <div style="font-family:Archivo;font-size:44px;font-weight:600;font-stretch:112%;line-height:1.05;margin-top:10px;">Séance terminée</div>
+          <div style="display:flex;gap:12px;margin-top:32px;">
+            <sc-for list="{{ doneStats }}" as="s" hint-placeholder-count="3">
+              <div style="flex:1;background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;padding:16px;">
+                <div style="font-family:Archivo;font-size:32px;font-weight:600;font-stretch:112%;font-variant-numeric:tabular-nums;line-height:1;">{{ s.v }}</div>
+                <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#6E736B;margin-top:10px;">{{ s.k }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#A9782C;margin:32px 0 12px;">Ajouté aux trophées</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E7E1;border-radius:20px;overflow:hidden;">
+            <sc-for list="{{ doneGains }}" as="g" hint-placeholder-count="4">
+              <div style="{{ g.wrap }}">
+                <span style="flex:1;min-width:0;">
+                  <span style="display:block;font-size:15px;">{{ g.nom }}</span>
+                  <span style="display:block;font-size:13px;color:#6E736B;margin-top:2px;font-variant-numeric:tabular-nums;">{{ g.total }} au total</span>
+                </span>
+                <span style="font-family:Archivo;font-size:18px;font-weight:600;color:#A9782C;font-variant-numeric:tabular-nums;flex:none;">{{ g.gain }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ hasMilestone }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid #A9782C;border-radius:20px;padding:20px;margin-top:16px;">
+              <div style="font-family:Archivo;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#A9782C;">Palier franchi</div>
+              <div style="font-family:Archivo;font-size:24px;font-weight:600;font-stretch:112%;margin-top:10px;">{{ milestone }}</div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="flex:none;padding:12px 20px calc(16px + env(safe-area-inset-bottom));background:#FFFFFF;border-top:1px solid #E5E7E1;box-shadow:0 -12px 24px rgba(17,19,16,0.04);">
+          <button onClick="{{ finishSession }}" style="{{ pPrimaryStyle }}">Terminer</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showAdjust }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(17,19,16,0.28);display:flex;align-items:flex-end;">
+          <div style="background:#FFFFFF;width:100%;border-radius:20px 20px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));">
+            <div style="font-family:Archivo;font-size:18px;font-weight:600;">Ajuster les répétitions</div>
+            <div style="font-size:15px;color:#6E736B;margin-top:6px;">Série {{ adjustSet }} · {{ pNom }}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:24px;">
+              <button onClick="{{ decReps }}" aria-label="Moins" style="width:56px;height:56px;border-radius:999px;border:1px solid #E5E7E1;font-family:Archivo;font-size:24px;">−</button>
+              <div style="font-family:Archivo;font-size:72px;font-weight:600;font-stretch:125%;line-height:1;font-variant-numeric:tabular-nums;">{{ adjustReps }}</div>
+              <button onClick="{{ incReps }}" aria-label="Plus" style="width:56px;height:56px;border-radius:999px;border:1px solid #E5E7E1;font-family:Archivo;font-size:24px;">+</button>
+            </div>
+            <button onClick="{{ closeAdjust }}" style="margin-top:24px;height:56px;width:100%;border-radius:999px;background:#111310;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Valider</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showQuit }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;background:rgba(17,19,16,0.28);display:flex;align-items:flex-end;">
+          <div style="background:#FFFFFF;width:100%;border-radius:20px 20px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));">
+            <div style="font-family:Archivo;font-size:18px;font-weight:600;">Quitter la séance ?</div>
+            <div style="font-size:15px;color:#6E736B;line-height:1.5;margin-top:8px;">Elle est enregistrée où tu t'es arrêté. Tu pourras la reprendre depuis Aujourd'hui.</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:24px;">
+              <button onClick="{{ confirmQuit }}" style="height:56px;border-radius:999px;border:1px solid #B3402E;color:#B3402E;font-family:Archivo;font-size:15px;font-weight:600;">Quitter et reprendre plus tard</button>
+              <button onClick="{{ cancelQuit }}" style="height:56px;border-radius:999px;background:#111310;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;">Continuer la séance</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+const PALIERS = [100, 500, 1000, 5000, 10000, 25000];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+const EX = [
+  ['pompes', 'Pompes', 'programme', 12400],
+  ['squats', 'Squats', 'programme', 9700],
+  ['mountain', 'Mountain climbers', 'programme', 5600],
+  ['fentes', 'Fentes alternées', 'programme', 4320],
+  ['pont', 'Pont fessier', 'dos', 3180],
+  ['tractions', 'Tractions', 'programme', 2140],
+  ['dips', 'Dips sur banc', 'programme', 1860],
+  ['releves', 'Relevés de jambes', 'programme', 1750],
+  ['lombaires', 'Extensions lombaires', 'dos', 1420],
+  ['superman', 'Superman', 'dos', 1240],
+  ['chat', 'Chat-chameau', 'dos', 997],
+  ['gainage', 'Gainage ventral', 'programme', 890],
+  ['birddog', 'Bird dog', 'dos', 760],
+  ['lateral', 'Gainage latéral', 'dos', 620],
+  ['deadbug', 'Dead bug', 'dos', 640],
+  ['burpees', 'Burpees', 'programme', 540],
+  ['diamant', 'Pompes diamant', 'programme', 430],
+  ['australien', 'Tirage australien', 'programme', 310],
+  ['chaise', 'Chaise au mur', 'programme', 208],
+  ['rowing', 'Rowing élastique', 'programme', 84]
+];
+const NIVEAU_T = ['Fondations', 'Volume', 'Tempo', 'Force', 'Densité', 'Explosivité', 'Contrôle', 'Test'];
+const JOUR_T = ['Haut du corps', 'Bas du corps', 'Gainage', 'Full body', 'Haut du corps', 'Bas du corps', 'Test du niveau'];
+const BACK_T = ['Mobilité lombaire', 'Chaîne postérieure', 'Gainage profond', 'Hanches', 'Mobilité lombaire', 'Chaîne postérieure', 'Marche'];
+const JOURS_FR = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+class Component extends DCLogic {
+  state = {
+    tab: 'today', overlay: null, dev: 'normal',
+    viewParcours: 'intermediaire', openLevel: 3, sheet: null, trophy: null,
+    sort: 'reps', filter: 'tous',
+    setup: { step: 1, parcours: null, niveau: null, jour: null },
+    player: null, adjust: null, quit: false,
+    roll: 1, rolled: false, tick: 0,
+    progDone: false, backDone: false, resume: { ex: 'Tractions', i: 2 }
+  };
+
+  get D() {
+    if (!this._d) this._d = this.build();
+    return this._d;
+  }
+
+  build() {
+    const ex = {};
+    EX.forEach(e => { ex[e[0]] = { id: e[0], nom: e[1], module: e[2], total: e[3] }; });
+    const progIds = EX.filter(e => e[2] === 'programme').map(e => e[0]);
+    const dosIds = EX.filter(e => e[2] === 'dos').map(e => e[0]);
+    const parcours = [
+      { id: 'debutant', nom: 'Débutant', niveaux: 8, desc: 'Poser les bases, apprendre les mouvements.' },
+      { id: 'intermediaire', nom: 'Intermédiaire', niveaux: 8, desc: 'Monter en volume, tenir la régularité.' },
+      { id: 'advanced', nom: 'Advanced', niveaux: 4, desc: 'Densité, tempo lent, variantes dures.' }
+    ];
+    const mult = { debutant: 0.7, intermediaire: 1, advanced: 1.4 };
+    parcours.forEach(p => {
+      p.levels = [];
+      for (let n = 1; n <= p.niveaux; n++) {
+        const days = [];
+        for (let j = 1; j <= 7; j++) {
+          const count = j === 7 ? 3 : 4 + ((n + j) % 2);
+          const exos = [];
+          for (let k = 0; k < count; k++) {
+            const id = progIds[(n * 3 + j * 2 + k * 5) % progIds.length];
+            const series = 3 + ((n + k) % 2);
+            const reps = Math.max(4, Math.round((8 + n * 2 + k) * mult[p.id]));
+            exos.push({ id, nom: ex[id].nom, series, reps, repos: 60 + ((k % 2) * 30), note: k % 3 === 0 ? 'Tempo 3-1-1, amplitude complète.' : 'Repos ' + (60 + (k % 2) * 30) + ' s entre les séries.' });
+          }
+          days.push({ j, titre: JOUR_T[j - 1], exos });
+        }
+        p.levels.push({ n, titre: NIVEAU_T[n - 1] || 'Niveau ' + n, days });
+      }
+    });
+    const back = [];
+    for (let j = 1; j <= 7; j++) {
+      const exos = j === 7 ? [] : [0, 1, 2].map(k => {
+        const id = dosIds[(j * 2 + k) % dosIds.length];
+        const palier = 2 + ((j + k) % 5);
+        return { id, nom: ex[id].nom, series: 2, reps: 8 + palier * 2, repos: 40, note: 'Palier ' + palier + ' · mouvement lent, sans à-coup.' };
+      });
+      back.push({ j, titre: BACK_T[j - 1], exos, note: j === 7 ? 'Marche continue, allure conversationnelle.' : 'Séance courte, sans forcer. Arrête avant la douleur.' });
+    }
+    const paliers = dosIds.map((id, i) => ({ id, nom: ex[id].nom, palier: 2 + (i % 5), delta: i % 3 === 0 ? 1 : 0 }));
+    return { ex, parcours, back, paliers, dosIds };
+  }
+
+  componentDidMount() {
+    this._t = setInterval(() => {
+      const p = this.state.player;
+      if (!p) return;
+      if (p.phase === 'rest') {
+        const left = p.restLeft - 0.1;
+        if (left <= 0) this.setState({ player: { ...p, phase: 'exercise', restLeft: 0, elapsed: p.elapsed + 0.1 } });
+        else this.setState({ player: { ...p, restLeft: left, elapsed: p.elapsed + 0.1 } });
+      } else if (p.phase === 'exercise') {
+        this.setState({ player: { ...p, elapsed: p.elapsed + 0.1 } });
+      }
+    }, 100);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+
+  // ---------- helpers ----------
+  pastille(kind, accent, size) {
+    const s = size || 14;
+    const base = 'width:' + s + 'px;height:' + s + 'px;border-radius:999px;flex:none;display:flex;align-items:center;justify-content:center;box-sizing:border-box;';
+    let outer = base + 'border:1px solid #E5E7E1;background:transparent;';
+    let inner = 'display:none;';
+    if (kind === 'done') outer = base + 'border:1px solid ' + accent + ';background:' + accent + ';';
+    else if (kind === 'today') outer = base + 'border:2px solid ' + accent + ';background:transparent;box-shadow:0 0 0 4px ' + accent + '1F;';
+    else if (kind === 'skip') outer = base + 'border:1px solid #E5E7E1;background:#E5E7E1;';
+    else if (kind === 'rest') { inner = 'width:' + Math.max(3, Math.round(s / 4)) + 'px;height:' + Math.max(3, Math.round(s / 4)) + 'px;border-radius:999px;background:#6E736B;display:block;'; }
+    return { outer, inner };
+  }
+
+  dayKind(pid, n, j) {
+    const pos = this.state.setup.parcours && this.state.dev === 'empty' ? null : { p: 'intermediaire', n: 3, j: 5 };
+    if (!pos || pid !== pos.p) return j === 7 ? 'rest' : 'todo';
+    if (n < pos.n) return 'done';
+    if (n > pos.n) return j === 7 ? 'rest' : 'todo';
+    if (n === 3 && j === 2) return 'skip';
+    if (j < pos.j) return 'done';
+    if (j === pos.j) return 'today';
+    return j === 7 ? 'rest' : 'todo';
+  }
+
+  fmt(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  clock(s) { const m = Math.floor(s / 60); return m + ':' + String(Math.floor(s % 60)).padStart(2, '0'); }
+  tier(total) { let t = -1; PALIERS.forEach((p, i) => { if (total >= p) t = i; }); return t; }
+
+  currentDay() {
+    const p = this.D.parcours.find(x => x.id === 'intermediaire');
+    return p.levels[2].days[4];
+  }
+
+  // ---------- actions ----------
+  setTab = t => {
+    if (t === 'trophies' && !this.state.rolled) this.startRoll();
+    this.setState({ tab: t, overlay: null });
+  };
+  startRoll() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { this.setState({ rolled: true, roll: 1 }); return; }
+    this.setState({ rolled: true, roll: 0 });
+    const t0 = performance.now();
+    const step = () => {
+      const p = Math.min(1, (performance.now() - t0) / 950);
+      this.setState({ roll: p });
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  startPlayer(module, day, accent) {
+    this.setState({
+      player: {
+        module, accent, day, i: 0, set: 0, phase: 'exercise', elapsed: 0,
+        restLeft: 0, restTotal: 0, restBetween: false, reps: {}
+      }, overlay: null, quit: false, adjust: null
+    });
+  }
+
+  advance = () => {
+    const p = this.state.player;
+    const exo = p.day.exos[p.i];
+    const done = p.set + 1;
+    const reps = { ...p.reps };
+    reps[exo.id] = (reps[exo.id] || 0) + (p.repsOverride || exo.reps);
+    if (done < exo.series) {
+      this.setState({ player: { ...p, set: done, reps, phase: 'rest', restLeft: exo.repos, restTotal: exo.repos, restBetween: false, repsOverride: null } });
+    } else if (p.i + 1 < p.day.exos.length) {
+      this.setState({ player: { ...p, i: p.i + 1, set: 0, reps, phase: 'rest', restLeft: 90, restTotal: 90, restBetween: true, repsOverride: null } });
+    } else {
+      this.setState({ player: { ...p, reps, phase: 'done' } });
+    }
+  };
+
+  // ---------- render ----------
+  renderVals() {
+    const st = this.state, D = this.D;
+    const dev = st.dev;
+    const v = {};
+
+    v.isToday = st.tab === 'today';
+    v.isProgram = st.tab === 'program';
+    v.isBack = st.tab === 'back';
+    v.isTrophies = st.tab === 'trophies';
+    v.goToday = () => this.setTab('today');
+    v.goProgram = () => this.setTab('program');
+    v.goBack = () => this.setTab('back');
+    v.goTrophies = () => this.setTab('trophies');
+    v.openSettings = () => this.setState({ overlay: 'settings' });
+    v.closeOverlay = () => this.setState({ overlay: null, sheet: null, trophy: null });
+    v.openSetup = () => this.setState({ overlay: 'setup', setup: { step: 1, parcours: null, niveau: null, jour: null } });
+    v.retry = () => this.setState({ dev: 'normal' });
+
+    const tabOn = 'font-family:Archivo;font-size:11px;font-weight:600;letter-spacing:.01em;color:#111310;';
+    const tabOff = 'font-family:Archivo;font-size:11px;font-weight:500;letter-spacing:.01em;color:#6E736B;';
+    const icon = (active, kind) => {
+      const c = active ? '#111310' : '#6E736B';
+      if (kind === 'circle') return 'width:18px;height:18px;border-radius:999px;display:block;' + (active ? 'background:' + c + ';' : 'border:1.5px solid ' + c + ';');
+      if (kind === 'grid') return 'width:18px;height:18px;display:block;border-radius:3px;background-image:radial-gradient(' + c + ' 1.6px, transparent 1.7px);background-size:6px 6px;background-position:1px 1px;opacity:' + (active ? 1 : .8) + ';';
+      if (kind === 'bars') return 'width:18px;height:18px;display:block;background-image:linear-gradient(' + c + ' 0 ' + (active ? 4 : 2) + 'px, transparent ' + (active ? 4 : 2) + 'px 6px);background-size:18px 6px;background-repeat:repeat-y;background-position:0 1px;';
+      return 'width:14px;height:14px;display:block;transform:rotate(45deg);border-radius:2px;' + (active ? 'background:' + c + ';' : 'border:1.5px solid ' + c + ';');
+    };
+    v.ic1 = icon(v.isToday, 'circle'); v.lb1 = v.isToday ? tabOn : tabOff;
+    v.ic2 = icon(v.isProgram, 'grid'); v.lb2 = v.isProgram ? tabOn : tabOff;
+    v.ic3 = icon(v.isBack, 'bars'); v.lb3 = v.isBack ? tabOn : tabOff;
+    v.ic4 = icon(v.isTrophies, 'diamond'); v.lb4 = v.isTrophies ? tabOn : tabOff;
+
+    // ---- Aujourd'hui
+    v.showLoading = dev === 'loading';
+    v.showError = dev === 'erreur';
+    v.showEmpty = dev === 'vide';
+    v.showNormal = dev === 'normal';
+    v.dateLabel = 'Mardi 11 août';
+    v.streak = 23;
+    v.hasResume = dev === 'normal' && !!st.resume && !st.progDone;
+    v.resumeLabel = st.resume ? st.resume.ex : '';
+    v.resumeSession = () => { const d = this.currentDay(); this.startPlayer('programme', d, '#1F3BE0'); };
+
+    const day = this.currentDay();
+    v.progPosition = 'Intermédiaire · Niveau 3 · Jour 5';
+    v.progDayTitle = day.titre + ' · ' + day.exos.length + ' exercices';
+    v.progDuration = '32 min';
+    v.todayPastilles = [1, 2, 3, 4, 5, 6, 7].map(j => this.pattern('intermediaire', 3, j, '#1F3BE0', 14));
+    v.progExPreview = day.exos.slice(0, 3).map(e => ({ nom: e.nom, dose: e.series + ' × ' + e.reps }));
+    const rest = day.exos.length - 3;
+    v.progExRest = rest > 1 ? 'et ' + rest + ' autres' : (rest === 1 ? 'et 1 autre' : '');
+    v.progDone = st.progDone;
+    v.progNotDone = !st.progDone;
+    v.progDoneReps = this.fmt(day.exos.reduce((a, e) => a + e.series * e.reps, 0));
+    v.progDoneTime = '31 min';
+    v.startProg = () => this.startPlayer('programme', day, '#1F3BE0');
+    v.reviewSession = () => this.startPlayer('programme', day, '#1F3BE0');
+
+    const bd = D.back[3];
+    v.backDayNum = 4;
+    v.backCycleNum = 12;
+    v.backTitle = bd.titre;
+    v.backNote = bd.note;
+    v.backDuration = '11 min';
+    v.backExPreview = bd.exos.map(e => ({ nom: e.nom, dose: e.series + ' × ' + e.reps }));
+    v.backCta = st.backDone ? 'Séance faite' : 'Commencer';
+    v.startBack = () => this.startPlayer('dos', bd, '#2E7D63');
+    v.backPastilles = [1, 2, 3, 4, 5, 6, 7].map(j => {
+      const kind = j === 7 ? 'rest' : (j < 4 ? 'done' : (j === 4 ? 'today' : 'todo'));
+      return this.pastille(kind, '#2E7D63', 20);
+    });
+    v.backDayLabels = JOURS_FR.map(d => ({ t: d.slice(0, 1) }));
+    v.backProgress = D.paliers.map((p, i) => ({
+      wrap: 'padding:16px 20px;' + (i ? 'border-top:1px solid #E5E7E1;' : ''),
+      nom: p.nom,
+      meta: 'Palier ' + p.palier + (p.delta ? ' · +1 depuis le cycle précédent' : ' · stable'),
+      steps: [1, 2, 3, 4, 5, 6].map(s => ({
+        style: 'display:block;width:5px;border-radius:2px;height:' + (6 + s * 3) + 'px;background:' + (s <= p.palier ? '#2E7D63' : '#E5E7E1') + ';'
+      }))
+    }));
+
+    // ---- Programme
+    const pc = D.parcours.find(p => p.id === st.viewParcours);
+    v.parcoursTabs = D.parcours.map(p => ({
+      nom: p.nom, onClick: () => this.setState({ viewParcours: p.id, openLevel: null }),
+      style: 'flex:1;height:40px;border-radius:999px;font-family:Archivo;font-size:13px;font-weight:600;' +
+        (p.id === st.viewParcours ? 'background:#111310;color:#FFFFFF;' : 'color:#6E736B;')
+    }));
+    v.parcoursMeta = pc.niveaux + ' niveaux · ' + pc.niveaux * 7 + ' jours';
+    v.levelRows = pc.levels.map((l, i) => {
+      const open = st.openLevel === l.n;
+      const kinds = l.days.map(d => this.dayKind(pc.id, l.n, d.j));
+      const doneCount = kinds.filter(k => k === 'done').length;
+      return {
+        n: l.n, titre: l.titre, open,
+        wrap: i ? 'border-top:1px solid #E5E7E1;' : '',
+        pct: Math.round(doneCount / 7 * 100) + '%',
+        pastilles: l.days.map(d => this.pattern(pc.id, l.n, d.j, '#1F3BE0', 12)),
+        onClick: () => this.setState({ openLevel: open ? null : l.n }),
+        days: open ? l.days.map(d => {
+          const pa = this.pattern(pc.id, l.n, d.j, '#1F3BE0', 12);
+          return {
+            titre: 'Jour ' + d.j + ' · ' + d.titre,
+            meta: d.exos.length + ' exercices · ' + (18 + d.exos.length * 4) + ' min',
+            pastille: pa.outer, inner: pa.inner,
+            onClick: () => this.setState({ sheet: { p: pc.id, n: l.n, j: d.j }, overlay: 'day' })
+          };
+        }) : []
+      };
+    });
+
+    // ---- Fiche jour
+    v.showDaySheet = st.overlay === 'day' && !!st.sheet;
+    if (v.showDaySheet) {
+      const p2 = D.parcours.find(p => p.id === st.sheet.p);
+      const d2 = p2.levels[st.sheet.n - 1].days[st.sheet.j - 1];
+      v.sheetEyebrow = p2.nom + ' · Niveau ' + st.sheet.n;
+      v.sheetTitle = 'Jour ' + d2.j + ' · ' + d2.titre;
+      v.sheetExercises = d2.exos.map((e, i) => ({
+        wrap: 'padding:16px 0;' + (i ? 'border-top:1px solid #E5E7E1;' : 'padding-top:0;'),
+        nom: e.nom, dose: e.series + ' × ' + e.reps, note: e.note
+      }));
+      v.startSheetDay = () => this.startPlayer('programme', d2, '#1F3BE0');
+      v.moveStart = () => this.setState({ overlay: null, sheet: null });
+    }
+
+    // ---- Trophées
+    let list = EX.map(e => ({ id: e[0], nom: e[1], module: e[2], total: e[3] }));
+    if (st.filter === 'programme') list = list.filter(e => e.module === 'programme');
+    if (st.filter === 'dos') list = list.filter(e => e.module === 'dos');
+    if (st.sort === 'alpha') list = list.slice().sort((a, b) => a.nom.localeCompare(b.nom));
+    if (st.sort === 'recent') list = list.slice().reverse();
+    v.trophyEmpty = dev === 'vide';
+    const grand = EX.reduce((a, e) => a + e[3], 0);
+    v.trophyTotal = this.fmt(grand * this.ease(st.roll));
+    v.trophySub = '412 séances · 389 jours d\'activité';
+    const chips = [['reps', 'Plus de reps', 'sort'], ['recent', 'Récent', 'sort'], ['alpha', 'A → Z', 'sort'], ['tous', 'Tous', 'filter'], ['programme', 'Programme', 'filter'], ['dos', 'Dos', 'filter']];
+    v.trophyChips = chips.map(c => {
+      const on = st[c[2]] === c[0];
+      return {
+        label: c[1], onClick: () => this.setState(c[2] === 'sort' ? { sort: c[0] } : { filter: c[0] }),
+        style: 'flex:none;height:36px;padding:0 16px;border-radius:999px;font-family:Archivo;font-size:13px;font-weight:500;white-space:nowrap;' +
+          (on ? 'background:#111310;color:#FFFFFF;' : 'background:#FFFFFF;border:1px solid #E5E7E1;color:#6E736B;')
+      };
+    });
+    v.trophyCards = dev === 'vide' ? [] : list.map((e, i) => {
+      const p = Math.max(0, Math.min(1, (st.roll - i * 0.02) / 0.7));
+      const t = this.tier(e.total);
+      return {
+        nom: e.nom, slug: e.id + '.jpg', count: this.fmt(e.total * this.ease(p)),
+        tierLabel: t >= 0 ? ROMAN[t] + ' · ' + this.fmt(PALIERS[t]) : 'Premier palier à 100',
+        tier: 'display:block;font-family:Archivo;font-size:11px;font-weight:600;letter-spacing:.06em;margin-top:10px;padding-top:8px;border-top:1px solid ' + (t >= 0 ? '#A9782C' : '#E5E7E1') + ';color:' + (t >= 0 ? '#A9782C' : '#6E736B') + ';',
+        onClick: () => this.setState({ trophy: e.id, overlay: 'trophy' })
+      };
+    });
+
+    v.showTrophySheet = st.overlay === 'trophy' && !!st.trophy;
+    if (v.showTrophySheet) {
+      const e = D.ex[st.trophy];
+      const t = this.tier(e.total);
+      const next = PALIERS.find(p => p > e.total) || null;
+      v.detailNom = e.nom; v.detailSlug = e.id + '.jpg';
+      v.detailTotal = this.fmt(e.total);
+      v.detailRows = [
+        { k: 'Palier atteint', v: t >= 0 ? ROMAN[t] : '—' },
+        { k: 'Programme', v: this.fmt(e.module === 'dos' ? Math.round(e.total * 0.15) : Math.round(e.total * 0.88)) },
+        { k: 'Dos', v: this.fmt(e.module === 'dos' ? Math.round(e.total * 0.85) : Math.round(e.total * 0.12)) },
+        { k: 'Premier passage', v: '14 sept. 2024' },
+        { k: 'Dernier passage', v: '10 août 2026' }
+      ];
+      v.detailNext = next ? this.fmt(next) : 'Tous franchis';
+      v.detailRemain = next ? 'encore ' + this.fmt(next - e.total) + ' répétitions' : 'plus rien à franchir';
+    }
+
+    // ---- Réglages
+    v.showSettings = st.overlay === 'settings';
+    const row = (k, val, sub, i, alert) => ({
+      k, v: val, sub: sub || '', onClick: () => {},
+      wrap: 'width:100%;display:flex;align-items:center;gap:16px;padding:14px 20px;min-height:56px;' + (i ? 'border-top:1px solid #E5E7E1;' : ''),
+      labelStyle: 'display:block;font-size:15px;color:' + (alert ? '#B3402E' : '#111310') + ';'
+    });
+    v.settingsGroups = [
+      { titre: 'Programme', rows: [row('Parcours actif', 'Intermédiaire', '', 0), row('Position', 'N3 · J5', '', 1), { ...row('Changer mon point de départ', '›', '', 2), onClick: () => this.setState({ overlay: 'setup', setup: { step: 1, parcours: null, niveau: null, jour: null } }) }] },
+      { titre: 'Séance', rows: [row('Repos entre séries', '60 s', '', 0), row('Repos entre exercices', '90 s', '', 1), row('Décompte sonore', 'Activé', '', 2), row('Garder l\'écran allumé', 'Activé', '', 3), row('Compte à rebours', '3 s', '', 4)] },
+      { titre: 'BackPain', rows: [row('Début de cycle', 'Lundi', '', 0), row('Rappel de marche', 'Dimanche 10:00', '', 1)] },
+      { titre: 'Données', rows: [row('Exporter', '›', 'Fichier JSON sur l\'appareil', 0), row('Réinitialiser la progression', '', 'Irréversible, double confirmation', 1, true), row('Version', '2.4.0', '', 2)] }
+    ];
+    v.devChips = ['normal', 'vide', 'chargement', 'erreur'].map(d => {
+      const key = d === 'chargement' ? 'loading' : d;
+      const on = st.dev === key;
+      return {
+        label: d, onClick: () => this.setState({ dev: key, overlay: null, tab: 'today' }),
+        style: 'height:36px;padding:0 16px;border-radius:999px;font-family:Archivo;font-size:13px;font-weight:500;' +
+          (on ? 'background:#111310;color:#FFFFFF;' : 'background:#FFFFFF;border:1px solid #E5E7E1;color:#6E736B;')
+      };
+    });
+
+    // ---- Setup
+    const su = st.setup;
+    v.showSetup = st.overlay === 'setup';
+    v.setupBar = 'height:100%;background:#1F3BE0;border-radius:999px;width:' + (su.step * 25) + '%;transition:width 240ms cubic-bezier(0.2,0,0,1);';
+    v.setupStepLabel = 'Étape ' + Math.min(su.step, 3) + ' sur 3';
+    v.setupBackLabel = su.step === 1 ? 'Annuler' : 'Retour';
+    v.setupBackStep = () => su.step === 1 ? this.setState({ overlay: null }) : this.setState({ setup: { ...su, step: su.step - 1 } });
+    v.setupIs1 = su.step === 1; v.setupIs2 = su.step === 2; v.setupIs3 = su.step === 3; v.setupIs4 = su.step === 4;
+    v.setupTitle = ['Quel parcours ?', 'Quel niveau ?', 'Quel jour ?', 'Tout est prêt.'][su.step - 1];
+    v.setupSub = ['Tu pourras en changer plus tard.', 'Commence là où tu te sens juste.', 'Le premier jour de ta série.', 'Ta progression démarre ici.'][su.step - 1];
+    const selP = su.parcours ? D.parcours.find(p => p.id === su.parcours) : null;
+    v.setupParcours = D.parcours.map(p => ({
+      nom: p.nom, desc: p.desc, meta: p.niveaux + ' niveaux · ' + p.niveaux * 7 + ' j',
+      onClick: () => this.setState({ setup: { ...su, parcours: p.id, step: 2 } }),
+      wrap: 'display:block;width:100%;background:#FFFFFF;border-radius:20px;padding:20px;border:' + (su.parcours === p.id ? '2px solid #1F3BE0' : '1px solid #E5E7E1') + ';'
+    }));
+    v.setupLevels = (selP || D.parcours[1]).levels.map((l, i) => ({
+      n: l.n, titre: l.titre,
+      pastilles: l.days.map(() => this.pastille('todo', '#1F3BE0', 12)),
+      onClick: () => this.setState({ setup: { ...su, niveau: l.n, step: 3 } }),
+      wrap: 'width:100%;display:flex;align-items:center;gap:16px;padding:14px 20px;min-height:56px;' + (i ? 'border-top:1px solid #E5E7E1;' : '') + (su.niveau === l.n ? 'background:#F6F7F4;' : '')
+    }));
+    const selL = selP && su.niveau ? selP.levels[su.niveau - 1] : D.parcours[1].levels[0];
+    v.setupDays = selL.days.map(d => ({
+      n: d.j, titre: 'Jour ' + d.j + ' · ' + d.titre, meta: d.exos.length + ' exercices',
+      onClick: () => this.setState({ setup: { ...su, jour: d.j, step: 4 } }),
+      pastille: 'width:44px;height:44px;border-radius:999px;flex:none;display:flex;align-items:center;justify-content:center;font-family:Archivo;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;' +
+        (su.jour === d.j ? 'background:#1F3BE0;color:#FFFFFF;' : 'border:1px solid #E5E7E1;color:#6E736B;'),
+      wrap: 'width:100%;display:flex;align-items:center;gap:16px;background:#FFFFFF;border-radius:20px;padding:12px;border:' + (su.jour === d.j ? '2px solid #1F3BE0' : '1px solid #E5E7E1') + ';'
+    }));
+    v.setupChoice = selP ? selP.nom + ' · Niveau ' + su.niveau + ' · Jour ' + su.jour : '';
+    v.setupCanGo = su.step === 4;
+    v.setupConfirm = () => this.setState({ overlay: null, dev: 'normal', tab: 'today' });
+
+    // ---- Player
+    const pl = st.player;
+    v.showPlayer = !!pl;
+    v.pPrimaryStyle = 'height:56px;width:100%;border-radius:999px;color:#FFFFFF;font-family:Archivo;font-size:15px;font-weight:600;background:' + (pl ? pl.accent : '#1F3BE0') + ';';
+    if (pl) {
+      const exo = pl.day.exos[pl.i] || pl.day.exos[0];
+      v.phaseExercise = pl.phase === 'exercise';
+      v.phaseRest = pl.phase === 'rest';
+      v.phaseDone = pl.phase === 'done';
+      v.pAccent = pl.accent;
+      v.pModuleLabel = pl.module === 'dos' ? 'BackPain' : 'Programme';
+      v.pIndexLabel = 'Exercice ' + (pl.i + 1) + ' / ' + pl.day.exos.length;
+      v.pElapsed = this.clock(pl.elapsed);
+      v.pSegments = pl.day.exos.map((e, i) => ({
+        style: 'flex:1;height:3px;border-radius:999px;background:' + (i < pl.i ? pl.accent : (i === pl.i ? pl.accent : '#E5E7E1')) + ';opacity:' + (i > pl.i ? 1 : (i === pl.i ? .55 : 1)) + ';'
+      }));
+      v.pSlug = exo.id + '.jpg';
+      v.pNom = exo.nom;
+      v.pDose = exo.series + ' × ' + (pl.repsOverride || exo.reps);
+      v.pNote = exo.note;
+      v.pSets = Array.from({ length: exo.series }, (_, i) => ({
+        style: 'flex:1;height:10px;border-radius:999px;background:' + (i < pl.set ? pl.accent : '#FFFFFF') + ';border:1px solid ' + (i < pl.set ? pl.accent : '#E5E7E1') + ';'
+      }));
+      v.setDone = this.advance;
+      v.skipExercise = () => this.setState({ player: { ...pl, i: Math.min(pl.i + 1, pl.day.exos.length - 1), set: 0, repsOverride: null } });
+      v.askQuit = () => this.setState({ quit: true });
+      v.showQuit = st.quit;
+      v.cancelQuit = () => this.setState({ quit: false });
+      v.confirmQuit = () => this.setState({ player: null, quit: false });
+      v.openAdjust = () => this.setState({ adjust: pl.repsOverride || exo.reps });
+      v.showAdjust = st.adjust !== null && st.adjust !== undefined;
+      v.adjustReps = st.adjust;
+      v.adjustSet = pl.set + 1;
+      v.incReps = () => this.setState({ adjust: st.adjust + 1 });
+      v.decReps = () => this.setState({ adjust: Math.max(1, st.adjust - 1) });
+      v.closeAdjust = () => this.setState({ adjust: null, player: { ...pl, repsOverride: st.adjust } });
+
+      const circ = 2 * Math.PI * 112;
+      v.restDash = circ;
+      v.restOffset = circ * (1 - (pl.restTotal ? pl.restLeft / pl.restTotal : 0));
+      v.restColor = pl.restBetween ? '#6E736B' : pl.accent;
+      v.restLeft = Math.ceil(pl.restLeft);
+      v.restKind = pl.restBetween ? 'Exercice suivant' : 'Repos entre séries';
+      v.restNext = pl.restBetween ? exo.nom : 'Série ' + (pl.set + 1) + ' sur ' + exo.series;
+      v.addRest = () => this.setState({ player: { ...pl, restLeft: pl.restLeft + 15, restTotal: pl.restTotal + 15 } });
+      v.skipRest = () => this.setState({ player: { ...pl, phase: 'exercise', restLeft: 0 } });
+
+      const totalReps = Object.values(pl.reps).reduce((a, b) => a + b, 0);
+      v.doneStats = [
+        { k: 'Durée', v: this.clock(pl.elapsed) },
+        { k: 'Exercices', v: String(pl.day.exos.length) },
+        { k: 'Répétitions', v: this.fmt(totalReps) }
+      ];
+      const gains = Object.keys(pl.reps);
+      v.doneGains = gains.map((id, i) => ({
+        wrap: 'display:flex;align-items:center;gap:16px;padding:14px 20px;' + (i ? 'border-top:1px solid #E5E7E1;' : ''),
+        nom: D.ex[id].nom, gain: '+' + pl.reps[id], total: this.fmt(D.ex[id].total + pl.reps[id])
+      }));
+      const ms = gains.find(id => this.tier(D.ex[id].total + pl.reps[id]) > this.tier(D.ex[id].total));
+      v.hasMilestone = !!ms;
+      v.milestone = ms ? D.ex[ms].nom + ' passe ' + this.fmt(PALIERS[this.tier(D.ex[ms].total + pl.reps[ms])]) + ' répétitions' : '';
+      v.finishSession = () => this.setState({ player: null, progDone: pl.module === 'programme' ? true : st.progDone, backDone: pl.module === 'dos' ? true : st.backDone, resume: null, tab: 'today' });
+    }
+    return v;
+  }
+
+  pattern(pid, n, j, accent, size) {
+    return this.pastille(this.dayKind(pid, n, j), accent, size);
+  }
+  ease(p) { const x = Math.max(0, Math.min(1, p)); return 1 - Math.pow(1 - x, 3); }
+}
+</script>
+</body>
+</html>

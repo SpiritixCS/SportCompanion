@@ -58,7 +58,13 @@ Chrome sur iOS est un wrapper WebKit : **pas d'installation PWA sur l'écran d'a
 
 ## 4. Design
 
-Système visuel complet défini dans **Claude Design**, projet *BackPainDesign* (`https://claude.ai/design/p/26278c39-f837-45df-9871-0aba27003ad2`), fichier `uploads/claude.md` pour le brief complet et `Suivi Entrainement.dc.html` pour le prototype visuel (format canvas `sc-if`/`sc-for`, pas du code React directement réutilisable — à traduire en composants réels). Pour re-fetch : `mcp__claude-design__read_file` sur ce project_id.
+Système visuel complet défini dans **Claude Design**, projet *BackPainDesign* (`https://claude.ai/design/p/26278c39-f837-45df-9871-0aba27003ad2`). **Source de vérité locale, vendorisée dans ce repo** (le projet Claude Design vit sur un autre compte que celui utilisé par les sessions Claude Code sur ce repo — `mcp__claude-design__read_file` n'y a pas accès) :
+
+- `design/uploads/claude.md` — brief complet.
+- `design/Suivi Entrainement.dc.html` — prototype visuel (format canvas `sc-if`/`sc-for`, pas du code React directement réutilisable — à traduire en composants réels).
+- `design/support.js` — runtime nécessaire pour ouvrir/rendre le `.dc.html`.
+
+Ces fichiers sont la référence à relire en cas de doute — ne pas dépendre d'un accès MCP live au projet. Si le projet Claude Design est mis à jour, re-exporter (Share → Export → Project HTML) depuis le compte propriétaire et remplacer ces trois fichiers.
 
 ### Direction artistique
 
@@ -202,6 +208,10 @@ Objective.md                          objectif produit d'origine (source brute)
 BackPainProgram.md                    domaine BackPain — source de vérité, ne pas modifier
 DEPLOYMENT.md                         infra, accès VM, script de déploiement
 deploy/                               deploy.sh + unité systemd
+design/                               brief + prototype Claude Design vendorisés (§4) — source de vérité locale
+  uploads/claude.md                   brief complet
+  Suivi Entrainement.dc.html          prototype visuel (canvas sc-if/sc-for)
+  support.js                          runtime requis pour ouvrir le .dc.html
 Caliathletics/
   caliathletics_backup/               HTML sauvegardé du site original (3 parcours)
   workout_raw.json                    extraction brute (Parser.py)
