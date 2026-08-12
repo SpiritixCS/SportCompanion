@@ -14,6 +14,9 @@ rsync -az --delete \
   --exclude 'data' \
   --exclude '.git' \
   --exclude '.env*' \
+  --exclude '.superpowers' \
+  --exclude '.claude' \
+  --exclude '*.tsbuildinfo' \
   -e "ssh -i \"$SSH_KEY\"" \
   ./ "$REMOTE:$REMOTE_DIR/"
 
