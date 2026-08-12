@@ -130,6 +130,7 @@ export function ExerciseView({
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         initialValue={targetDefaultReps(exercise)}
+        accent={accent}
         onConfirm={(value) => {
           setSheetOpen(false);
           onCompleteSet(value);

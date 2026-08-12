@@ -1,6 +1,7 @@
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { formatClock } from "@/lib/player/formatClock";
+import type { Accent } from "@/components/Pastille";
 import type { Exercise } from "@/lib/workout/types";
 import type { SetLoggedRecord } from "@/lib/player/db";
 
@@ -8,11 +9,13 @@ export function SummaryView({
   exercises,
   setsLogged,
   durationSeconds,
+  accent = "cobalt",
   onFinish,
 }: {
   exercises: Exercise[];
   setsLogged: SetLoggedRecord[];
   durationSeconds: number;
+  accent?: Accent;
   onFinish: () => void;
 }) {
   const repsByExercise = new Map<number, number>();
@@ -61,7 +64,7 @@ export function SummaryView({
       </div>
 
       <div className="flex-none px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-paper border-t border-hairline shadow-[0_-12px_24px_rgba(17,19,16,0.04)]">
-        <Button variant="primary" accent="cobalt" onClick={onFinish}>
+        <Button variant="primary" accent={accent} onClick={onFinish}>
           Terminer
         </Button>
       </div>

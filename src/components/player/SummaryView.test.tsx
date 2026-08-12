@@ -60,4 +60,11 @@ describe("SummaryView", () => {
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
     expect(onFinish).toHaveBeenCalledOnce();
   });
+
+  it("uses the sage accent on the Terminer button when accent='sage'", () => {
+    render(
+      <SummaryView exercises={EXERCISES} setsLogged={[]} durationSeconds={0} accent="sage" onFinish={() => {}} />,
+    );
+    expect(screen.getByRole("button", { name: "Terminer" })).toHaveClass("bg-sage");
+  });
 });

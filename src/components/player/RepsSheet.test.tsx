@@ -31,4 +31,9 @@ describe("RepsSheet", () => {
     await userEvent.click(screen.getByRole("button", { name: "Valider" }));
     expect(onConfirm).toHaveBeenCalledWith(13);
   });
+
+  it("uses the sage accent on the Valider button when accent='sage'", () => {
+    render(<RepsSheet open onClose={() => {}} initialValue={12} accent="sage" onConfirm={() => {}} />);
+    expect(screen.getByRole("button", { name: "Valider" })).toHaveClass("bg-sage");
+  });
 });

@@ -9,4 +9,9 @@ describe("ResumeBanner", () => {
     expect(screen.getByText("Reprendre à Push ups")).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute("href", "/player?parcours=beginner&level=0&day=0");
   });
+
+  it("uses the sage accent border when accent='sage'", () => {
+    render(<ResumeBanner exerciseName="Hip hinge" href="/player/dos" accent="sage" />);
+    expect(screen.getByRole("link")).toHaveClass("border-sage");
+  });
 });

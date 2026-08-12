@@ -11,14 +11,9 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh, push }),
 }));
 
-const logSetAction = vi.fn().mockResolvedValue(undefined);
-const skipExerciseAction = vi.fn().mockResolvedValue(undefined);
-const completeSeanceAction = vi.fn().mockResolvedValue(undefined);
-vi.mock("@/lib/player/actions", () => ({
-  logSetAction: (...args: unknown[]) => logSetAction(...args),
-  skipExerciseAction: (...args: unknown[]) => skipExerciseAction(...args),
-  completeSeanceAction: (...args: unknown[]) => completeSeanceAction(...args),
-}));
+const onLogSet = vi.fn().mockResolvedValue(undefined);
+const onSkipExercise = vi.fn().mockResolvedValue(undefined);
+const onSeanceFinish = vi.fn().mockResolvedValue(undefined);
 
 const DAY: TrainDay = {
   kind: "train",
@@ -31,12 +26,16 @@ const DAY: TrainDay = {
 
 const STARTED_AT = new Date(Date.now() - 65_000).toISOString();
 
+function actionProps() {
+  return { onLogSet, onSkipExercise, onSeanceFinish };
+}
+
 beforeEach(() => {
   refresh.mockClear();
   push.mockClear();
-  logSetAction.mockClear();
-  skipExerciseAction.mockClear();
-  completeSeanceAction.mockClear();
+  onLogSet.mockClear();
+  onSkipExercise.mockClear();
+  onSeanceFinish.mockClear();
 });
 
 describe("PlayerScreen", () => {
@@ -48,12 +47,12 @@ describe("PlayerScreen", () => {
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
     expect(screen.getByText("Push ups")).toBeInTheDocument();
     expect(screen.getByText("1:05")).toBeInTheDocument();
   });
 
-  it("logs the set then shows RestView with the betweenExercises variant when it was the last set", async () => {
+  it("logs the set then shows RestView with the default betweenExercises duration when it was the last set", async () => {
     const state: PlayerState = {
       phase: "in-progress",
       seanceId: 1,
@@ -61,16 +60,42 @@ describe("PlayerScreen", () => {
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Série terminée" }));
     await userEvent.click(screen.getByRole("button", { name: "Valider" }));
 
-    expect(logSetAction).toHaveBeenCalledWith(
+    expect(onLogSet).toHaveBeenCalledWith(
       expect.objectContaining({ seanceId: 1, exerciseOrder: 0, setNumber: 1, repsActual: 10, restSeconds: 120 }),
     );
     expect(screen.getByText("120")).toBeInTheDocument();
     expect(screen.getByText(/Squats/)).toBeInTheDocument();
+  });
+
+  it("uses custom rest durations when provided", async () => {
+    const state: PlayerState = {
+      phase: "in-progress",
+      seanceId: 1,
+      startedAt: STARTED_AT,
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
+      skippedExerciseOrders: [],
+    };
+    render(
+      <PlayerScreen
+        day={DAY}
+        state={state}
+        setsLogged={[]}
+        {...actionProps()}
+        restBetweenSetsSeconds={60}
+        restBetweenExercisesSeconds={60}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Série terminée" }));
+    await userEvent.click(screen.getByRole("button", { name: "Valider" }));
+
+    expect(onLogSet).toHaveBeenCalledWith(expect.objectContaining({ restSeconds: 60 }));
+    expect(screen.getByText("60")).toBeInTheDocument();
   });
 
   it("skips the exercise and refreshes", async () => {
@@ -81,11 +106,11 @@ describe("PlayerScreen", () => {
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
 
     await userEvent.click(screen.getByText("Passer l'exercice"));
 
-    expect(skipExerciseAction).toHaveBeenCalledWith(1, 0);
+    expect(onSkipExercise).toHaveBeenCalledWith(1, 0);
     expect(refresh).toHaveBeenCalledOnce();
   });
 
@@ -97,7 +122,7 @@ describe("PlayerScreen", () => {
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
     expect(screen.getByText("Quitter la séance ?")).toBeInTheDocument();
@@ -114,7 +139,7 @@ describe("PlayerScreen", () => {
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
     await userEvent.click(screen.getByRole("button", { name: "Continuer la séance" }));
@@ -123,19 +148,19 @@ describe("PlayerScreen", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it("renders SummaryView for pending-validation and completes on Terminer", async () => {
+  it("renders SummaryView for pending-validation and calls onSeanceFinish on Terminer", async () => {
     const state: PlayerState = { phase: "pending-validation", seanceId: 1, startedAt: STARTED_AT };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
 
-    expect(completeSeanceAction).toHaveBeenCalledWith(1);
+    expect(onSeanceFinish).toHaveBeenCalledWith(1);
     expect(refresh).toHaveBeenCalledOnce();
   });
 
   it("shows a simple message for an already-completed seance", () => {
     const state: PlayerState = { phase: "completed", seanceId: 1 };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
     expect(screen.getByText("Séance déjà validée.")).toBeInTheDocument();
   });
 });

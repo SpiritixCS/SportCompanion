@@ -2,6 +2,7 @@ import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { loadPlayerState } from "@/lib/player/loadPlayerState";
 import { getSetsForSeance } from "@/lib/player/db";
+import { logSetAction, skipExerciseAction, completeSeanceAction } from "@/lib/player/actions";
 import { beginner, intermediate, advanced } from "@/lib/workout/data";
 import type { Program } from "@/lib/workout/types";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
@@ -41,5 +42,14 @@ export default async function PlayerPage({
   const state = loadPlayerState(db, parcours, level, dayIndex, day);
   const setsLogged = getSetsForSeance(db, state.seanceId);
 
-  return <PlayerScreen day={day} state={state} setsLogged={setsLogged} />;
+  return (
+    <PlayerScreen
+      day={day}
+      state={state}
+      setsLogged={setsLogged}
+      onLogSet={logSetAction}
+      onSkipExercise={skipExerciseAction}
+      onSeanceFinish={completeSeanceAction}
+    />
+  );
 }

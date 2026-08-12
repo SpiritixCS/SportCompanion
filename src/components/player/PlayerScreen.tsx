@@ -6,11 +6,20 @@ import { ExerciseView } from "./ExerciseView";
 import { RestView } from "./RestView";
 import { SummaryView } from "./SummaryView";
 import { Sheet } from "@/components/Sheet";
-import { logSetAction, skipExerciseAction, completeSeanceAction } from "@/lib/player/actions";
 import { REST_BETWEEN_SETS_SECONDS, REST_BETWEEN_EXERCISES_SECONDS } from "@/lib/player/constants";
+import type { Accent } from "@/components/Pastille";
 import type { TrainDay } from "@/lib/workout/types";
 import type { PlayerState } from "@/lib/player/loadPlayerState";
 import type { SetLoggedRecord } from "@/lib/player/db";
+
+type LogSetParams = {
+  seanceId: number;
+  exerciseOrder: number;
+  setNumber: number;
+  repsTarget: string;
+  repsActual: number;
+  restSeconds: number;
+};
 
 type LocalPhase =
   | { kind: "exercise" }
@@ -54,10 +63,22 @@ export function PlayerScreen({
   day,
   state,
   setsLogged,
+  accent = "cobalt",
+  restBetweenSetsSeconds = REST_BETWEEN_SETS_SECONDS,
+  restBetweenExercisesSeconds = REST_BETWEEN_EXERCISES_SECONDS,
+  onLogSet,
+  onSkipExercise,
+  onSeanceFinish,
 }: {
   day: TrainDay;
   state: PlayerState;
   setsLogged: SetLoggedRecord[];
+  accent?: Accent;
+  restBetweenSetsSeconds?: number;
+  restBetweenExercisesSeconds?: number;
+  onLogSet: (params: LogSetParams) => Promise<void>;
+  onSkipExercise: (seanceId: number, exerciseOrder: number) => Promise<void>;
+  onSeanceFinish: (seanceId: number) => Promise<void>;
 }) {
   const router = useRouter();
   const [localPhase, setLocalPhase] = useState<LocalPhase>({ kind: "exercise" });
@@ -70,8 +91,9 @@ export function PlayerScreen({
         exercises={day.exercises}
         setsLogged={setsLogged}
         durationSeconds={elapsedSeconds}
+        accent={accent}
         onFinish={async () => {
-          await completeSeanceAction(state.seanceId);
+          await onSeanceFinish(state.seanceId);
           router.refresh();
         }}
       />
@@ -91,8 +113,8 @@ export function PlayerScreen({
   const exercise = day.exercises[exerciseOrder]!;
 
   async function handleCompleteSet(repsActual: number) {
-    const restSeconds = isLastSetOfExercise ? REST_BETWEEN_EXERCISES_SECONDS : REST_BETWEEN_SETS_SECONDS;
-    await logSetAction({
+    const restSeconds = isLastSetOfExercise ? restBetweenExercisesSeconds : restBetweenSetsSeconds;
+    await onLogSet({
       seanceId,
       exerciseOrder,
       setNumber,
@@ -111,7 +133,7 @@ export function PlayerScreen({
   }
 
   async function handleSkipExercise() {
-    await skipExerciseAction(seanceId, exerciseOrder);
+    await onSkipExercise(seanceId, exerciseOrder);
     router.refresh();
   }
 
@@ -121,6 +143,7 @@ export function PlayerScreen({
         durationSeconds={localPhase.durationSeconds}
         nextLabel={localPhase.nextLabel}
         variant={localPhase.variant}
+        accent={accent}
         onComplete={() => {
           setLocalPhase({ kind: "exercise" });
           router.refresh();
@@ -137,6 +160,7 @@ export function PlayerScreen({
         totalExercises={day.exercises.length}
         setNumber={setNumber}
         elapsedSeconds={elapsedSeconds}
+        accent={accent}
         onCompleteSet={handleCompleteSet}
         onSkipExercise={handleSkipExercise}
         onQuit={() => setQuitOpen(true)}

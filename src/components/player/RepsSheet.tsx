@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sheet } from "@/components/Sheet";
 import { Button } from "@/components/Button";
+import type { Accent } from "@/components/Pastille";
 
 // ponytail: stepper (−/valeur/+) au lieu d'une vraie molette à
 // glisser/snap — le brief design l'appelle "feuille à molette", une
@@ -13,11 +14,13 @@ export function RepsSheet({
   open,
   onClose,
   initialValue,
+  accent = "cobalt",
   onConfirm,
 }: {
   open: boolean;
   onClose: () => void;
   initialValue: number;
+  accent?: Accent;
   onConfirm: (value: number) => void;
 }) {
   const [value, setValue] = useState(initialValue);
@@ -39,7 +42,7 @@ export function RepsSheet({
           +
         </Button>
       </div>
-      <Button variant="primary" accent="cobalt" onClick={() => onConfirm(value)}>
+      <Button variant="primary" accent={accent} onClick={() => onConfirm(value)}>
         Valider
       </Button>
     </Sheet>
