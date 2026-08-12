@@ -4,6 +4,7 @@ import type Database from "better-sqlite3";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { setCurrentPosition } from "./db";
+import { getParcours } from "./parcours";
 
 let dbInstance: Database.Database | null = null;
 
@@ -28,6 +29,7 @@ export async function resolveLevelUpAction(
   parcours: string,
   level: number,
 ): Promise<void> {
-  const nextLevel = choice === "advance" ? level + 1 : level;
+  const levelCount = getParcours(parcours)?.levelCount ?? level + 1;
+  const nextLevel = choice === "advance" ? Math.min(level + 1, levelCount - 1) : level;
   setCurrentPosition(db(), parcours, nextLevel, 0);
 }

@@ -12,7 +12,7 @@ function dbPath(): string {
   return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
 }
 
-export default async function DevPlayerPage({
+export default async function PlayerPage({
   searchParams,
 }: {
   searchParams: Promise<{ parcours?: string; level?: string; day?: string }>;
@@ -31,7 +31,7 @@ export default async function DevPlayerPage({
       <main className="p-5">
         <p className="text-15 text-graphite">
           Jour introuvable pour ces paramètres. Essaie
-          /dev/player?parcours=beginner&level=0&day=0
+          /player?parcours=beginner&level=0&day=0
         </p>
       </main>
     );

@@ -45,4 +45,11 @@ describe("DaySheet", () => {
     expect(setCurrentPositionAction).toHaveBeenCalledWith("beginner", 0, 0);
     expect(push).toHaveBeenCalledWith("/player?parcours=beginner&level=0&day=0");
   });
+
+  it("shows Repos and hides both start actions on a rest day", () => {
+    render(<DaySheet parcours="beginner" level={0} dayIndex={1} onClose={() => {}} />);
+    expect(screen.getByText("Repos")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Démarrer ce jour" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reprendre ici" })).not.toBeInTheDocument();
+  });
 });
