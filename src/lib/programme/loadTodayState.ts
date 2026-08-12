@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 import { syncPosition, LAST_DAY_INDEX } from "./syncPosition";
-import { isDayValidated, getLatestCompletedSeanceId, getCurrentPosition } from "./db";
+import { isDayValidated, getLatestCompletedSeanceId } from "./db";
 import { estimateDurationMinutes } from "./estimateDuration";
 import { formatTarget } from "@/lib/player/formatTarget";
 import { getActiveSeance, getSetsForSeance, getSkippedExercises } from "@/lib/player/db";
@@ -29,26 +29,14 @@ export type TodayState =
     };
 
 export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[]): TodayState {
-  const currentPosition = getCurrentPosition(db);
-  if (!currentPosition) return { phase: "empty" };
-
-  const parcoursMeta = allParcours.find((p) => p.id === currentPosition.parcours);
-  if (!parcoursMeta) return { phase: "empty" };
-
-  const currentLevelDays = parcoursMeta.program[currentPosition.level] ?? [];
-  const currentDay = currentLevelDays[currentPosition.dayIndex];
-
-  // If already at a training day (not day 0), use current position as-is
-  // Otherwise, sync forward to find the next day that needs work
-  const position =
-    currentDay && currentDay.kind === "train" && currentPosition.dayIndex !== 0
-      ? currentPosition
-      : syncPosition(db, (parcours, level, dayIndex) => {
-          const meta = allParcours.find((p) => p.id === parcours);
-          return meta?.program[level]?.[dayIndex]?.kind;
-        });
-
+  const position = syncPosition(db, (parcours, level, dayIndex) => {
+    const meta = allParcours.find((p) => p.id === parcours);
+    return meta?.program[level]?.[dayIndex]?.kind;
+  });
   if (!position) return { phase: "empty" };
+
+  const parcoursMeta = allParcours.find((p) => p.id === position.parcours);
+  if (!parcoursMeta) return { phase: "empty" };
 
   if (position.dayIndex === LAST_DAY_INDEX) {
     return {
@@ -75,6 +63,8 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
   let doneReps: number | null = null;
   let resume: { exerciseName: string } | null = null;
 
+  // done is structurally unreachable here in practice — syncPosition always walks past a
+  // validated day before this runs. Kept for forward-compatibility if that contract ever changes.
   if (done) {
     const seanceId = getLatestCompletedSeanceId(db, position.parcours, position.level, position.dayIndex);
     if (seanceId) {

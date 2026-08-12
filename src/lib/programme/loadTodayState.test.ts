@@ -141,19 +141,4 @@ describe("loadTodayState", () => {
       level: 0,
     });
   });
-
-  it("reports done with the total reps when the position sits on an already-validated day (e.g. after Reprendre ici onto a past day)", () => {
-    const db = setup();
-    setCurrentPosition(db, "beginner", 0, 2);
-    const seance = startSeance(db, "beginner", 0, 2);
-    logSet(db, { seanceId: seance.id, exerciseOrder: 0, setNumber: 1, repsTarget: "8", repsActual: 8, restSeconds: 90 });
-    completeSeance(db, seance.id);
-
-    const state = loadTodayState(db, ALL_PARCOURS);
-    if (state.phase !== "normal") throw new Error("unreachable");
-    expect(state.dayIndex).toBe(2);
-    expect(state.done).toBe(true);
-    expect(state.doneReps).toBe(8);
-    expect(state.resume).toBeNull();
-  });
 });
