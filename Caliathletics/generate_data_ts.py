@@ -51,7 +51,6 @@ def main():
     lines = [
         '// Généré par Caliathletics/generate_data_ts.py depuis workout_curated.json.',
         '// Ne pas éditer à la main — corriger la source (curate_workout.py) et régénérer.',
-        'import type { WorkoutProgram } from "./types";',
         "",
     ]
 
@@ -63,12 +62,6 @@ def main():
             lines.append(f"  [\n    {slots_ts}\n  ],")
         lines.append("];")
         lines.append("")
-
-    # Export WORKOUT_PROGRAM for backwards compatibility
-    lines.append("export const WORKOUT_PROGRAM: WorkoutProgram = {")
-    for tier in ["beginner", "intermediate", "advanced"]:
-        lines.append(f"  {tier},")
-    lines.append("};")
 
     OUTPUT_TS.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"-> {OUTPUT_TS}")

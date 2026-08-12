@@ -1,6 +1,5 @@
 // Généré par Caliathletics/generate_data_ts.py depuis workout_curated.json.
 // Ne pas éditer à la main — corriger la source (curate_workout.py) et régénérer.
-import type { WorkoutProgram } from "./types";
 
 export const beginner = [
   [
@@ -772,8 +771,3 @@ export const advanced = [
   ],
 ];
 
-export const WORKOUT_PROGRAM: WorkoutProgram = {
-  beginner,
-  intermediate,
-  advanced,
-};
