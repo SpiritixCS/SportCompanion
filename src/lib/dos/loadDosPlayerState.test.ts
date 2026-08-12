@@ -42,8 +42,8 @@ describe("loadDosPlayerState", () => {
   it("reports pending-validation once every set is logged", () => {
     const db = setup();
     const seance = getOrStartDosSeance(db, "2026-08-17", "lundi", 1);
-    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
-    logDosSet(db, { seanceId: seance.id, exerciseOrder: 1, setNumber: 1, valeurTarget: "8-10", valeurActual: 9, restSeconds: 90 });
+    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, exerciseId: "lundi-hip-hinge-echauffement", setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
+    logDosSet(db, { seanceId: seance.id, exerciseOrder: 1, exerciseId: "A-1", setNumber: 1, valeurTarget: "8-10", valeurActual: 9, restSeconds: 90 });
     const state = loadDosPlayerState(db, "2026-08-17", "lundi", 1, DAY);
     expect(state.phase).toBe("pending-validation");
   });
@@ -74,7 +74,7 @@ describe("loadDosPlayerState", () => {
     if (first.phase !== "in-progress") throw new Error("unreachable");
 
     logDosSet(db, {
-      seanceId: first.seanceId, exerciseOrder: 0, setNumber: 1,
+      seanceId: first.seanceId, exerciseOrder: 0, exerciseId: "lundi-hip-hinge-echauffement", setNumber: 1,
       valeurTarget: "10", valeurActual: 10, restSeconds: 90,
     });
 

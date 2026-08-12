@@ -66,7 +66,7 @@ describe("PlayerScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Valider" }));
 
     expect(onLogSet).toHaveBeenCalledWith(
-      expect.objectContaining({ seanceId: 1, exerciseOrder: 0, setNumber: 1, repsActual: 10, restSeconds: 120 }),
+      expect.objectContaining({ seanceId: 1, exerciseOrder: 0, exerciseId: "push-ups", setNumber: 1, repsActual: 10, restSeconds: 120 }),
     );
     expect(screen.getByText("120")).toBeInTheDocument();
     expect(screen.getByText(/Squats/)).toBeInTheDocument();

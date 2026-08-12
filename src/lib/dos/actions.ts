@@ -43,6 +43,7 @@ export async function setStartDateAction(date: string): Promise<void> {
 export async function logDosSetAction(params: {
   seanceId: number;
   exerciseOrder: number;
+  exerciseId: string;
   setNumber: number;
   repsTarget: string;
   repsActual: number;
@@ -51,6 +52,7 @@ export async function logDosSetAction(params: {
   logDosSet(db(), {
     seanceId: params.seanceId,
     exerciseOrder: params.exerciseOrder,
+    exerciseId: params.exerciseId,
     setNumber: params.setNumber,
     valeurTarget: params.repsTarget,
     valeurActual: params.repsActual,

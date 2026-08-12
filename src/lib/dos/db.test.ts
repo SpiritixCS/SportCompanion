@@ -51,10 +51,11 @@ describe("dos_sets_logged / dos_skipped_exercises", () => {
   it("logs a set and reads it back in order", () => {
     const db = setup();
     const seance = getOrStartDosSeance(db, "2026-08-17", "lundi", 1);
-    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
-    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, setNumber: 2, valeurTarget: "10", valeurActual: 9, restSeconds: 90 });
+    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, exerciseId: "A-1", setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
+    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, exerciseId: "A-1", setNumber: 2, valeurTarget: "10", valeurActual: 9, restSeconds: 90 });
     const sets = getSetsForDosSeance(db, seance.id);
     expect(sets.map((s) => s.valeurActual)).toEqual([10, 9]);
+    expect(sets.map((s) => s.exerciseId)).toEqual(["A-1", "A-1"]);
   });
 
   it("skips an exercise and reads it back", () => {
@@ -68,7 +69,7 @@ describe("dos_sets_logged / dos_skipped_exercises", () => {
 describe("toPlayerSetsLogged", () => {
   it("renames valeurTarget/valeurActual to repsTarget/repsActual", () => {
     const mapped = toPlayerSetsLogged([
-      { id: 1, seanceId: 1, exerciseOrder: 0, setNumber: 1, valeurTarget: "8-10", valeurActual: 9, restSeconds: 90, completedAt: "2026-08-17T09:00:00.000Z" },
+      { id: 1, seanceId: 1, exerciseOrder: 0, exerciseId: "A-1", setNumber: 1, valeurTarget: "8-10", valeurActual: 9, restSeconds: 90, completedAt: "2026-08-17T09:00:00.000Z" },
     ]);
     expect(mapped).toEqual([
       { id: 1, seanceId: 1, exerciseOrder: 0, setNumber: 1, repsTarget: "8-10", repsActual: 9, restSeconds: 90, completedAt: "2026-08-17T09:00:00.000Z" },

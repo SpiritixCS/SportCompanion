@@ -60,7 +60,7 @@ describe("loadDosTodayState", () => {
     setStartDate(db, "2026-08-17");
     freezeToMonday();
     const seance = getOrStartDosSeance(db, "2026-08-17", "lundi", 1);
-    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
+    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, exerciseId: "lundi-hip-hinge-echauffement", setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
     const state = loadDosTodayState(db);
     if (state.phase !== "normal") throw new Error("unreachable");
     expect(state.resume).not.toBeNull();
@@ -71,7 +71,7 @@ describe("loadDosTodayState", () => {
     setStartDate(db, "2026-08-17");
     freezeToMonday();
     const seance = getOrStartDosSeance(db, "2026-08-17", "lundi", 1);
-    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
+    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, exerciseId: "lundi-hip-hinge-echauffement", setNumber: 1, valeurTarget: "10", valeurActual: 10, restSeconds: 90 });
     completeDosSeance(db, seance.id, 1);
     const state = loadDosTodayState(db);
     if (state.phase !== "normal") throw new Error("unreachable");

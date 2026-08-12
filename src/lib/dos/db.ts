@@ -15,6 +15,7 @@ export type DosSetLoggedRecord = {
   id: number;
   seanceId: number;
   exerciseOrder: number;
+  exerciseId: string;
   setNumber: number;
   valeurTarget: string;
   valeurActual: number;
@@ -70,7 +71,7 @@ export function getOrStartDosSeance(
 export function getSetsForDosSeance(db: Database.Database, seanceId: number): DosSetLoggedRecord[] {
   return db
     .prepare(
-      `SELECT id, seance_id AS seanceId, exercise_order AS exerciseOrder, set_number AS setNumber,
+      `SELECT id, seance_id AS seanceId, exercise_order AS exerciseOrder, exercise_id AS exerciseId, set_number AS setNumber,
               valeur_target AS valeurTarget, valeur_actual AS valeurActual, rest_seconds AS restSeconds,
               completed_at AS completedAt
        FROM dos_sets_logged WHERE seance_id = ? ORDER BY id ASC`,
@@ -83,6 +84,7 @@ export function logDosSet(
   params: {
     seanceId: number;
     exerciseOrder: number;
+    exerciseId: string;
     setNumber: number;
     valeurTarget: string;
     valeurActual: number;
@@ -92,10 +94,10 @@ export function logDosSet(
   const completedAt = new Date().toISOString();
   const result = db
     .prepare(
-      `INSERT INTO dos_sets_logged (seance_id, exercise_order, set_number, valeur_target, valeur_actual, rest_seconds, completed_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO dos_sets_logged (seance_id, exercise_order, exercise_id, set_number, valeur_target, valeur_actual, rest_seconds, completed_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(params.seanceId, params.exerciseOrder, params.setNumber, params.valeurTarget, params.valeurActual, params.restSeconds, completedAt);
+    .run(params.seanceId, params.exerciseOrder, params.exerciseId, params.setNumber, params.valeurTarget, params.valeurActual, params.restSeconds, completedAt);
   return { ...params, id: Number(result.lastInsertRowid), completedAt };
 }
 

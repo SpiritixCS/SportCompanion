@@ -15,6 +15,7 @@ import type { SetLoggedRecord } from "@/lib/player/db";
 type LogSetParams = {
   seanceId: number;
   exerciseOrder: number;
+  exerciseId: string;
   setNumber: number;
   repsTarget: string;
   repsActual: number;
@@ -117,6 +118,7 @@ export function PlayerScreen({
     await onLogSet({
       seanceId,
       exerciseOrder,
+      exerciseId: exercise.id,
       setNumber,
       repsTarget: JSON.stringify(exercise.target.value),
       repsActual,

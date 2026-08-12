@@ -22,12 +22,17 @@ function db(): Database.Database {
 export async function logSetAction(params: {
   seanceId: number;
   exerciseOrder: number;
+  exerciseId: string;
   setNumber: number;
   repsTarget: string;
   repsActual: number;
   restSeconds: number;
 }): Promise<void> {
-  logSetDb(db(), params);
+  // exerciseId is discarded here: Programme's sets_logged table has no
+  // exercise_id column and doesn't need one — a Programme day's composition
+  // is static, so exercise_order alone always replays the right exercise.
+  const { exerciseId: _exerciseId, ...dbParams } = params;
+  logSetDb(db(), dbParams);
 }
 
 export async function skipExerciseAction(seanceId: number, exerciseOrder: number): Promise<void> {

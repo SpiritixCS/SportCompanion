@@ -22,9 +22,13 @@ describe("0005_dos_seances migration", () => {
     const seances = (db.prepare("PRAGMA table_info(dos_seances)").all() as { name: string }[]).map((c) => c.name);
     expect(seances).toEqual(["id", "date", "jour_semaine", "semaine", "started_at", "completed_at", "gene_pendant"]);
 
+    // dos_sets_logged gains exercise_id in migration 0006 — this checks the
+    // table as it stands today (all migrations applied), not the schema as
+    // it was the moment 0005 alone had run. See 0006_dos_sets_exercise_id.test.ts
+    // for the migration that adds this column.
     const sets = (db.prepare("PRAGMA table_info(dos_sets_logged)").all() as { name: string }[]).map((c) => c.name);
     expect(sets).toEqual([
-      "id", "seance_id", "exercise_order", "set_number", "valeur_target", "valeur_actual", "rest_seconds", "completed_at",
+      "id", "seance_id", "exercise_order", "exercise_id", "set_number", "valeur_target", "valeur_actual", "rest_seconds", "completed_at",
     ]);
 
     const skipped = (db.prepare("PRAGMA table_info(dos_skipped_exercises)").all() as { name: string }[]).map((c) => c.name);
