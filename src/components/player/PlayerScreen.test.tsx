@@ -163,4 +163,29 @@ describe("PlayerScreen", () => {
     render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
     expect(screen.getByText("Séance déjà validée.")).toBeInTheDocument();
   });
+
+  it("requests a wake lock by default, and not at all when keepScreenAwakeEnabled=false", async () => {
+    const requestMock = vi.fn().mockResolvedValue({ release: vi.fn().mockResolvedValue(undefined) });
+    Object.defineProperty(navigator, "wakeLock", { value: { request: requestMock }, configurable: true });
+
+    const state: PlayerState = {
+      phase: "in-progress",
+      seanceId: 1,
+      startedAt: STARTED_AT,
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
+      skippedExerciseOrders: [],
+    };
+    const { unmount } = render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
+    await vi.waitFor(() => expect(requestMock).toHaveBeenCalledWith("screen"));
+    unmount();
+
+    requestMock.mockClear();
+    render(
+      <PlayerScreen day={DAY} state={state} setsLogged={[]} keepScreenAwakeEnabled={false} {...actionProps()} />,
+    );
+    expect(requestMock).not.toHaveBeenCalled();
+
+    // @ts-expect-error test-only cleanup of a property this test adds
+    delete navigator.wakeLock;
+  });
 });

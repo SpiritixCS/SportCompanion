@@ -1,5 +1,6 @@
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
+import { getSettings } from "@/lib/settings/db";
 import { loadPlayerState } from "@/lib/player/loadPlayerState";
 import { getSetsForSeance } from "@/lib/player/db";
 import { logSetAction, skipExerciseAction, completeSeanceAction } from "@/lib/player/actions";
@@ -40,6 +41,7 @@ export default async function PlayerPage({
   }
 
   const db = getDb(dbPath());
+  const settings = getSettings(db);
   const state = loadPlayerState(db, parcours, level, dayIndex, day);
   const setsLogged = getSetsForSeance(db, state.seanceId);
 
@@ -54,6 +56,9 @@ export default async function PlayerPage({
       state={state}
       setsLogged={setsLogged}
       allTimeTotals={allTimeTotals}
+      restBetweenSetsSeconds={settings.restBetweenSetsSeconds}
+      restBetweenExercisesSeconds={settings.restBetweenExercisesSeconds}
+      keepScreenAwakeEnabled={settings.keepScreenAwakeEnabled}
       onLogSet={logSetAction}
       onSkipExercise={skipExerciseAction}
       onSeanceFinish={completeSeanceAction}

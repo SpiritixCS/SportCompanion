@@ -7,6 +7,7 @@ import { RestView } from "./RestView";
 import { SummaryView } from "./SummaryView";
 import { Sheet } from "@/components/Sheet";
 import { REST_BETWEEN_SETS_SECONDS, REST_BETWEEN_EXERCISES_SECONDS } from "@/lib/player/constants";
+import { useWakeLock } from "@/lib/player/useWakeLock";
 import type { Accent } from "@/components/Pastille";
 import type { TrainDay } from "@/lib/workout/types";
 import type { PlayerState } from "@/lib/player/loadPlayerState";
@@ -68,6 +69,7 @@ export function PlayerScreen({
   accent = "cobalt",
   restBetweenSetsSeconds = REST_BETWEEN_SETS_SECONDS,
   restBetweenExercisesSeconds = REST_BETWEEN_EXERCISES_SECONDS,
+  keepScreenAwakeEnabled = true,
   onLogSet,
   onSkipExercise,
   onSeanceFinish,
@@ -79,11 +81,13 @@ export function PlayerScreen({
   accent?: Accent;
   restBetweenSetsSeconds?: number;
   restBetweenExercisesSeconds?: number;
+  keepScreenAwakeEnabled?: boolean;
   onLogSet: (params: LogSetParams) => Promise<void>;
   onSkipExercise: (seanceId: number, exerciseOrder: number) => Promise<void>;
   onSeanceFinish: (seanceId: number) => Promise<void>;
 }) {
   const router = useRouter();
+  useWakeLock(keepScreenAwakeEnabled);
   const [localPhase, setLocalPhase] = useState<LocalPhase>({ kind: "exercise" });
   const [quitOpen, setQuitOpen] = useState(false);
   const elapsedSeconds = useElapsedSeconds(state.phase !== "completed" ? state.startedAt : null);

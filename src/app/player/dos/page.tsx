@@ -1,5 +1,6 @@
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
+import { getSettings } from "@/lib/settings/db";
 import { getStartDate, getEvaluations } from "@/lib/backpain/db";
 import { computeWeek, computeBlock } from "@/lib/backpain/periode";
 import { getCurrentCran } from "@/lib/backpain/progression";
@@ -20,6 +21,7 @@ function dbPath(): string {
 
 export default async function DosPlayerPage() {
   const db = getDb(dbPath());
+  const settings = getSettings(db);
   const startDate = getStartDate(db);
 
   if (!startDate) {
@@ -70,6 +72,7 @@ export default async function DosPlayerPage() {
       accent="sage"
       restBetweenSetsSeconds={restSeconds}
       restBetweenExercisesSeconds={restSeconds}
+      keepScreenAwakeEnabled={settings.keepScreenAwakeEnabled}
       onLogSet={logDosSetAction}
       onSkipExercise={skipDosExerciseAction}
       onSeanceFinish={startDosBilanAction}
