@@ -29,9 +29,9 @@ const STATE: TropheesScreenState = {
 };
 
 describe("TropheesScreen", () => {
-  it("shows the header total and activity summary", async () => {
+  it("shows the header total and activity summary", () => {
     render(<TropheesScreen state={STATE} />);
-    expect(await screen.findByText("420")).toBeInTheDocument();
+    expect(screen.getByText("420")).toBeInTheDocument();
     expect(screen.getByText(/10 séances/)).toBeInTheDocument();
     expect(screen.getByText(/9 jours/)).toBeInTheDocument();
   });
@@ -43,9 +43,11 @@ describe("TropheesScreen", () => {
   });
 
   it("filters to the Dos module only", async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    vi.useRealTimers();
+    const user = userEvent.setup();
     render(<TropheesScreen state={STATE} />);
     await user.click(screen.getByRole("button", { name: "Dos" }));
+    vi.useFakeTimers();
     expect(screen.queryByText("Squats")).not.toBeInTheDocument();
     expect(screen.getByText("Charnière & ischios")).toBeInTheDocument();
   });
