@@ -61,19 +61,23 @@ Toute modification future du nom d'hôte ou de la policy Access se fait dans le 
 
 ## Multi-utilisateur (Mathis + Clément)
 
-L'app distingue les deux comptes via le header `Cf-Access-Authenticated-User-Email` que Cloudflare Access injecte (voir `src/lib/auth/currentUser.ts`). Deux étapes manuelles, à faire une fois, ni l'une ni l'autre automatisable depuis ce repo :
+L'app distingue les deux comptes via le header `Cf-Access-Authenticated-User-Email` que Cloudflare Access injecte (voir `src/lib/auth/currentUser.ts`). `sportcompanion.service` déclare `EnvironmentFile=-/home/ubuntu/sportcompanion/.env` (le `-` le rend optionnel pour ne pas casser un démarrage si le fichier manque), mais **`MATHIS_EMAIL` n'est PAS défini ailleurs** (le service ne fixe que `DB_PATH`) : sans ce fichier, `currentUser()` ne reconnaît plus l'email de Mathis lui-même et toute requête — y compris les siennes — échoue avec « Accès non reconnu ».
 
-1. **Policy Access** : dans le dashboard Cloudflare (Zero Trust → Access → Applications → `workout.spiritix.fr`), ajouter l'email de Clément à la policy Allow existante (à côté du Gmail personnel de Mathis).
-2. **Variables d'environnement sur la VM** : créer `/home/ubuntu/sportcompanion/.env` (n'existe pas encore, jamais touché par `deploy.sh` qui exclut `.env*` du `rsync`) avec :
+**⚠️ Étape obligatoire, à faire AVANT le premier déploiement de ce qui introduit le multi-utilisateur — pas un réglage optionnel « à faire un jour » :**
+
+1. **Créer `/home/ubuntu/sportcompanion/.env`** sur la VM (n'existe pas encore, jamais touché par `deploy.sh` qui exclut `.env*` du `rsync`) avec **les deux** variables :
 
    ```
    MATHIS_EMAIL=<gmail perso de Mathis>
    CLEMENT_EMAIL=<email de Clément>
    ```
 
-   Sans ce fichier, tout le trafic authentifié par Access échoue avec « Accès non reconnu » — les emails du header ne correspondent à aucun utilisateur connu tant que ces deux variables ne sont pas posées.
+2. **Policy Access** : dans le dashboard Cloudflare (Zero Trust → Access → Applications → `workout.spiritix.fr`), ajouter l'email de Clément à la policy Allow existante (à côté du Gmail personnel de Mathis).
+3. **Redémarrer le service** — `sudo systemctl restart sportcompanion` — obligatoire après avoir créé ou modifié `.env` : systemd ne relit `EnvironmentFile` qu'au démarrage du service, éditer le fichier seul ne change rien tant que le service n'est pas redémarré.
 
-Clément a son propre fichier SQLite, `data/sportcompanion.clement.db`, créé automatiquement au prochain `npm run db:migrate` (le script boucle maintenant sur tous les utilisateurs connus, voir `scripts/db-migrate.ts`). Le fichier de Mathis (`data/sportcompanion.db`) est inchangé.
+Faire l'étape 1 puis 3 avant de déployer la première fois ce changement (ou juste après un `deploy/deploy.sh`, qui redémarre déjà le service — mais toute modification manuelle ultérieure de `.env` doit être suivie du même redémarrage manuel).
+
+Clément a son propre fichier SQLite, `data/sportcompanion.clement.db`. Il est créé au prochain `npm run db:migrate` **à condition que `.env` existe déjà** : `deploy.sh` source ce fichier (`set -a; . ./.env; set +a`) juste avant de lancer la migration, donc `CLEMENT_EMAIL` doit déjà être posé sur la VM pour que `knownUsers()` voie Clément et que sa base soit migrée (le script boucle sur tous les utilisateurs connus, voir `scripts/db-migrate.ts`). Le fichier de Mathis (`data/sportcompanion.db`) est inchangé.
 
 ---
 

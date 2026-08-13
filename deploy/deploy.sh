@@ -27,7 +27,12 @@ ssh -i "$SSH_KEY" "$REMOTE" "
   mkdir -p $REMOTE_DIR/data
   cd $REMOTE_DIR
   npm ci
-  cp data/sportcompanion.db data/sportcompanion.db.bak-\$(date +%s) 2>/dev/null || true
+  ts=\$(date +%s)
+  for f in data/*.db; do
+    [ -e \"\$f\" ] || continue
+    cp \"\$f\" \"\$f.bak-\$ts\" 2>/dev/null || true
+  done
+  set -a; [ -f .env ] && . ./.env; set +a
   npm run db:migrate
   npm run build
   cp -r public .next/standalone/public
