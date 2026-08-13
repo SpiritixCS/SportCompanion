@@ -1,8 +1,16 @@
+import path from "node:path";
+import { getDb } from "@/lib/db/client";
+import { loadTropheesScreenState } from "@/lib/trophies/loadTropheesScreenState";
+import { TropheesScreen } from "@/components/trophies/TropheesScreen";
+
+export const dynamic = "force-dynamic";
+
+function dbPath(): string {
+  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
+}
+
 export default function TropheesPage() {
-  return (
-    <div className="p-5">
-      <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-brass">Trophées</span>
-      <div className="font-archivo text-24 font-semibold mt-3">Arrive en phase 5</div>
-    </div>
-  );
+  const db = getDb(dbPath());
+  const state = loadTropheesScreenState(db);
+  return <TropheesScreen state={state} />;
 }
