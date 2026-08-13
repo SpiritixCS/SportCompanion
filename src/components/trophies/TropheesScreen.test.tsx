@@ -33,8 +33,8 @@ const STATE: TropheesScreenState = {
   seanceCount: 10,
   joursActivite: 9,
   cards: [
-    { id: "squats", module: "programme", name: "Squats", total: 300, firstAt: "2026-01-01T10:00:00.000Z", lastAt: "2026-08-01T10:00:00.000Z" },
-    { id: "A", module: "dos", name: "Charnière & ischios", total: 120, firstAt: "2026-02-01T10:00:00.000Z", lastAt: "2026-08-05T10:00:00.000Z", byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 120 }] },
+    { id: "squats", module: "programme", name: "Squats", unit: "reps", total: 300, firstAt: "2026-01-01T10:00:00.000Z", lastAt: "2026-08-01T10:00:00.000Z" },
+    { id: "A", module: "dos", name: "Charnière & ischios", unit: "reps", total: 120, firstAt: "2026-02-01T10:00:00.000Z", lastAt: "2026-08-05T10:00:00.000Z", byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 120 }] },
   ],
 };
 

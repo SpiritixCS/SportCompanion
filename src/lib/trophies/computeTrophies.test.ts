@@ -114,9 +114,9 @@ describe("computeTrophies — Tracking", () => {
   it("creates one card per tracking exercise, cumulating reps across seances", () => {
     const db = setup();
     const seanceA = startTrackingSeance(db);
-    logSetForExercise(db, seanceA.id, "Squats", 12);
+    logSetForExercise(db, seanceA.id, "Squats", "reps", 12);
     const seanceB = startTrackingSeance(db);
-    logSetForExercise(db, seanceB.id, "Squats", 8);
+    logSetForExercise(db, seanceB.id, "Squats", "reps", 8);
 
     const cards = computeTrophies(db);
     const squats = cards.find((c) => c.name === "Squats" && c.module === "tracking");
@@ -126,10 +126,37 @@ describe("computeTrophies — Tracking", () => {
   it("keeps distinct tracking exercises as separate cards", () => {
     const db = setup();
     const seance = startTrackingSeance(db);
-    logSetForExercise(db, seance.id, "Squats", 12);
-    logSetForExercise(db, seance.id, "Fentes", 10);
+    logSetForExercise(db, seance.id, "Squats", "reps", 12);
+    logSetForExercise(db, seance.id, "Fentes", "reps", 10);
 
     const cards = computeTrophies(db).filter((c) => c.module === "tracking");
     expect(cards).toHaveLength(2);
+  });
+
+  it("carries the exercise's unit onto its card, and keeps a seconds card out of any reps grouping", () => {
+    const db = setup();
+    const seance = startTrackingSeance(db);
+    logSetForExercise(db, seance.id, "Planche", "seconds", 30);
+    logSetForExercise(db, seance.id, "Planche", "seconds", 45);
+    logSetForExercise(db, seance.id, "Squats", "reps", 12);
+
+    const cards = computeTrophies(db).filter((c) => c.module === "tracking");
+    const planche = cards.find((c) => c.name === "Planche");
+    const squats = cards.find((c) => c.name === "Squats");
+    expect(planche).toMatchObject({ unit: "seconds", total: 75 });
+    expect(squats).toMatchObject({ unit: "reps", total: 12 });
+  });
+});
+
+describe("computeTrophies — Programme and Dos cards are always unit: reps", () => {
+  it("tags every Programme and Dos card as unit reps", () => {
+    const db = setup();
+    const seance = startSeance(db, "beginner", 0, 0);
+    logSet(db, { seanceId: seance.id, exerciseOrder: 6, setNumber: 1, repsTarget: "15", repsActual: 15, restSeconds: 90 });
+    const dosSeance = startDosSeance(db, "2026-01-05", "lundi", 1);
+    logDosSet(db, { seanceId: dosSeance.id, exerciseOrder: 0, exerciseId: "A-1", setNumber: 1, valeurTarget: "8-10", valeurActual: 8, restSeconds: 60 });
+
+    const cards = computeTrophies(db);
+    expect(cards.every((c) => c.unit === "reps")).toBe(true);
   });
 });

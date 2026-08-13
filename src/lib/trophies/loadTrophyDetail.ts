@@ -11,7 +11,7 @@ export function loadTrophyDetail(db: Database.Database, id: string): TrophyDetai
   const card = computeTrophies(db).find((c) => c.id === id);
   if (!card) return null;
 
-  const next = prochainPalier(card.total);
+  const next = card.unit === "seconds" ? null : prochainPalier(card.total);
   return {
     ...card,
     prochainPalier: next,

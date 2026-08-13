@@ -21,6 +21,7 @@ const PROGRAMME_CARD: TrophyCardData = {
   id: "squats",
   module: "programme",
   name: "Squats",
+  unit: "reps",
   total: 340,
   firstAt: "2026-01-01T10:00:00.000Z",
   lastAt: "2026-08-01T10:00:00.000Z",
@@ -30,6 +31,7 @@ const DOS_CARD: TrophyCardData = {
   id: "A",
   module: "dos",
   name: "Charnière & ischios",
+  unit: "reps",
   total: 80,
   firstAt: "2026-01-01T10:00:00.000Z",
   lastAt: "2026-08-01T10:00:00.000Z",
@@ -57,5 +59,11 @@ describe("TrophyCard", () => {
   it("renders no image for a Dos card", () => {
     render(<TrophyCard card={DOS_CARD} index={0} />);
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("shows no palier and an 's' suffix for a seconds card, regardless of total", () => {
+    render(<TrophyCard card={{ ...PROGRAMME_CARD, id: "tracking-1", module: "tracking", unit: "seconds", total: 900 }} index={0} />);
+    expect(screen.getByText("s")).toBeInTheDocument();
+    expect(screen.queryByText(/Palier/)).not.toBeInTheDocument();
   });
 });

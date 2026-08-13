@@ -10,7 +10,7 @@ export type TropheesScreenState = {
 
 export function loadTropheesScreenState(db: Database.Database): TropheesScreenState {
   const cards = computeTrophies(db);
-  const totalReps = cards.reduce((sum, c) => sum + c.total, 0);
+  const totalReps = cards.filter((c) => c.unit === "reps").reduce((sum, c) => sum + c.total, 0);
 
   const seanceRow = db
     .prepare(

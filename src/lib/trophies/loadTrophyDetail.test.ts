@@ -5,6 +5,7 @@ import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
 import { startSeance, logSet } from "@/lib/player/db";
+import { startSeance as startTrackingSeance, logSetForExercise } from "@/lib/tracking/db";
 import { loadTrophyDetail } from "./loadTrophyDetail";
 
 let tmpDir: string;
@@ -43,5 +44,14 @@ describe("loadTrophyDetail", () => {
 
     const detail = loadTrophyDetail(db, "squats");
     expect(detail).toMatchObject({ prochainPalier: null, resteAParcourir: null });
+  });
+
+  it("skips palier computation entirely for a seconds-unit card", () => {
+    const db = setup();
+    const seance = startTrackingSeance(db);
+    logSetForExercise(db, seance.id, "Planche", "seconds", 45);
+
+    const detail = loadTrophyDetail(db, "tracking-1");
+    expect(detail).toMatchObject({ unit: "seconds", prochainPalier: null, resteAParcourir: null });
   });
 });

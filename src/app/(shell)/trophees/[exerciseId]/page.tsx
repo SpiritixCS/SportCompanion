@@ -50,7 +50,10 @@ export default async function TrophyDetailPage({
         )}
 
         <h1 className="font-archivo text-32 font-semibold">{detail.name}</h1>
-        <div className="font-archivo text-44 font-semibold tabular-nums mt-3">{detail.total}</div>
+        <div className="font-archivo text-44 font-semibold tabular-nums mt-3">
+          {detail.total}
+          {detail.unit === "seconds" && <span className="text-24 font-medium"> s</span>}
+        </div>
 
         <Card className="mt-6 p-4">
           <div className="flex justify-between py-2">
@@ -61,14 +64,16 @@ export default async function TrophyDetailPage({
             <span className="text-15 text-graphite">Dernier passage</span>
             <span className="text-15 tabular-nums">{formatDateFr(detail.lastAt)}</span>
           </div>
-          <div className="flex justify-between py-2 border-t border-hairline">
-            <span className="text-15 text-graphite">Prochain palier</span>
-            <span className="text-15 tabular-nums">
-              {detail.prochainPalier === null
-                ? "Tous les paliers atteints"
-                : `${detail.resteAParcourir} restants pour atteindre ${detail.prochainPalier}`}
-            </span>
-          </div>
+          {detail.unit === "reps" && (
+            <div className="flex justify-between py-2 border-t border-hairline">
+              <span className="text-15 text-graphite">Prochain palier</span>
+              <span className="text-15 tabular-nums">
+                {detail.prochainPalier === null
+                  ? "Tous les paliers atteints"
+                  : `${detail.resteAParcourir} restants pour atteindre ${detail.prochainPalier}`}
+              </span>
+            </div>
+          )}
         </Card>
 
         {detail.byCran && detail.byCran.length > 0 && (
