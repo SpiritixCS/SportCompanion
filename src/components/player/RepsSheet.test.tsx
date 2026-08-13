@@ -36,4 +36,22 @@ describe("RepsSheet", () => {
     render(<RepsSheet open onClose={() => {}} initialValue={12} accent="sage" onConfirm={() => {}} />);
     expect(screen.getByRole("button", { name: "Valider" })).toHaveClass("bg-sage");
   });
+
+  it("uses a custom title when provided, defaults to Ajuster les reps otherwise", () => {
+    const { rerender } = render(<RepsSheet open onClose={() => {}} initialValue={12} onConfirm={() => {}} />);
+    expect(screen.getByText("Ajuster les reps")).toBeInTheDocument();
+
+    rerender(<RepsSheet open onClose={() => {}} initialValue={12} title="Ajuster la durée (s)" onConfirm={() => {}} />);
+    expect(screen.getByText("Ajuster la durée (s)")).toBeInTheDocument();
+  });
+
+  it("shows no delete affordance by default, shows one and calls onDelete when provided", async () => {
+    const onDelete = vi.fn();
+    const { rerender } = render(<RepsSheet open onClose={() => {}} initialValue={12} onConfirm={() => {}} />);
+    expect(screen.queryByRole("button", { name: "Supprimer la série" })).not.toBeInTheDocument();
+
+    rerender(<RepsSheet open onClose={() => {}} initialValue={12} onConfirm={() => {}} onDelete={onDelete} />);
+    await userEvent.click(screen.getByRole("button", { name: "Supprimer la série" }));
+    expect(onDelete).toHaveBeenCalledOnce();
+  });
 });

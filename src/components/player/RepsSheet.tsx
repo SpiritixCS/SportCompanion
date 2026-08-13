@@ -15,13 +15,17 @@ export function RepsSheet({
   onClose,
   initialValue,
   accent = "cobalt",
+  title = "Ajuster les reps",
   onConfirm,
+  onDelete,
 }: {
   open: boolean;
   onClose: () => void;
   initialValue: number;
   accent?: Accent;
+  title?: string;
   onConfirm: (value: number) => void;
+  onDelete?: () => void;
 }) {
   const [value, setValue] = useState(initialValue);
 
@@ -30,7 +34,7 @@ export function RepsSheet({
   }, [open, initialValue]);
 
   return (
-    <Sheet open={open} onClose={onClose} title="Ajuster les reps">
+    <Sheet open={open} onClose={onClose} title={title}>
       <div className="flex items-center justify-center gap-6 py-4">
         <Button variant="secondary" onClick={() => setValue((v) => Math.max(0, v - 1))}>
           −
@@ -45,6 +49,15 @@ export function RepsSheet({
       <Button variant="primary" accent={accent} onClick={() => onConfirm(value)}>
         Valider
       </Button>
+      {onDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          className="mt-3 w-full h-11 flex items-center justify-center font-archivo text-15 font-medium text-alert"
+        >
+          Supprimer la série
+        </button>
+      )}
     </Sheet>
   );
 }
