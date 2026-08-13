@@ -72,6 +72,24 @@ describe("TrackingSeanceScreen", () => {
     expect(screen.queryByRole("button", { name: "Reps" })).not.toBeInTheDocument();
   });
 
+  it("keeps the unit locked for an exercise added earlier in this same session, even though it isn't in the initial suggestions", async () => {
+    logTrackingSetAction.mockResolvedValue([
+      { ...SQUATS_SET, id: 30, exerciseName: "Planche", exerciseUnit: "seconds", valeurActual: 40 },
+    ]);
+    render(<TrackingSeanceScreen seanceId={1} completed={false} initialSets={[]} exerciseSuggestions={[]} />);
+
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Planche");
+    await userEvent.click(screen.getByRole("button", { name: "Secondes" }));
+    await userEvent.click(screen.getByRole("button", { name: "Ajouter la série" }));
+    await screen.findAllByText("Planche");
+
+    await userEvent.clear(screen.getByPlaceholderText("Nom de l'exercice"));
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Planche");
+
+    expect(screen.getByText("Unité : secondes")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reps" })).not.toBeInTheDocument();
+  });
+
   it("shows the reps/seconds toggle, defaulting to reps, for an unknown exercise name", async () => {
     render(<TrackingSeanceScreen seanceId={1} completed={false} initialSets={[]} exerciseSuggestions={[]} />);
     await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Fentes bulgares");

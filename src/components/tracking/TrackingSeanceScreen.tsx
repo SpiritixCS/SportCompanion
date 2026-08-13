@@ -54,7 +54,14 @@ export function TrackingSeanceScreen({
   const [editingSet, setEditingSet] = useState<TrackingSetWithExercise | null>(null);
 
   const groups = groupByExercise(sets);
-  const matchedExercise = exerciseSuggestions.find(
+  // Exercises already added to `sets` during this client session (created via
+  // findOrCreateExercise) must lock the unit picker too, not just the
+  // server-rendered `exerciseSuggestions` from page load.
+  const knownExercises = [
+    ...exerciseSuggestions,
+    ...sets.map((s) => ({ name: s.exerciseName, unit: s.exerciseUnit })),
+  ];
+  const matchedExercise = knownExercises.find(
     (e) => e.name.trim().toLowerCase() === exerciseName.trim().toLowerCase(),
   );
   const effectiveUnit = matchedExercise?.unit ?? unit;
@@ -79,6 +86,7 @@ export function TrackingSeanceScreen({
   async function handleUpdateSet(newValue: number) {
     if (!editingSet) return;
     const id = editingSet.id;
+    setError(false);
     try {
       await updateTrackingSetAction(id, newValue);
       setSets((prev) => prev.map((s) => (s.id === id ? { ...s, valeurActual: newValue } : s)));
@@ -91,6 +99,7 @@ export function TrackingSeanceScreen({
   async function handleDeleteSet() {
     if (!editingSet) return;
     const id = editingSet.id;
+    setError(false);
     try {
       await deleteTrackingSetAction(id);
       setSets((prev) => prev.filter((s) => s.id !== id));
@@ -174,23 +183,13 @@ export function TrackingSeanceScreen({
         )}
 
         <div className="flex items-center justify-center gap-6">
-          <button
-            type="button"
-            aria-label="Diminuer la valeur"
-            onClick={() => setValeur((v) => Math.max(0, v - 1))}
-            className="h-14 w-full rounded-pill font-archivo text-15 font-semibold disabled:opacity-40 bg-paper border border-hairline text-ink"
-          >
+          <Button variant="secondary" ariaLabel="Diminuer la valeur" onClick={() => setValeur((v) => Math.max(0, v - 1))}>
             −
-          </button>
+          </Button>
           <span className="font-archivo text-44 font-semibold tabular-nums w-16 text-center">{valeur}</span>
-          <button
-            type="button"
-            aria-label="Augmenter la valeur"
-            onClick={() => setValeur((v) => v + 1)}
-            className="h-14 w-full rounded-pill font-archivo text-15 font-semibold disabled:opacity-40 bg-paper border border-hairline text-ink"
-          >
+          <Button variant="secondary" ariaLabel="Augmenter la valeur" onClick={() => setValeur((v) => v + 1)}>
             +
-          </button>
+          </Button>
         </div>
 
         <div className="flex items-center justify-between">

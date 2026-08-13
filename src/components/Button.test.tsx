@@ -31,4 +31,16 @@ describe("Button", () => {
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
     expect(onClick).not.toHaveBeenCalled();
   });
+
+  it("applies aria-label when passed, and has no accessible-name override otherwise", () => {
+    render(
+      <Button variant="secondary" ariaLabel="Diminuer la valeur">
+        −
+      </Button>,
+    );
+    expect(screen.getByRole("button", { name: "Diminuer la valeur" })).toBeInTheDocument();
+
+    render(<Button variant="secondary">Revoir</Button>);
+    expect(screen.getByRole("button", { name: "Revoir" })).not.toHaveAttribute("aria-label");
+  });
 });
