@@ -44,4 +44,29 @@ describe("useWakeLock", () => {
     expect(() => renderHook(() => useWakeLock(true))).not.toThrow();
     expect(requestMock).not.toHaveBeenCalled();
   });
+
+  it("re-acquires the lock when the tab returns to foreground after the browser auto-released it", async () => {
+    const release = vi.fn().mockResolvedValue(undefined);
+    let releaseListener: (() => void) | undefined;
+    const sentinel = {
+      release,
+      addEventListener: vi.fn((type: string, listener: () => void) => {
+        if (type === "release") releaseListener = listener;
+      }),
+    };
+    requestMock.mockResolvedValue(sentinel);
+    Object.defineProperty(navigator, "wakeLock", { value: { request: requestMock }, configurable: true });
+
+    renderHook(() => useWakeLock(true));
+    await vi.waitFor(() => expect(requestMock).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(releaseListener).toBeDefined());
+
+    // Simulate the browser auto-releasing the lock on its own (tab
+    // backgrounding on Chrome iOS), then the tab returning to foreground.
+    releaseListener!();
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    await vi.waitFor(() => expect(requestMock).toHaveBeenCalledTimes(2));
+  });
 });

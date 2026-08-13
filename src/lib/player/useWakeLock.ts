@@ -2,7 +2,10 @@
 
 import { useEffect } from "react";
 
-type WakeLockSentinel = { release: () => Promise<void> };
+type WakeLockSentinel = {
+  release: () => Promise<void>;
+  addEventListener: (type: "release", listener: () => void) => void;
+};
 type WakeLockNavigator = Navigator & {
   wakeLock?: { request: (type: "screen") => Promise<WakeLockSentinel> };
 };
@@ -24,6 +27,13 @@ export function useWakeLock(enabled: boolean): void {
           return;
         }
         sentinel = lock;
+        // The browser can auto-release the lock on its own (e.g. tab
+        // backgrounding on Chrome iOS) without this hook calling release() —
+        // track that so handleVisibilityChange's `!sentinel` check reflects
+        // the sentinel's real state, not just whether we released it.
+        lock.addEventListener("release", () => {
+          sentinel = null;
+        });
       } catch {
         // Request can be rejected (e.g. document not visible yet) — the
         // player still works without the lock, this is a comfort feature.
