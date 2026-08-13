@@ -105,6 +105,15 @@ describe("ReglagesScreen", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it("shows the error state when a settings update fails", async () => {
+    getReglagesStateAction.mockResolvedValue(BASE_STATE);
+    updateSettingsAction.mockRejectedValue(new Error("boom"));
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    await waitFor(() => expect(screen.getByText("Garder l'écran allumé")).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("switch", { name: "Garder l'écran allumé" }));
+    await waitFor(() => expect(screen.getByText("Impossible de charger les réglages.")).toBeInTheDocument());
+  });
+
   // Mandatory persistence check (CLAUDE.md §2/§7): a value edited in one
   // mount must still be there after the overlay unmounts and remounts —
   // ReglagesScreen must re-read from the action on every mount, never

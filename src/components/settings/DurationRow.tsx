@@ -51,16 +51,16 @@ export function DurationRow({
           </div>
           <span className="text-13 text-graphite">secondes</span>
         </div>
-        <Button
-          variant="primary"
-          accent="cobalt"
+        <button
+          type="button"
           onClick={() => {
             onConfirm(draft);
             setOpen(false);
           }}
+          className="h-14 w-full rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
         >
           Valider
-        </Button>
+        </button>
       </Sheet>
     </>
   );

@@ -36,8 +36,12 @@ export function ReglagesScreen({
   }, []);
 
   async function patch(update: Partial<Omit<ReglagesState, "dosStartDate" | "version">>) {
-    const next = await updateSettingsAction(update);
-    setState((prev) => (prev ? { ...prev, ...next } : prev));
+    try {
+      const next = await updateSettingsAction(update);
+      setState((prev) => (prev ? { ...prev, ...next } : prev));
+    } catch {
+      setError(true);
+    }
   }
 
   return (
