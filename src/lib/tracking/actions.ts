@@ -8,7 +8,6 @@ import {
   updateSet as updateSetDb,
   deleteSet as deleteSetDb,
   completeSeance as completeSeanceDb,
-  listExercises as listExercisesDb,
   type TrackingSetWithExercise,
   type TrackingUnit,
 } from "./db";
@@ -42,8 +41,4 @@ export async function deleteTrackingSetAction(setId: number): Promise<void> {
 
 export async function completeTrackingSeanceAction(seanceId: number): Promise<void> {
   completeSeanceDb(await db(), seanceId);
-}
-
-export async function listTrackingExercisesAction(): Promise<{ name: string; unit: TrackingUnit }[]> {
-  return listExercisesDb(await db());
 }
