@@ -10,6 +10,7 @@ import { loadDosPlayerState } from "@/lib/dos/loadDosPlayerState";
 import { getSetsForDosSeance, toPlayerSetsLogged } from "@/lib/dos/db";
 import { logDosSetAction, skipDosExerciseAction, startDosBilanAction } from "@/lib/dos/actions";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
+import { computeTrophies, resolveTrophyCardId, isReplogEligible } from "@/lib/trophies/computeTrophies";
 
 export const dynamic = "force-dynamic";
 
@@ -53,11 +54,19 @@ export default async function DosPlayerPage() {
   const setsLogged = toPlayerSetsLogged(getSetsForDosSeance(db, state.seanceId));
   const restSeconds = getDosRestSeconds(jourSemaine);
 
+  const cardTotals = new Map(computeTrophies(db).map((c) => [c.id, c.total]));
+  const allTimeTotals = day.exercises.map((exercise) =>
+    isReplogEligible(exercise.id, exercise.countsInStats, semaine)
+      ? cardTotals.get(resolveTrophyCardId(exercise.id))
+      : undefined,
+  );
+
   return (
     <PlayerScreen
       day={day}
       state={state}
       setsLogged={setsLogged}
+      allTimeTotals={allTimeTotals}
       accent="sage"
       restBetweenSetsSeconds={restSeconds}
       restBetweenExercisesSeconds={restSeconds}

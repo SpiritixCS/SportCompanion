@@ -64,6 +64,7 @@ export function PlayerScreen({
   day,
   state,
   setsLogged,
+  allTimeTotals = [],
   accent = "cobalt",
   restBetweenSetsSeconds = REST_BETWEEN_SETS_SECONDS,
   restBetweenExercisesSeconds = REST_BETWEEN_EXERCISES_SECONDS,
@@ -74,6 +75,7 @@ export function PlayerScreen({
   day: TrainDay;
   state: PlayerState;
   setsLogged: SetLoggedRecord[];
+  allTimeTotals?: (number | undefined)[];
   accent?: Accent;
   restBetweenSetsSeconds?: number;
   restBetweenExercisesSeconds?: number;
@@ -92,6 +94,7 @@ export function PlayerScreen({
         exercises={day.exercises}
         setsLogged={setsLogged}
         durationSeconds={elapsedSeconds}
+        allTimeTotals={allTimeTotals}
         accent={accent}
         onFinish={async () => {
           await onSeanceFinish(state.seanceId);

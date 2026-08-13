@@ -1,3 +1,4 @@
+// src/components/player/SummaryView.test.tsx
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -32,7 +33,7 @@ describe("SummaryView", () => {
       set({ exerciseOrder: 1, setNumber: 1, repsActual: 15 }),
     ];
     render(
-      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={630} onFinish={() => {}} />,
+      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={630} allTimeTotals={[]} onFinish={() => {}} />,
     );
     expect(screen.getByText("10:30")).toBeInTheDocument(); // durée
     expect(screen.getByText("2")).toBeInTheDocument(); // exercices
@@ -45,7 +46,7 @@ describe("SummaryView", () => {
   it("lists only exercises with at least one logged set, each with its summed reps", () => {
     const setsLogged = [set({ exerciseOrder: 1, setNumber: 1, repsActual: 15 })];
     render(
-      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={300} onFinish={() => {}} />,
+      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={300} allTimeTotals={[]} onFinish={() => {}} />,
     );
     expect(screen.queryByText("Push ups")).not.toBeInTheDocument();
     expect(screen.getByText("Squats")).toBeInTheDocument();
@@ -55,7 +56,7 @@ describe("SummaryView", () => {
   it("calls onFinish when Terminer is clicked", async () => {
     const onFinish = vi.fn();
     render(
-      <SummaryView exercises={EXERCISES} setsLogged={[]} durationSeconds={0} onFinish={onFinish} />,
+      <SummaryView exercises={EXERCISES} setsLogged={[]} durationSeconds={0} allTimeTotals={[]} onFinish={onFinish} />,
     );
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
     expect(onFinish).toHaveBeenCalledOnce();
@@ -63,8 +64,32 @@ describe("SummaryView", () => {
 
   it("uses the sage accent on the Terminer button when accent='sage'", () => {
     render(
-      <SummaryView exercises={EXERCISES} setsLogged={[]} durationSeconds={0} accent="sage" onFinish={() => {}} />,
+      <SummaryView exercises={EXERCISES} setsLogged={[]} durationSeconds={0} allTimeTotals={[]} accent="sage" onFinish={() => {}} />,
     );
     expect(screen.getByRole("button", { name: "Terminer" })).toHaveClass("bg-sage");
+  });
+
+  it("shows the new all-time total next to the reps done this séance", () => {
+    const setsLogged = [set({ exerciseOrder: 1, setNumber: 1, repsActual: 15 })];
+    render(
+      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={300} allTimeTotals={[undefined, 40]} onFinish={() => {}} />,
+    );
+    expect(screen.getByText("+15 reps · 40 au total")).toBeInTheDocument();
+  });
+
+  it("shows a palier franchi banner when a threshold is crossed this séance", () => {
+    const setsLogged = [set({ exerciseOrder: 1, setNumber: 1, repsActual: 15 })];
+    render(
+      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={300} allTimeTotals={[undefined, 100]} onFinish={() => {}} />,
+    );
+    expect(screen.getByText("Palier franchi · 100 répétitions · Squats")).toBeInTheDocument();
+  });
+
+  it("shows no banner when the séance stays within the same palier", () => {
+    const setsLogged = [set({ exerciseOrder: 1, setNumber: 1, repsActual: 15 })];
+    render(
+      <SummaryView exercises={EXERCISES} setsLogged={setsLogged} durationSeconds={300} allTimeTotals={[undefined, 60]} onFinish={() => {}} />,
+    );
+    expect(screen.queryByText(/Palier franchi/)).not.toBeInTheDocument();
   });
 });

@@ -6,6 +6,7 @@ import { logSetAction, skipExerciseAction, completeSeanceAction } from "@/lib/pl
 import { beginner, intermediate, advanced } from "@/lib/workout/data";
 import type { Program } from "@/lib/workout/types";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
+import { computeTrophies, resolveTrophyCardId, isReplogEligible } from "@/lib/trophies/computeTrophies";
 
 const PROGRAMS: Record<string, Program> = { beginner, intermediate, advanced };
 
@@ -42,11 +43,17 @@ export default async function PlayerPage({
   const state = loadPlayerState(db, parcours, level, dayIndex, day);
   const setsLogged = getSetsForSeance(db, state.seanceId);
 
+  const cardTotals = new Map(computeTrophies(db).map((c) => [c.id, c.total]));
+  const allTimeTotals = day.exercises.map((exercise) =>
+    isReplogEligible(exercise.id, exercise.countsInStats) ? cardTotals.get(resolveTrophyCardId(exercise.id)) : undefined,
+  );
+
   return (
     <PlayerScreen
       day={day}
       state={state}
       setsLogged={setsLogged}
+      allTimeTotals={allTimeTotals}
       onLogSet={logSetAction}
       onSkipExercise={skipExerciseAction}
       onSeanceFinish={completeSeanceAction}
