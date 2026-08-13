@@ -2,15 +2,23 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TropheesScreen } from "./TropheesScreen";
+import { __resetAnimateLatchForTests } from "./useCountUp";
 import type { TropheesScreenState } from "@/lib/trophies/loadTropheesScreenState";
 
-beforeEach(() => {
-  vi.useFakeTimers();
+function mockMatchMedia(matches: boolean) {
   window.matchMedia = vi.fn().mockReturnValue({
-    matches: true,
+    matches,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
   }) as unknown as typeof window.matchMedia;
+}
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  mockMatchMedia(true);
+  // The animate-this-load decision is latched once per module load — reset
+  // it so each test starts from a fresh, un-latched state.
+  __resetAnimateLatchForTests();
 });
 
 afterEach(() => {
@@ -23,8 +31,8 @@ const STATE: TropheesScreenState = {
   seanceCount: 10,
   joursActivite: 9,
   cards: [
-    { id: "squats", module: "programme", name: "Squats", movementFamily: "squat", videoId: null, total: 300, firstAt: "2026-01-01T10:00:00.000Z", lastAt: "2026-08-01T10:00:00.000Z", seanceCount: 8 },
-    { id: "A", module: "dos", name: "Charnière & ischios", movementFamily: "arbre-A", videoId: null, total: 120, firstAt: "2026-02-01T10:00:00.000Z", lastAt: "2026-08-05T10:00:00.000Z", seanceCount: 2, byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 120 }] },
+    { id: "squats", module: "programme", name: "Squats", total: 300, firstAt: "2026-01-01T10:00:00.000Z", lastAt: "2026-08-01T10:00:00.000Z" },
+    { id: "A", module: "dos", name: "Charnière & ischios", total: 120, firstAt: "2026-02-01T10:00:00.000Z", lastAt: "2026-08-05T10:00:00.000Z", byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 120 }] },
   ],
 };
 
@@ -55,5 +63,22 @@ describe("TropheesScreen", () => {
   it("shows the empty state when there are no cards", () => {
     render(<TropheesScreen state={{ totalReps: 0, seanceCount: 0, joursActivite: 0, cards: [] }} />);
     expect(screen.getByText(/première séance/)).toBeInTheDocument();
+  });
+
+  it("animates the header total from 0 when reduced motion is off (regression: effect ordering race)", () => {
+    // Regression test for a bug where every useCountUp instance independently
+    // read-then-wrote the same sessionStorage flag: TrophyCard children's
+    // effects fired before TropheesScreen's own header effect (React fires
+    // child effects before parent effects), so the header always found the
+    // flag already set and skipped its animation. With reduced motion off,
+    // the header total must start at 0 and only reach the target after the
+    // animation runs — proving the animation actually starts.
+    mockMatchMedia(false);
+    const { container } = render(<TropheesScreen state={STATE} />);
+    // Scope to the header total specifically (text-44) — the card totals
+    // (text-24) also start at 0, so a plain getByText("0") would be ambiguous.
+    const headerTotal = container.querySelector(".text-44");
+    expect(headerTotal).toHaveTextContent("0");
+    expect(headerTotal).not.toHaveTextContent("420");
   });
 });

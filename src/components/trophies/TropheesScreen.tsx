@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/Card";
 import { TrophyCard } from "./TrophyCard";
 import { useCountUp } from "./useCountUp";
 import type { TropheesScreenState } from "@/lib/trophies/loadTropheesScreenState";
@@ -79,9 +78,20 @@ export function TropheesScreen({ state }: { state: TropheesScreenState }) {
 
       {cards.length === 0 ? (
         <div className="px-5 pt-6">
-          <Card className="p-6 text-center">
-            <p className="text-15 text-graphite">Fais ta première séance pour commencer à cumuler.</p>
-          </Card>
+          {/* Carte fantôme : même silhouette qu'une TrophyCard, mais en
+              contour hairline transparent — même langage visuel que la
+              pastille "à venir" (border-hairline, bg-transparent), pas une
+              nouvelle convention. */}
+          <div className="w-1/2 min-[720px]:w-1/3 rounded-card border border-dashed border-hairline bg-transparent overflow-hidden">
+            <div className="aspect-square" />
+            <div className="p-4">
+              <div className="h-3.5 w-3/4 rounded-pill bg-hairline/60" />
+              <div className="h-6 w-1/2 rounded-pill bg-hairline/60 mt-3" />
+            </div>
+          </div>
+          <p className="text-15 text-graphite mt-5">
+            Fais ta première séance pour commencer à cumuler.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 min-[720px]:grid-cols-3 gap-3 px-5 pt-5">

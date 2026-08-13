@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useCountUp } from "./useCountUp";
+import { useCountUp, __resetAnimateLatchForTests } from "./useCountUp";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -9,6 +9,9 @@ beforeEach(() => {
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
   }) as unknown as typeof window.matchMedia;
+  // The "should this page load animate" decision is latched once per module
+  // load — reset it so each test starts from a fresh, un-latched state.
+  __resetAnimateLatchForTests();
 });
 
 afterEach(() => {
