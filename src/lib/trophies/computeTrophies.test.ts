@@ -46,6 +46,10 @@ describe("isReplogEligible", () => {
     expect(isReplogEligible("C-1", true, 1)).toBe(true);
     expect(isReplogEligible("C-1", true, 9)).toBe(false);
   });
+
+  it("treats an arbre id with no known bloc context as ineligible, rather than throwing", () => {
+    expect(isReplogEligible("A-1", true)).toBe(false);
+  });
 });
 
 describe("computeTrophies — Programme", () => {
@@ -60,7 +64,7 @@ describe("computeTrophies — Programme", () => {
 
     const cards = computeTrophies(db);
     const squats = cards.find((c) => c.id === "squats");
-    expect(squats).toMatchObject({ module: "programme", name: "Squats", total: 27, seanceCount: 2 });
+    expect(squats).toMatchObject({ module: "programme", name: "Squats", total: 27 });
   });
 
   it("excludes an exercise with countsInStats: false", () => {
@@ -87,7 +91,7 @@ describe("computeTrophies — Dos", () => {
 
     const cards = computeTrophies(db);
     const arbreC = cards.find((c) => c.id === "C");
-    expect(arbreC).toMatchObject({ module: "dos", name: "Extenseurs lombaires", total: 22, seanceCount: 2 });
+    expect(arbreC).toMatchObject({ module: "dos", name: "Extenseurs lombaires", total: 22 });
     expect(arbreC?.byCran).toEqual([
       { cran: 1, nom: "Superman au sol, tenue 5 s", total: 10 },
       { cran: 2, nom: "Reverse hyper au bord du lit", total: 12 },

@@ -8,12 +8,9 @@ export type TrophyCard = {
   id: string;
   module: "programme" | "dos";
   name: string;
-  movementFamily: string;
-  videoId: string | null;
   total: number;
   firstAt: string;
   lastAt: string;
-  seanceCount: number;
   byCran?: { cran: number; nom: string; total: number }[];
 };
 
@@ -25,28 +22,27 @@ export function resolveTrophyCardId(exerciseId: string): string {
 export function isReplogEligible(exerciseId: string, countsInStats: boolean, semaine?: number): boolean {
   const match = exerciseId.match(ARBRE_EXERCISE_ID);
   if (!match) return countsInStats;
+  // An arbre id with no known bloc context isn't verifiably reps-eligible —
+  // treat it as ineligible rather than asserting semaine is defined.
+  if (semaine === undefined) return false;
   const arbre = match[1] as ArbreId;
-  const bloc = computeBlock(semaine!);
+  const bloc = computeBlock(semaine);
   return ARBRES[arbre].prescriptions[bloc - 1]!.unite === "reps";
 }
 
 type Accumulator = {
   module: "programme" | "dos";
   name: string;
-  movementFamily: string;
-  videoId: string | null;
   total: number;
   firstAt: string;
   lastAt: string;
-  seanceIds: Set<number>;
   byCran: Map<number, number>;
 };
 
-function touch(acc: Accumulator, amount: number, completedAt: string, seanceId: number, cran?: number): void {
+function touch(acc: Accumulator, amount: number, completedAt: string, cran?: number): void {
   acc.total += amount;
   if (completedAt < acc.firstAt) acc.firstAt = completedAt;
   if (completedAt > acc.lastAt) acc.lastAt = completedAt;
-  acc.seanceIds.add(seanceId);
   if (cran !== undefined) acc.byCran.set(cran, (acc.byCran.get(cran) ?? 0) + amount);
 }
 
@@ -56,14 +52,13 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
   const programmeRows = db
     .prepare(
       `SELECT sl.exercise_order AS exerciseOrder, sl.reps_actual AS repsActual, sl.completed_at AS completedAt,
-              sl.seance_id AS seanceId, s.parcours, s.level, s.day_index AS dayIndex
+              s.parcours, s.level, s.day_index AS dayIndex
        FROM sets_logged sl JOIN seances s ON sl.seance_id = s.id`,
     )
     .all() as {
     exerciseOrder: number;
     repsActual: number;
     completedAt: string;
-    seanceId: number;
     parcours: string;
     level: number;
     dayIndex: number;
@@ -83,30 +78,26 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
       entry = {
         module: "programme",
         name: exercise.name,
-        movementFamily: exercise.movementFamily,
-        videoId: exercise.videoId,
         total: 0,
         firstAt: row.completedAt,
         lastAt: row.completedAt,
-        seanceIds: new Set(),
         byCran: new Map(),
       };
       acc.set(id, entry);
     }
-    touch(entry, row.repsActual, row.completedAt, row.seanceId);
+    touch(entry, row.repsActual, row.completedAt);
   }
 
   const dosRows = db
     .prepare(
       `SELECT dsl.exercise_id AS exerciseId, dsl.valeur_actual AS valeurActual, dsl.completed_at AS completedAt,
-              dsl.seance_id AS seanceId, ds.semaine
+              ds.semaine
        FROM dos_sets_logged dsl JOIN dos_seances ds ON dsl.seance_id = ds.id`,
     )
     .all() as {
     exerciseId: string;
     valeurActual: number;
     completedAt: string;
-    seanceId: number;
     semaine: number;
   }[];
 
@@ -122,29 +113,23 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
       entry = {
         module: "dos",
         name: ARBRES[arbre].nom,
-        movementFamily: `arbre-${arbre}`,
-        videoId: null,
         total: 0,
         firstAt: row.completedAt,
         lastAt: row.completedAt,
-        seanceIds: new Set(),
         byCran: new Map(),
       };
       acc.set(arbre, entry);
     }
-    touch(entry, row.valeurActual, row.completedAt, row.seanceId, cran);
+    touch(entry, row.valeurActual, row.completedAt, cran);
   }
 
   return [...acc.entries()].map(([id, entry]) => ({
     id,
     module: entry.module,
     name: entry.name,
-    movementFamily: entry.movementFamily,
-    videoId: entry.videoId,
     total: entry.total,
     firstAt: entry.firstAt,
     lastAt: entry.lastAt,
-    seanceCount: entry.seanceIds.size,
     byCran:
       entry.module === "dos"
         ? [...entry.byCran.entries()]
