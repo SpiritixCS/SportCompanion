@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
-import { getSeanceById, getSetsForSeance, listExerciseNames } from "@/lib/tracking/db";
+import { getSeanceById, getSetsForSeance, listExercises } from "@/lib/tracking/db";
 import { TrackingSeanceScreen } from "@/components/tracking/TrackingSeanceScreen";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function TrackingSeancePage({
   if (!seance) notFound();
 
   const sets = getSetsForSeance(db, seanceId);
-  const exerciseSuggestions = listExerciseNames(db);
+  const exerciseSuggestions = listExercises(db);
 
   return (
     <TrackingSeanceScreen

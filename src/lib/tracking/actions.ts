@@ -5,9 +5,12 @@ import { currentUser } from "@/lib/auth/currentUser";
 import {
   getOrStartSeance,
   logSetForExercise,
+  updateSet as updateSetDb,
+  deleteSet as deleteSetDb,
   completeSeance as completeSeanceDb,
-  listExerciseNames as listExerciseNamesDb,
+  listExercises as listExercisesDb,
   type TrackingSetWithExercise,
+  type TrackingUnit,
 } from "./db";
 
 async function db() {
@@ -22,15 +25,25 @@ export async function startTrackingSeanceAction(): Promise<number> {
 export async function logTrackingSetAction(params: {
   seanceId: number;
   exerciseName: string;
-  repsActual: number;
-}): Promise<TrackingSetWithExercise> {
-  return logSetForExercise(await db(), params.seanceId, params.exerciseName, params.repsActual);
+  unit: TrackingUnit;
+  valeurActual: number;
+  count?: number;
+}): Promise<TrackingSetWithExercise[]> {
+  return logSetForExercise(await db(), params.seanceId, params.exerciseName, params.unit, params.valeurActual, params.count ?? 1);
+}
+
+export async function updateTrackingSetAction(setId: number, valeurActual: number): Promise<void> {
+  updateSetDb(await db(), setId, valeurActual);
+}
+
+export async function deleteTrackingSetAction(setId: number): Promise<void> {
+  deleteSetDb(await db(), setId);
 }
 
 export async function completeTrackingSeanceAction(seanceId: number): Promise<void> {
   completeSeanceDb(await db(), seanceId);
 }
 
-export async function listTrackingExerciseNamesAction(): Promise<string[]> {
-  return listExerciseNamesDb(await db());
+export async function listTrackingExercisesAction(): Promise<{ name: string; unit: TrackingUnit }[]> {
+  return listExercisesDb(await db());
 }
