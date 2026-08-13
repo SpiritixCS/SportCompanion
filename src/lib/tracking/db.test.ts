@@ -137,8 +137,8 @@ describe("logSetForExercise", () => {
     completeSeance(db, seanceA.id);
     const seanceB = startSeance(db);
     const [setB] = logSetForExercise(db, seanceB.id, "Planche", "reps", 45);
-    expect(setB.exerciseId).toBe(setA.exerciseId);
-    expect(setB.exerciseUnit).toBe("seconds");
+    expect(setB!.exerciseId).toBe(setA!.exerciseId);
+    expect(setB!.exerciseUnit).toBe("seconds");
   });
 });
 
@@ -159,7 +159,7 @@ describe("updateSet / deleteSet", () => {
     const db = setup();
     const seance = startSeance(db);
     const [set] = logSetForExercise(db, seance.id, "Squats", "reps", 10);
-    updateSet(db, set.id, 12);
+    updateSet(db, set!.id, 12);
     const [reloaded] = getSetsForSeance(db, seance.id);
     expect(reloaded!.valeurActual).toBe(12);
   });
@@ -169,7 +169,7 @@ describe("updateSet / deleteSet", () => {
     const seance = startSeance(db);
     const [first] = logSetForExercise(db, seance.id, "Squats", "reps", 10);
     logSetForExercise(db, seance.id, "Squats", "reps", 12);
-    deleteSet(db, first.id);
+    deleteSet(db, first!.id);
     const remaining = getSetsForSeance(db, seance.id);
     expect(remaining).toHaveLength(1);
     expect(remaining[0]!.valeurActual).toBe(12);
@@ -180,9 +180,9 @@ describe("updateSet / deleteSet", () => {
     const seance = startSeance(db);
     const [set] = logSetForExercise(db, seance.id, "Squats", "reps", 10);
     completeSeance(db, seance.id);
-    updateSet(db, set.id, 15);
+    updateSet(db, set!.id, 15);
     expect(getSetsForSeance(db, seance.id)[0]!.valeurActual).toBe(15);
-    deleteSet(db, set.id);
+    deleteSet(db, set!.id);
     expect(getSetsForSeance(db, seance.id)).toHaveLength(0);
   });
 });
