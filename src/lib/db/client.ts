@@ -8,3 +8,14 @@ export function getDb(dbPath: string): Database.Database {
   db.pragma("journal_mode = WAL");
   return db;
 }
+
+const dbByPath = new Map<string, Database.Database>();
+
+export function getDbForUser(user: { dbPath: string }): Database.Database {
+  let db = dbByPath.get(user.dbPath);
+  if (!db) {
+    db = getDb(user.dbPath);
+    dbByPath.set(user.dbPath, db);
+  }
+  return db;
+}

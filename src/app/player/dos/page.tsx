@@ -1,5 +1,6 @@
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { redirect } from "next/navigation";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { getSettings } from "@/lib/settings/db";
 import { getStartDate, getEvaluations } from "@/lib/backpain/db";
 import { computeWeek, computeBlock } from "@/lib/backpain/periode";
@@ -15,12 +16,10 @@ import { computeTrophies, resolveTrophyCardId, isReplogEligible } from "@/lib/tr
 
 export const dynamic = "force-dynamic";
 
-function dbPath(): string {
-  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-}
-
 export default async function DosPlayerPage() {
-  const db = getDb(dbPath());
+  const user = await currentUser();
+  if (user.slug !== "mathis") redirect("/");
+  const db = getDbForUser(user);
   const settings = getSettings(db);
   const startDate = getStartDate(db);
 

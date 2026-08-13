@@ -1,5 +1,6 @@
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { redirect } from "next/navigation";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { getEvaluations } from "@/lib/backpain/db";
 import { getCurrentCran } from "@/lib/backpain/progression";
 import { computeBlock } from "@/lib/backpain/periode";
@@ -12,18 +13,17 @@ import { BilanDosClient } from "@/components/dos/BilanDosClient";
 
 export const dynamic = "force-dynamic";
 
-function dbPath(): string {
-  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-}
-
 export default async function DosBilanPage({
   searchParams,
 }: {
   searchParams: Promise<{ seanceId?: string }>;
 }) {
+  const user = await currentUser();
+  if (user.slug !== "mathis") redirect("/");
+
   const params = await searchParams;
   const seanceId = Number(params.seanceId);
-  const db = getDb(dbPath());
+  const db = getDbForUser(user);
   const seance = getDosSeanceById(db, seanceId);
 
   if (!seance) {

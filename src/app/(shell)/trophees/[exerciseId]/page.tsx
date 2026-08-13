@@ -1,16 +1,12 @@
 import Link from "next/link";
-import path from "node:path";
 import { notFound } from "next/navigation";
-import { getDb } from "@/lib/db/client";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { loadTrophyDetail } from "@/lib/trophies/loadTrophyDetail";
 import { Card } from "@/components/Card";
 import { IconClose } from "@/components/icons/IconClose";
 
 export const dynamic = "force-dynamic";
-
-function dbPath(): string {
-  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-}
 
 function formatDateFr(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(
@@ -24,7 +20,7 @@ export default async function TrophyDetailPage({
   params: Promise<{ exerciseId: string }>;
 }) {
   const { exerciseId } = await params;
-  const db = getDb(dbPath());
+  const db = getDbForUser(await currentUser());
   const detail = loadTrophyDetail(db, exerciseId);
 
   if (!detail) notFound();

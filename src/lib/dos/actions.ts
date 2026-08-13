@@ -1,9 +1,8 @@
 "use server";
 
-import type Database from "better-sqlite3";
-import path from "node:path";
 import { redirect } from "next/navigation";
-import { getDb } from "@/lib/db/client";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { setStartDate, getEvaluations, recordEvaluation } from "@/lib/backpain/db";
 import { computeWeek, computeBlock } from "@/lib/backpain/periode";
 import { evaluateProgression, getCurrentCran } from "@/lib/backpain/progression";
@@ -19,18 +18,12 @@ import {
 } from "./db";
 import { buildArbreEvaluationInputs, type Reserve } from "./bilan";
 
-let dbInstance: Database.Database | null = null;
-
-function db(): Database.Database {
-  if (!dbInstance) {
-    const dbPath = process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-    dbInstance = getDb(dbPath);
-  }
-  return dbInstance;
+async function db() {
+  return getDbForUser(await currentUser());
 }
 
 export async function setStartDateAction(date: string): Promise<void> {
-  setStartDate(db(), date);
+  setStartDate(await db(), date);
 }
 
 // External signature matches src/lib/player/actions.ts's logSetAction exactly
@@ -49,7 +42,7 @@ export async function logDosSetAction(params: {
   repsActual: number;
   restSeconds: number;
 }): Promise<void> {
-  logDosSet(db(), {
+  logDosSet(await db(), {
     seanceId: params.seanceId,
     exerciseOrder: params.exerciseOrder,
     exerciseId: params.exerciseId,
@@ -61,7 +54,7 @@ export async function logDosSetAction(params: {
 }
 
 export async function skipDosExerciseAction(seanceId: number, exerciseOrder: number): Promise<void> {
-  skipDosExercise(db(), seanceId, exerciseOrder);
+  skipDosExercise(await db(), seanceId, exerciseOrder);
 }
 
 export async function startDosBilanAction(seanceId: number): Promise<never> {
@@ -73,7 +66,7 @@ export async function completeDosSeanceAction(
   genePendant: number,
   reserves: Partial<Record<ArbreId, Reserve>>,
 ): Promise<{ arbre: ArbreId; nom: string; message: string }[]> {
-  const database = db();
+  const database = await db();
   const seance = getDosSeanceById(database, seanceId)!;
 
   // Idempotency guard against a double-tap (or a slow network + impatient

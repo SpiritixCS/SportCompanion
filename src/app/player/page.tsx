@@ -1,5 +1,5 @@
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { getSettings } from "@/lib/settings/db";
 import { loadPlayerState } from "@/lib/player/loadPlayerState";
 import { getSetsForSeance } from "@/lib/player/db";
@@ -10,10 +10,6 @@ import { PlayerScreen } from "@/components/player/PlayerScreen";
 import { computeTrophies, resolveTrophyCardId, isReplogEligible } from "@/lib/trophies/computeTrophies";
 
 const PROGRAMS: Record<string, Program> = { beginner, intermediate, advanced };
-
-function dbPath(): string {
-  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-}
 
 export default async function PlayerPage({
   searchParams,
@@ -40,7 +36,7 @@ export default async function PlayerPage({
     );
   }
 
-  const db = getDb(dbPath());
+  const db = getDbForUser(await currentUser());
   const settings = getSettings(db);
   const state = loadPlayerState(db, parcours, level, dayIndex, day);
   const setsLogged = getSetsForSeance(db, state.seanceId);

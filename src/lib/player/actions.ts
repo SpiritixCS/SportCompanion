@@ -1,22 +1,15 @@
 "use server";
 
-import type Database from "better-sqlite3";
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import {
   logSet as logSetDb,
   skipExercise as skipExerciseDb,
   completeSeance as completeSeanceDb,
 } from "./db";
 
-let dbInstance: Database.Database | null = null;
-
-function db(): Database.Database {
-  if (!dbInstance) {
-    const dbPath = process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-    dbInstance = getDb(dbPath);
-  }
-  return dbInstance;
+async function db() {
+  return getDbForUser(await currentUser());
 }
 
 export async function logSetAction(params: {
@@ -32,13 +25,13 @@ export async function logSetAction(params: {
   // exercise_id column and doesn't need one — a Programme day's composition
   // is static, so exercise_order alone always replays the right exercise.
   const { exerciseId: _exerciseId, ...dbParams } = params;
-  logSetDb(db(), dbParams);
+  logSetDb(await db(), dbParams);
 }
 
 export async function skipExerciseAction(seanceId: number, exerciseOrder: number): Promise<void> {
-  skipExerciseDb(db(), seanceId, exerciseOrder);
+  skipExerciseDb(await db(), seanceId, exerciseOrder);
 }
 
 export async function completeSeanceAction(seanceId: number): Promise<void> {
-  completeSeanceDb(db(), seanceId);
+  completeSeanceDb(await db(), seanceId);
 }

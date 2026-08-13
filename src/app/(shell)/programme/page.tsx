@@ -1,17 +1,13 @@
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { loadProgrammeState } from "@/lib/programme/loadProgrammeState";
 import { PARCOURS } from "@/lib/programme/parcours";
 import { ProgrammeScreen } from "@/components/programme/ProgrammeScreen";
 
 export const dynamic = "force-dynamic";
 
-function dbPath(): string {
-  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-}
-
-export default function ProgrammePage() {
-  const db = getDb(dbPath());
+export default async function ProgrammePage() {
+  const db = getDbForUser(await currentUser());
   const levelsByParcours = Object.fromEntries(
     PARCOURS.map((p) => [p.id, loadProgrammeState(db, p)]),
   );

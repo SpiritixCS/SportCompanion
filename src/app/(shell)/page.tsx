@@ -1,5 +1,5 @@
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { loadTodayState } from "@/lib/programme/loadTodayState";
 import { loadDosTodayState } from "@/lib/dos/loadDosTodayState";
 import { PARCOURS } from "@/lib/programme/parcours";
@@ -7,13 +7,10 @@ import { AujourdhuiScreen } from "@/components/today/AujourdhuiScreen";
 
 export const dynamic = "force-dynamic";
 
-function dbPath(): string {
-  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-}
-
 export default async function TodayPage() {
-  const db = getDb(dbPath());
+  const user = await currentUser();
+  const db = getDbForUser(user);
   const state = loadTodayState(db, PARCOURS);
-  const dosState = loadDosTodayState(db);
-  return <AujourdhuiScreen state={state} dosState={dosState} />;
+  const dosState = user.slug === "mathis" ? loadDosTodayState(db) : null;
+  return <AujourdhuiScreen state={state} dosState={dosState} user={{ slug: user.slug, label: user.label }} />;
 }

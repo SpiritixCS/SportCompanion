@@ -1,16 +1,15 @@
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { redirect } from "next/navigation";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { loadDosScreenState } from "@/lib/dos/loadDosScreenState";
 import { DosScreen } from "@/components/dos/DosScreen";
 
 export const dynamic = "force-dynamic";
 
-function dbPath(): string {
-  return process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-}
-
 export default async function DosPage() {
-  const db = getDb(dbPath());
+  const user = await currentUser();
+  if (user.slug !== "mathis") redirect("/");
+  const db = getDbForUser(user);
   const state = loadDosScreenState(db);
   return <DosScreen state={state} />;
 }

@@ -1,19 +1,12 @@
 "use server";
 
-import type Database from "better-sqlite3";
-import path from "node:path";
-import { getDb } from "@/lib/db/client";
+import { getDbForUser } from "@/lib/db/client";
+import { currentUser } from "@/lib/auth/currentUser";
 import { setCurrentPosition } from "./db";
 import { getParcours } from "./parcours";
 
-let dbInstance: Database.Database | null = null;
-
-function db(): Database.Database {
-  if (!dbInstance) {
-    const dbPath = process.env.DB_PATH ?? path.join(process.cwd(), "data", "sportcompanion.db");
-    dbInstance = getDb(dbPath);
-  }
-  return dbInstance;
+async function db() {
+  return getDbForUser(await currentUser());
 }
 
 export async function setCurrentPositionAction(
@@ -21,7 +14,7 @@ export async function setCurrentPositionAction(
   level: number,
   dayIndex: number,
 ): Promise<void> {
-  setCurrentPosition(db(), parcours, level, dayIndex);
+  setCurrentPosition(await db(), parcours, level, dayIndex);
 }
 
 export async function resolveLevelUpAction(
@@ -31,5 +24,5 @@ export async function resolveLevelUpAction(
 ): Promise<void> {
   const levelCount = getParcours(parcours)?.levelCount ?? level + 1;
   const nextLevel = choice === "advance" ? Math.min(level + 1, levelCount - 1) : level;
-  setCurrentPosition(db(), parcours, nextLevel, 0);
+  setCurrentPosition(await db(), parcours, nextLevel, 0);
 }
