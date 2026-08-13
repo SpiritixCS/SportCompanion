@@ -18,7 +18,7 @@ export function ReglagesScreen({
 }: {
   onClose: () => void;
   onChangePointDepart: () => void;
-  programmePosition: { parcoursLabel: string; level: number; dayIndex: number } | null;
+  programmePosition: { parcoursLabel: string; level: number; dayIndex: number | null } | null;
 }) {
   const [state, setState] = useState<ReglagesState | null>(null);
   const [error, setError] = useState(false);
@@ -96,7 +96,9 @@ export function ReglagesScreen({
                   <span className="text-15">Position</span>
                   <span className="font-archivo text-15 font-medium text-graphite tabular-nums">
                     {programmePosition
-                      ? `Niveau ${programmePosition.level + 1} · Jour ${programmePosition.dayIndex + 1}`
+                      ? programmePosition.dayIndex !== null
+                        ? `Niveau ${programmePosition.level + 1} · Jour ${programmePosition.dayIndex + 1}`
+                        : `Niveau ${programmePosition.level + 1}`
                       : "—"}
                   </span>
                 </div>

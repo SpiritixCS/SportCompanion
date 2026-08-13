@@ -165,7 +165,9 @@ describe("PlayerScreen", () => {
   });
 
   it("requests a wake lock by default, and not at all when keepScreenAwakeEnabled=false", async () => {
-    const requestMock = vi.fn().mockResolvedValue({ release: vi.fn().mockResolvedValue(undefined) });
+    const requestMock = vi
+      .fn()
+      .mockResolvedValue({ release: vi.fn().mockResolvedValue(undefined), addEventListener: vi.fn() });
     Object.defineProperty(navigator, "wakeLock", { value: { request: requestMock }, configurable: true });
 
     const state: PlayerState = {

@@ -53,6 +53,19 @@ describe("ReglagesScreen", () => {
     expect(screen.getByText("Niveau 3 · Jour 5")).toBeInTheDocument();
   });
 
+  it("shows Niveau N alone when dayIndex is null (level-up phase, no day assigned yet)", async () => {
+    getReglagesStateAction.mockResolvedValue(BASE_STATE);
+    render(
+      <ReglagesScreen
+        onClose={() => {}}
+        onChangePointDepart={() => {}}
+        programmePosition={{ parcoursLabel: "Débutant", level: 2, dayIndex: null }}
+      />,
+    );
+    await waitFor(() => expect(screen.getByText("Débutant")).toBeInTheDocument());
+    expect(screen.getByText("Niveau 3")).toBeInTheDocument();
+  });
+
   it("calls onChangePointDepart when the row is tapped", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     const onChangePointDepart = vi.fn();

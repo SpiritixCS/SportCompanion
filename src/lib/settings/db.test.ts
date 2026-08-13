@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
-import { getSettings, updateSettings } from "./db";
+import { getSettings, updateSettings, type AppSettings } from "./db";
 
 let tmpDir: string;
 
@@ -51,5 +51,26 @@ describe("updateSettings", () => {
     updateSettings(db, { soundCountdownEnabled: true });
     expect(getSettings(db).soundCountdownEnabled).toBe(true);
     expect(getSettings(db).soundCountdownEnabled).toBe(true);
+  });
+
+  it("ignores unknown keys in the patch without throwing or touching real columns", () => {
+    const db = setup();
+    const before = getSettings(db);
+    expect(() =>
+      updateSettings(db, { ...({ notARealKey: "x" } as unknown as Partial<AppSettings>) }),
+    ).not.toThrow();
+    expect(getSettings(db)).toEqual(before);
+  });
+
+  it("clamps a negative duration up to the 15s floor", () => {
+    const db = setup();
+    const result = updateSettings(db, { restBetweenSetsSeconds: -1 });
+    expect(result.restBetweenSetsSeconds).toBe(15);
+  });
+
+  it("clamps an absurdly large duration down to the 600s ceiling", () => {
+    const db = setup();
+    const result = updateSettings(db, { restBetweenExercisesSeconds: 999999 });
+    expect(result.restBetweenExercisesSeconds).toBe(600);
   });
 });

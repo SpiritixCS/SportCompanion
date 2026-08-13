@@ -24,7 +24,7 @@ export function AujourdhuiHeader({ onOpenReglages }: { onOpenReglages: () => voi
   }, []);
 
   return (
-    <div className="flex items-start justify-between gap-4 mb-8">
+    <div className="flex items-start justify-between gap-4">
       <div>
         <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">
           {dateLabel}

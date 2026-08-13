@@ -18,8 +18,8 @@ describe("Toggle", () => {
 
   it("shows the ink track when checked, hairline when not", () => {
     const { rerender } = render(<Toggle checked={true} onChange={() => {}} label="x" />);
-    expect(screen.getByRole("switch")).toHaveClass("bg-ink");
+    expect(screen.getByRole("switch").firstChild).toHaveClass("bg-ink");
     rerender(<Toggle checked={false} onChange={() => {}} label="x" />);
-    expect(screen.getByRole("switch")).toHaveClass("bg-hairline");
+    expect(screen.getByRole("switch").firstChild).toHaveClass("bg-hairline");
   });
 });

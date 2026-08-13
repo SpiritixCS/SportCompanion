@@ -72,7 +72,9 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
         programmePosition={
           state.phase === "normal"
             ? { parcoursLabel: state.parcoursLabel, level: state.level, dayIndex: state.dayIndex }
-            : null
+            : state.phase === "level-up"
+              ? { parcoursLabel: state.parcoursLabel, level: state.level, dayIndex: null }
+              : null
         }
       />
     );
@@ -80,7 +82,7 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
 
   if (state.phase === "empty") {
     return (
-      <div className="p-5">
+      <div className="p-5 flex flex-col gap-8">
         <AujourdhuiHeader onOpenReglages={() => setReglagesOpen(true)} />
         <Card className="p-6">
           <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">

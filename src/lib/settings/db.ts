@@ -45,11 +45,25 @@ const COLUMN_BY_KEY: Record<keyof AppSettings, string> = {
   keepScreenAwakeEnabled: "keep_screen_awake_enabled",
 };
 
+// Matches DurationRow's FLOOR_SECONDS; ceiling is a sane upper bound (10 min).
+const DURATION_FLOOR_SECONDS = 15;
+const DURATION_CEILING_SECONDS = 600;
+const DURATION_KEYS = new Set<keyof AppSettings>(["restBetweenSetsSeconds", "restBetweenExercisesSeconds"]);
+
+function clampDuration(value: number): number {
+  return Math.min(DURATION_CEILING_SECONDS, Math.max(DURATION_FLOOR_SECONDS, Math.round(value)));
+}
+
 export function updateSettings(db: Database.Database, patch: Partial<AppSettings>): AppSettings {
-  const entries = Object.entries(patch) as [keyof AppSettings, number | boolean][];
+  const entries = (Object.entries(patch) as [keyof AppSettings, number | boolean][]).filter(
+    ([key]) => key in COLUMN_BY_KEY,
+  );
   if (entries.length > 0) {
     const setClause = entries.map(([key]) => `${COLUMN_BY_KEY[key]} = ?`).join(", ");
-    const values = entries.map(([, value]) => (typeof value === "boolean" ? (value ? 1 : 0) : value));
+    const values = entries.map(([key, value]) => {
+      if (typeof value === "boolean") return value ? 1 : 0;
+      return DURATION_KEYS.has(key) ? clampDuration(value) : value;
+    });
     db.prepare(`UPDATE app_settings SET ${setClause} WHERE id = 1`).run(...values);
   }
   return getSettings(db);

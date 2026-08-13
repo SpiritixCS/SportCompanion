@@ -55,6 +55,18 @@ describe("AujourdhuiScreen", () => {
     expect(screen.getByText("Débutant · Niveau 1 terminé")).toBeInTheDocument();
   });
 
+  it("level-up state still shows the active parcours in Réglages, not Non défini", async () => {
+    render(
+      <AujourdhuiScreen
+        state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
+        dosState={DOS_NO_START_DATE}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Réglages" }));
+    await waitFor(() => expect(screen.getByText("Débutant")).toBeInTheDocument());
+    expect(screen.getByText("Niveau 1")).toBeInTheDocument();
+  });
+
   it("normal state renders the Programme card and the real BackPainCard", () => {
     const state: TodayState = {
       phase: "normal", parcours: "beginner", parcoursLabel: "Débutant", level: 0, dayIndex: 0,

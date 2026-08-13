@@ -55,7 +55,7 @@ export function useWakeLock(enabled: boolean): void {
     return () => {
       cancelled = true;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      sentinel?.release();
+      sentinel?.release().catch(() => {});
       sentinel = null;
     };
   }, [enabled]);
