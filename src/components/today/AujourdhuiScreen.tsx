@@ -8,6 +8,8 @@ import { ProgrammeCard } from "./ProgrammeCard";
 import { LevelUpPrompt } from "./LevelUpPrompt";
 import { BackPainCard } from "./BackPainCard";
 import { SetupFlow } from "@/components/setup/SetupFlow";
+import { AujourdhuiHeader } from "./AujourdhuiHeader";
+import { ReglagesScreen } from "@/components/settings/ReglagesScreen";
 import type { TodayState } from "@/lib/programme/loadTodayState";
 import type { DosTodayState } from "@/lib/dos/loadDosTodayState";
 
@@ -53,14 +55,33 @@ function DosCard({ dosState }: { dosState: DosTodayState }) {
 export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosState: DosTodayState }) {
   const router = useRouter();
   const [setupOpen, setSetupOpen] = useState(false);
+  const [reglagesOpen, setReglagesOpen] = useState(false);
 
   if (setupOpen) {
     return <SetupFlow onClose={() => setSetupOpen(false)} />;
   }
 
+  if (reglagesOpen) {
+    return (
+      <ReglagesScreen
+        onClose={() => setReglagesOpen(false)}
+        onChangePointDepart={() => {
+          setReglagesOpen(false);
+          setSetupOpen(true);
+        }}
+        programmePosition={
+          state.phase === "normal"
+            ? { parcoursLabel: state.parcoursLabel, level: state.level, dayIndex: state.dayIndex }
+            : null
+        }
+      />
+    );
+  }
+
   if (state.phase === "empty") {
     return (
       <div className="p-5">
+        <AujourdhuiHeader onOpenReglages={() => setReglagesOpen(true)} />
         <Card className="p-6">
           <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">
             Premier jour
@@ -86,6 +107,7 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
   if (state.phase === "level-up") {
     return (
       <div className="p-5 flex flex-col gap-8">
+        <AujourdhuiHeader onOpenReglages={() => setReglagesOpen(true)} />
         <LevelUpPrompt
           parcours={state.parcours}
           parcoursLabel={state.parcoursLabel}
@@ -98,6 +120,7 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
 
   return (
     <div className="p-5 flex flex-col gap-8">
+      <AujourdhuiHeader onOpenReglages={() => setReglagesOpen(true)} />
       {state.resume && (
         <ResumeBanner
           exerciseName={state.resume.exerciseName}
