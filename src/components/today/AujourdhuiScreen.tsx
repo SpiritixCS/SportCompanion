@@ -10,8 +10,10 @@ import { BackPainCard } from "./BackPainCard";
 import { SetupFlow } from "@/components/setup/SetupFlow";
 import { AujourdhuiHeader } from "./AujourdhuiHeader";
 import { ReglagesScreen } from "@/components/settings/ReglagesScreen";
+import { TrackingCard } from "./TrackingCard";
 import type { TodayState } from "@/lib/programme/loadTodayState";
 import type { DosTodayState } from "@/lib/dos/loadDosTodayState";
+import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 import type { UserSlug } from "@/lib/auth/users";
 
 function playerHref(parcours: string, level: number, dayIndex: number): string {
@@ -56,10 +58,12 @@ function DosCard({ dosState }: { dosState: DosTodayState }) {
 export function AujourdhuiScreen({
   state,
   dosState,
+  trackingState,
   user,
 }: {
   state: TodayState;
   dosState: DosTodayState | null;
+  trackingState: TrackingScreenState | null;
   user: { slug: UserSlug; label: string };
 }) {
   const router = useRouter();
@@ -156,7 +160,7 @@ export function AujourdhuiScreen({
         href={playerHref(state.parcours, state.level, state.dayIndex)}
       />
 
-      {dosState && <DosCard dosState={dosState} />}
+      {dosState ? <DosCard dosState={dosState} /> : trackingState ? <TrackingCard state={trackingState} /> : null}
     </div>
   );
 }
