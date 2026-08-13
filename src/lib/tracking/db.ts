@@ -42,7 +42,7 @@ function mapSeance(row: { id: number; started_at: string; completed_at: string |
 
 export function getActiveSeance(db: Database.Database): TrackingSeance | null {
   const row = db
-    .prepare(`SELECT * FROM tracking_seances WHERE completed_at IS NULL ORDER BY started_at DESC LIMIT 1`)
+    .prepare(`SELECT * FROM tracking_seances WHERE completed_at IS NULL ORDER BY started_at DESC, id DESC LIMIT 1`)
     .get() as Parameters<typeof mapSeance>[0] | undefined;
   return row ? mapSeance(row) : null;
 }

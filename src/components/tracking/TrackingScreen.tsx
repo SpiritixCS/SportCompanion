@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { ResumeBanner } from "@/components/today/ResumeBanner";
@@ -12,10 +13,16 @@ function formatDateFr(iso: string): string {
 
 export function TrackingScreen({ state }: { state: TrackingScreenState }) {
   const router = useRouter();
+  const [error, setError] = useState(false);
 
   async function handleStart() {
-    const seanceId = await startTrackingSeanceAction();
-    router.push(`/tracking/${seanceId}`);
+    setError(false);
+    try {
+      const seanceId = await startTrackingSeanceAction();
+      router.push(`/tracking/${seanceId}`);
+    } catch {
+      setError(true);
+    }
   }
 
   return (
@@ -27,6 +34,12 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
 
       {state.activeSeanceId !== null && (
         <ResumeBanner exerciseName="ta séance en cours" href={`/tracking/${state.activeSeanceId}`} accent="sage" />
+      )}
+
+      {error && (
+        <div className="bg-paper border border-hairline rounded-card p-6">
+          <p className="text-15 text-graphite">Une erreur est survenue. Réessaie.</p>
+        </div>
       )}
 
       <button

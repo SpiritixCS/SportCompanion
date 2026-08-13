@@ -38,6 +38,7 @@ export function TrackingSeanceScreen({
   const [exerciseName, setExerciseName] = useState("");
   const [reps, setReps] = useState(10);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
 
   const groups = groupByExercise(sets);
 
@@ -45,20 +46,37 @@ export function TrackingSeanceScreen({
     const name = exerciseName.trim();
     if (!name || saving) return;
     setSaving(true);
-    const set = await logTrackingSetAction({ seanceId, exerciseName: name, repsActual: reps });
-    setSets((prev) => [...prev, set]);
-    setExerciseName("");
-    setSaving(false);
+    setError(false);
+    try {
+      const set = await logTrackingSetAction({ seanceId, exerciseName: name, repsActual: reps });
+      setSets((prev) => [...prev, set]);
+      setExerciseName("");
+    } catch {
+      setError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleFinish() {
-    await completeTrackingSeanceAction(seanceId);
-    router.push("/tracking");
+    setError(false);
+    try {
+      await completeTrackingSeanceAction(seanceId);
+      router.push("/tracking");
+    } catch {
+      setError(true);
+    }
   }
 
   return (
     <div className="p-5 flex flex-col gap-6">
       <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+
+      {error && (
+        <div className="bg-paper border border-hairline rounded-card p-6">
+          <p className="text-15 text-graphite">Une erreur est survenue. Réessaie.</p>
+        </div>
+      )}
 
       {groups.length === 0 ? (
         <p className="text-15 text-graphite">Ajoute ton premier exercice ci-dessous.</p>

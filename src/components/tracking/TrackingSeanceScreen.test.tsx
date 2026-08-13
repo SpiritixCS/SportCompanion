@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TrackingSeanceScreen } from "./TrackingSeanceScreen";
@@ -12,6 +12,13 @@ vi.mock("@/lib/tracking/actions", () => ({
   logTrackingSetAction: (...args: unknown[]) => logTrackingSetAction(...args),
   completeTrackingSeanceAction: (...args: unknown[]) => completeTrackingSeanceAction(...args),
 }));
+
+// Module-level mocks (vi.mock hoisting) otherwise accumulate implementations
+// across tests in this file — reset between tests so each test controls its
+// own resolve/reject behaviour.
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("TrackingSeanceScreen", () => {
   it("prompts to add the first exercise when the seance is empty", () => {
@@ -62,6 +69,17 @@ describe("TrackingSeanceScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Terminer la séance" }));
     expect(completeTrackingSeanceAction).toHaveBeenCalledWith(1);
     expect(push).toHaveBeenCalledWith("/tracking");
+  });
+
+  it("re-enables Ajouter la série and shows an error affordance when logTrackingSetAction fails", async () => {
+    logTrackingSetAction.mockRejectedValueOnce(new Error("boom"));
+    render(<TrackingSeanceScreen seanceId={1} completed={false} initialSets={[]} exerciseSuggestions={[]} />);
+
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Fentes");
+    await userEvent.click(screen.getByRole("button", { name: "Ajouter la série" }));
+
+    expect(await screen.findByText("Une erreur est survenue. Réessaie.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ajouter la série" })).not.toBeDisabled();
   });
 
   it("hides the entry form and the finish button once the seance is completed", () => {

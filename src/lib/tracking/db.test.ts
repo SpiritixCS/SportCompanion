@@ -75,6 +75,14 @@ describe("seances", () => {
     expect(getActiveSeance(db)).toBeNull();
     expect(getSeanceById(db, seance.id)!.completedAt).not.toBeNull();
   });
+
+  it("breaks a started_at tie by id, returning the most recently inserted active seance", () => {
+    const db = setup();
+    const sameInstant = "2026-08-13T10:00:00.000Z";
+    db.prepare(`INSERT INTO tracking_seances (started_at) VALUES (?)`).run(sameInstant);
+    const second = db.prepare(`INSERT INTO tracking_seances (started_at) VALUES (?)`).run(sameInstant);
+    expect(getActiveSeance(db)!.id).toBe(Number(second.lastInsertRowid));
+  });
 });
 
 describe("logSetForExercise", () => {

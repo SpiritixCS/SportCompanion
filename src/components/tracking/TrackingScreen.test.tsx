@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TrackingScreen } from "./TrackingScreen";
@@ -10,6 +10,13 @@ const startTrackingSeanceAction = vi.fn();
 vi.mock("@/lib/tracking/actions", () => ({
   startTrackingSeanceAction: (...args: unknown[]) => startTrackingSeanceAction(...args),
 }));
+
+// Module-level mocks (vi.mock hoisting) otherwise accumulate implementations
+// across tests in this file — reset between tests so each test controls its
+// own resolve/reject behaviour.
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("TrackingScreen", () => {
   it("shows the empty state with no history", () => {
@@ -41,5 +48,13 @@ describe("TrackingScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Enregistrer une séance" }));
     expect(startTrackingSeanceAction).toHaveBeenCalledOnce();
     expect(push).toHaveBeenCalledWith("/tracking/9");
+  });
+
+  it("shows an error affordance instead of navigating when startTrackingSeanceAction fails", async () => {
+    startTrackingSeanceAction.mockRejectedValueOnce(new Error("boom"));
+    render(<TrackingScreen state={{ activeSeanceId: null, seances: [] }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Enregistrer une séance" }));
+    expect(await screen.findByText("Une erreur est survenue. Réessaie.")).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
   });
 });
