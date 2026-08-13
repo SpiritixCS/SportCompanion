@@ -65,7 +65,20 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
                   {seance.exerciseCount} exercice{seance.exerciseCount > 1 ? "s" : ""}
                 </div>
               </div>
-              <div className="font-archivo text-18 font-semibold tabular-nums">{seance.totalReps}</div>
+              <div className="text-right">
+                {seance.totalReps > 0 && (
+                  <div className="font-archivo text-18 font-semibold tabular-nums">{seance.totalReps}</div>
+                )}
+                {seance.totalSeconds > 0 && (
+                  <div
+                    className={`font-archivo tabular-nums ${
+                      seance.totalReps > 0 ? "text-13 text-graphite" : "text-18 font-semibold"
+                    }`}
+                  >
+                    {seance.totalSeconds} s
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </Card>

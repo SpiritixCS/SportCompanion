@@ -29,12 +29,38 @@ describe("TrackingScreen", () => {
       <TrackingScreen
         state={{
           activeSeanceId: null,
-          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, exerciseCount: 3 }],
+          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
         }}
       />,
     );
     expect(screen.getByText("42")).toBeInTheDocument();
     expect(screen.getByText("3 exercices")).toBeInTheDocument();
+  });
+
+  it("shows a seconds total alongside the reps total when a seance has both", () => {
+    render(
+      <TrackingScreen
+        state={{
+          activeSeanceId: null,
+          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 90, exerciseCount: 4 }],
+        }}
+      />,
+    );
+    expect(screen.getByText("42")).toBeInTheDocument();
+    expect(screen.getByText("90 s")).toBeInTheDocument();
+  });
+
+  it("shows only the seconds total when a seance is seconds-only", () => {
+    render(
+      <TrackingScreen
+        state={{
+          activeSeanceId: null,
+          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 0, totalSeconds: 60, exerciseCount: 1 }],
+        }}
+      />,
+    );
+    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    expect(screen.getByText("60 s")).toBeInTheDocument();
   });
 
   it("shows a resume banner when a seance is already active", () => {
