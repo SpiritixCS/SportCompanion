@@ -70,7 +70,7 @@ export default async function TrophyDetailPage({
             <span className="text-15 tabular-nums">
               {detail.prochainPalier === null
                 ? "Tous les paliers atteints"
-                : `${detail.resteAParcourir} restants`}
+                : `${detail.resteAParcourir} restants pour atteindre ${detail.prochainPalier}`}
             </span>
           </div>
         </Card>
