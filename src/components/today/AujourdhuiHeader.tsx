@@ -16,7 +16,13 @@ function formatTodayLabel(): string {
 // trophies UTC/local day mix noted in this project's migration history.
 // Seeding blank and filling client-side avoids both the hydration
 // mismatch and a wrong date.
-export function AujourdhuiHeader({ onOpenReglages }: { onOpenReglages: () => void }) {
+export function AujourdhuiHeader({
+  userLabel,
+  onOpenReglages,
+}: {
+  userLabel: string;
+  onOpenReglages: () => void;
+}) {
   const [dateLabel, setDateLabel] = useState("");
 
   useEffect(() => {
@@ -29,7 +35,7 @@ export function AujourdhuiHeader({ onOpenReglages }: { onOpenReglages: () => voi
         <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">
           {dateLabel}
         </span>
-        <div className="font-archivo text-32 font-semibold leading-[1.05] mt-2">Salut Mathis.</div>
+        <div className="font-archivo text-32 font-semibold leading-[1.05] mt-2">Salut {userLabel}.</div>
       </div>
       <button
         type="button"

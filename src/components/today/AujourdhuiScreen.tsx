@@ -12,6 +12,7 @@ import { AujourdhuiHeader } from "./AujourdhuiHeader";
 import { ReglagesScreen } from "@/components/settings/ReglagesScreen";
 import type { TodayState } from "@/lib/programme/loadTodayState";
 import type { DosTodayState } from "@/lib/dos/loadDosTodayState";
+import type { UserSlug } from "@/lib/auth/users";
 
 function playerHref(parcours: string, level: number, dayIndex: number): string {
   return `/player?parcours=${parcours}&level=${level}&day=${dayIndex}`;
@@ -52,7 +53,15 @@ function DosCard({ dosState }: { dosState: DosTodayState }) {
   );
 }
 
-export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosState: DosTodayState }) {
+export function AujourdhuiScreen({
+  state,
+  dosState,
+  user,
+}: {
+  state: TodayState;
+  dosState: DosTodayState | null;
+  user: { slug: UserSlug; label: string };
+}) {
   const router = useRouter();
   const [setupOpen, setSetupOpen] = useState(false);
   const [reglagesOpen, setReglagesOpen] = useState(false);
@@ -64,6 +73,7 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
   if (reglagesOpen) {
     return (
       <ReglagesScreen
+        userSlug={user.slug}
         onClose={() => setReglagesOpen(false)}
         onChangePointDepart={() => {
           setReglagesOpen(false);
@@ -83,7 +93,7 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
   if (state.phase === "empty") {
     return (
       <div className="p-5 flex flex-col gap-8">
-        <AujourdhuiHeader onOpenReglages={() => setReglagesOpen(true)} />
+        <AujourdhuiHeader userLabel={user.label} onOpenReglages={() => setReglagesOpen(true)} />
         <Card className="p-6">
           <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">
             Premier jour
@@ -109,7 +119,7 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
   if (state.phase === "level-up") {
     return (
       <div className="p-5 flex flex-col gap-8">
-        <AujourdhuiHeader onOpenReglages={() => setReglagesOpen(true)} />
+        <AujourdhuiHeader userLabel={user.label} onOpenReglages={() => setReglagesOpen(true)} />
         <LevelUpPrompt
           parcours={state.parcours}
           parcoursLabel={state.parcoursLabel}
@@ -122,14 +132,14 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
 
   return (
     <div className="p-5 flex flex-col gap-8">
-      <AujourdhuiHeader onOpenReglages={() => setReglagesOpen(true)} />
+      <AujourdhuiHeader userLabel={user.label} onOpenReglages={() => setReglagesOpen(true)} />
       {state.resume && (
         <ResumeBanner
           exerciseName={state.resume.exerciseName}
           href={playerHref(state.parcours, state.level, state.dayIndex)}
         />
       )}
-      {dosState.phase === "normal" && dosState.resume && (
+      {dosState?.phase === "normal" && dosState.resume && (
         <ResumeBanner exerciseName={dosState.resume.exerciseName} href="/player/dos" accent="sage" />
       )}
 
@@ -146,7 +156,7 @@ export function AujourdhuiScreen({ state, dosState }: { state: TodayState; dosSt
         href={playerHref(state.parcours, state.level, state.dayIndex)}
       />
 
-      <DosCard dosState={dosState} />
+      {dosState && <DosCard dosState={dosState} />}
     </div>
   );
 }

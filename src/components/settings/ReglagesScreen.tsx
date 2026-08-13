@@ -6,16 +6,19 @@ import { IconChevronRight } from "@/components/icons/IconChevronRight";
 import { Toggle } from "./Toggle";
 import { DurationRow } from "./DurationRow";
 import { getReglagesStateAction, updateSettingsAction, type ReglagesState } from "@/lib/settings/actions";
+import type { UserSlug } from "@/lib/auth/users";
 
 function formatDateFr(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(iso));
 }
 
 export function ReglagesScreen({
+  userSlug,
   onClose,
   onChangePointDepart,
   programmePosition,
 }: {
+  userSlug: UserSlug;
   onClose: () => void;
   onChangePointDepart: () => void;
   programmePosition: { parcoursLabel: string; level: number; dayIndex: number | null } | null;
@@ -156,19 +159,21 @@ export function ReglagesScreen({
               </div>
             </section>
 
-            <section>
-              <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
-                BackPain
-              </h2>
-              <div className="bg-paper border border-hairline rounded-card overflow-hidden">
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4">
-                  <span className="text-15">Début de cycle</span>
-                  <span className="font-archivo text-15 font-medium text-graphite">
-                    {state.dosStartDate ? formatDateFr(state.dosStartDate) : "Non défini"}
-                  </span>
+            {userSlug === "mathis" && (
+              <section>
+                <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+                  BackPain
+                </h2>
+                <div className="bg-paper border border-hairline rounded-card overflow-hidden">
+                  <div className="min-h-14 px-5 flex items-center justify-between gap-4">
+                    <span className="text-15">Début de cycle</span>
+                    <span className="font-archivo text-15 font-medium text-graphite">
+                      {state.dosStartDate ? formatDateFr(state.dosStartDate) : "Non défini"}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
+            )}
 
             <section>
               <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
