@@ -31,7 +31,7 @@ describe("loadTrackingScreenState", () => {
     const db = setup();
     const active = startSeance(db);
     const past = startSeance(db);
-    logSetForExercise(db, past.id, "Squats", 10);
+    logSetForExercise(db, past.id, "Squats", "reps", 10);
     completeSeance(db, past.id);
 
     const state = loadTrackingScreenState(db);
