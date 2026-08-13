@@ -59,6 +59,24 @@ Toute modification future du nom d'hôte ou de la policy Access se fait dans le 
 
 ---
 
+## Multi-utilisateur (Mathis + Clément)
+
+L'app distingue les deux comptes via le header `Cf-Access-Authenticated-User-Email` que Cloudflare Access injecte (voir `src/lib/auth/currentUser.ts`). Deux étapes manuelles, à faire une fois, ni l'une ni l'autre automatisable depuis ce repo :
+
+1. **Policy Access** : dans le dashboard Cloudflare (Zero Trust → Access → Applications → `workout.spiritix.fr`), ajouter l'email de Clément à la policy Allow existante (à côté du Gmail personnel de Mathis).
+2. **Variables d'environnement sur la VM** : créer `/home/ubuntu/sportcompanion/.env` (n'existe pas encore, jamais touché par `deploy.sh` qui exclut `.env*` du `rsync`) avec :
+
+   ```
+   MATHIS_EMAIL=<gmail perso de Mathis>
+   CLEMENT_EMAIL=<email de Clément>
+   ```
+
+   Sans ce fichier, tout le trafic authentifié par Access échoue avec « Accès non reconnu » — les emails du header ne correspondent à aucun utilisateur connu tant que ces deux variables ne sont pas posées.
+
+Clément a son propre fichier SQLite, `data/sportcompanion.clement.db`, créé automatiquement au prochain `npm run db:migrate` (le script boucle maintenant sur tous les utilisateurs connus, voir `scripts/db-migrate.ts`). Le fichier de Mathis (`data/sportcompanion.db`) est inchangé.
+
+---
+
 ## Déployer
 
 Depuis la racine du repo local :

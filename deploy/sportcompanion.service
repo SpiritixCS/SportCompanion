@@ -10,6 +10,7 @@ Environment=NODE_ENV=production
 Environment=PORT=3001
 Environment=HOSTNAME=127.0.0.1
 Environment=DB_PATH=/home/ubuntu/sportcompanion/data/sportcompanion.db
+EnvironmentFile=-/home/ubuntu/sportcompanion/.env
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=5
