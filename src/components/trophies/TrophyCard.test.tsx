@@ -21,24 +21,18 @@ const PROGRAMME_CARD: TrophyCardData = {
   id: "squats",
   module: "programme",
   name: "Squats",
-  movementFamily: "squat",
-  videoId: "404727865",
   total: 340,
   firstAt: "2026-01-01T10:00:00.000Z",
   lastAt: "2026-08-01T10:00:00.000Z",
-  seanceCount: 12,
 };
 
 const DOS_CARD: TrophyCardData = {
   id: "A",
   module: "dos",
   name: "Charnière & ischios",
-  movementFamily: "arbre-A",
-  videoId: null,
   total: 80,
   firstAt: "2026-01-01T10:00:00.000Z",
   lastAt: "2026-08-01T10:00:00.000Z",
-  seanceCount: 8,
   byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 80 }],
 };
 
