@@ -26,6 +26,8 @@ afterEach(() => {
   sessionStorage.clear();
 });
 
+const DOS_MODULE = { value: "dos" as const, label: "Dos" };
+
 const STATE: TropheesScreenState = {
   totalReps: 420,
   seanceCount: 10,
@@ -38,14 +40,14 @@ const STATE: TropheesScreenState = {
 
 describe("TropheesScreen", () => {
   it("shows the header total and activity summary", () => {
-    render(<TropheesScreen state={STATE} />);
+    render(<TropheesScreen state={STATE} secondModule={DOS_MODULE} />);
     expect(screen.getByText("420")).toBeInTheDocument();
     expect(screen.getByText(/10 séances/)).toBeInTheDocument();
     expect(screen.getByText(/9 jours/)).toBeInTheDocument();
   });
 
   it("shows every card by default", () => {
-    render(<TropheesScreen state={STATE} />);
+    render(<TropheesScreen state={STATE} secondModule={DOS_MODULE} />);
     expect(screen.getByText("Squats")).toBeInTheDocument();
     expect(screen.getByText("Charnière & ischios")).toBeInTheDocument();
   });
@@ -53,7 +55,7 @@ describe("TropheesScreen", () => {
   it("filters to the Dos module only", async () => {
     vi.useRealTimers();
     const user = userEvent.setup();
-    render(<TropheesScreen state={STATE} />);
+    render(<TropheesScreen state={STATE} secondModule={DOS_MODULE} />);
     await user.click(screen.getByRole("button", { name: "Dos" }));
     vi.useFakeTimers();
     expect(screen.queryByText("Squats")).not.toBeInTheDocument();
@@ -61,24 +63,28 @@ describe("TropheesScreen", () => {
   });
 
   it("shows the empty state when there are no cards", () => {
-    render(<TropheesScreen state={{ totalReps: 0, seanceCount: 0, joursActivite: 0, cards: [] }} />);
+    render(
+      <TropheesScreen state={{ totalReps: 0, seanceCount: 0, joursActivite: 0, cards: [] }} secondModule={DOS_MODULE} />,
+    );
     expect(screen.getByText(/première séance/)).toBeInTheDocument();
   });
 
   it("animates the header total from 0 when reduced motion is off (regression: effect ordering race)", () => {
-    // Regression test for a bug where every useCountUp instance independently
-    // read-then-wrote the same sessionStorage flag: TrophyCard children's
-    // effects fired before TropheesScreen's own header effect (React fires
-    // child effects before parent effects), so the header always found the
-    // flag already set and skipped its animation. With reduced motion off,
-    // the header total must start at 0 and only reach the target after the
-    // animation runs — proving the animation actually starts.
     mockMatchMedia(false);
-    const { container } = render(<TropheesScreen state={STATE} />);
-    // Scope to the header total specifically (text-44) — the card totals
-    // (text-24) also start at 0, so a plain getByText("0") would be ambiguous.
+    const { container } = render(<TropheesScreen state={STATE} secondModule={DOS_MODULE} />);
     const headerTotal = container.querySelector(".text-44");
     expect(headerTotal).toHaveTextContent("0");
     expect(headerTotal).not.toHaveTextContent("420");
+  });
+
+  it("shows a Tracking filter instead of Dos when secondModule is tracking", () => {
+    render(
+      <TropheesScreen
+        state={{ cards: [], totalReps: 0, seanceCount: 0, joursActivite: 0 }}
+        secondModule={{ value: "tracking", label: "Tracking" }}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Tracking" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Dos" })).not.toBeInTheDocument();
   });
 });

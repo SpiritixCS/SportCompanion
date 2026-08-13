@@ -6,7 +6,10 @@ import { TropheesScreen } from "@/components/trophies/TropheesScreen";
 export const dynamic = "force-dynamic";
 
 export default async function TropheesPage() {
-  const db = getDbForUser(await currentUser());
+  const user = await currentUser();
+  const db = getDbForUser(user);
   const state = loadTropheesScreenState(db);
-  return <TropheesScreen state={state} />;
+  const secondModule =
+    user.slug === "clement" ? { value: "tracking" as const, label: "Tracking" } : { value: "dos" as const, label: "Dos" };
+  return <TropheesScreen state={state} secondModule={secondModule} />;
 }

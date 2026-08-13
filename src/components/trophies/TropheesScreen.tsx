@@ -6,18 +6,12 @@ import { useCountUp } from "./useCountUp";
 import type { TropheesScreenState } from "@/lib/trophies/loadTropheesScreenState";
 
 type Tri = "reps" | "recent" | "alpha";
-type Filtre = "tous" | "programme" | "dos";
+type Filtre = "tous" | "programme" | "dos" | "tracking";
 
 const TRI_OPTIONS: { value: Tri; label: string }[] = [
   { value: "reps", label: "Plus de reps" },
   { value: "recent", label: "Récent" },
   { value: "alpha", label: "Alphabétique" },
-];
-
-const FILTRE_OPTIONS: { value: Filtre; label: string }[] = [
-  { value: "tous", label: "Tous" },
-  { value: "programme", label: "Programme" },
-  { value: "dos", label: "Dos" },
 ];
 
 function toggleButtonClass(active: boolean): string {
@@ -26,10 +20,22 @@ function toggleButtonClass(active: boolean): string {
   }`;
 }
 
-export function TropheesScreen({ state }: { state: TropheesScreenState }) {
+export function TropheesScreen({
+  state,
+  secondModule,
+}: {
+  state: TropheesScreenState;
+  secondModule: { value: "dos" | "tracking"; label: string };
+}) {
   const [tri, setTri] = useState<Tri>("reps");
   const [filtre, setFiltre] = useState<Filtre>("tous");
   const total = useCountUp(state.totalReps, 0);
+
+  const filtreOptions: { value: Filtre; label: string }[] = [
+    { value: "tous", label: "Tous" },
+    { value: "programme", label: "Programme" },
+    secondModule,
+  ];
 
   const cards = state.cards
     .filter((c) => filtre === "tous" || c.module === filtre)
@@ -64,7 +70,7 @@ export function TropheesScreen({ state }: { state: TropheesScreenState }) {
           </button>
         ))}
         <span className="w-px bg-hairline mx-1" />
-        {FILTRE_OPTIONS.map((opt) => (
+        {filtreOptions.map((opt) => (
           <button
             key={opt.value}
             type="button"
