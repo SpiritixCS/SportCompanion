@@ -56,4 +56,27 @@ describe("useCountUp", () => {
     const { result } = renderHook(() => useCountUp(100, 0));
     expect(result.current).toBe(100);
   });
+
+  it("sets session flag unconditionally even when prefers-reduced-motion blocks animation", () => {
+    // First mount: reduced-motion is true
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }) as unknown as typeof window.matchMedia;
+
+    const { result: result1 } = renderHook(() => useCountUp(100, 0));
+    expect(result1.current).toBe(100); // Shows target because of reduced-motion
+
+    // Second mount: reduced-motion is now false, but the session flag should
+    // still be set from the first mount, so no animation should occur
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }) as unknown as typeof window.matchMedia;
+
+    const { result: result2 } = renderHook(() => useCountUp(100, 0));
+    expect(result2.current).toBe(100); // Should show target immediately (no animation) because session flag was set
+  });
 });

@@ -13,15 +13,20 @@ export function useCountUp(target: number, delayMs: number): number {
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setValue(target);
-      return;
-    }
-    if (sessionStorage.getItem(SESSION_KEY) === "1") {
-      setValue(target);
-      return;
-    }
+    // Capture whether this session has already animated, before we set the flag
+    const wasAlreadyAnimated = sessionStorage.getItem(SESSION_KEY) === "1";
+
+    // Set the flag unconditionally as the first thing the effect does.
+    // This marks the session as "opened" even if we don't animate this mount.
     sessionStorage.setItem(SESSION_KEY, "1");
+
+    // Skip animation if either:
+    // 1. This session already opened the Trophées page in a prior mount, or
+    // 2. The user prefers reduced motion
+    if (wasAlreadyAnimated || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setValue(target);
+      return;
+    }
 
     const startAt = Date.now() + delayMs;
     const endAt = startAt + DURATION_MS;
