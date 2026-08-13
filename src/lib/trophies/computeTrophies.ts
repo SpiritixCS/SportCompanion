@@ -125,10 +125,10 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
 
   const trackingRows = db
     .prepare(
-      `SELECT tsl.exercise_id AS exerciseId, te.name AS exerciseName, tsl.reps_actual AS repsActual, tsl.completed_at AS completedAt
+      `SELECT tsl.exercise_id AS exerciseId, te.name AS exerciseName, tsl.valeur_actual AS valeurActual, tsl.completed_at AS completedAt
        FROM tracking_sets_logged tsl JOIN tracking_exercises te ON tsl.exercise_id = te.id`,
     )
-    .all() as { exerciseId: number; exerciseName: string; repsActual: number; completedAt: string }[];
+    .all() as { exerciseId: number; exerciseName: string; valeurActual: number; completedAt: string }[];
 
   for (const row of trackingRows) {
     const id = `tracking-${row.exerciseId}`;
@@ -144,7 +144,7 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
       };
       acc.set(id, entry);
     }
-    touch(entry, row.repsActual, row.completedAt);
+    touch(entry, row.valeurActual, row.completedAt);
   }
 
   return [...acc.entries()].map(([id, entry]) => ({

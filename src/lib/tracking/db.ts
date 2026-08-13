@@ -66,7 +66,7 @@ export function getSetsForSeance(db: Database.Database, seanceId: number): Track
   return db
     .prepare(
       `SELECT tsl.id, tsl.seance_id AS seanceId, tsl.exercise_id AS exerciseId, te.name AS exerciseName,
-              tsl.exercise_order AS exerciseOrder, tsl.set_number AS setNumber, tsl.reps_actual AS repsActual,
+              tsl.exercise_order AS exerciseOrder, tsl.set_number AS setNumber, tsl.valeur_actual AS repsActual,
               tsl.completed_at AS completedAt
        FROM tracking_sets_logged tsl JOIN tracking_exercises te ON tsl.exercise_id = te.id
        WHERE tsl.seance_id = ? ORDER BY tsl.id ASC`,
@@ -90,7 +90,7 @@ export function logSetForExercise(
   const completedAt = new Date().toISOString();
   const result = db
     .prepare(
-      `INSERT INTO tracking_sets_logged (seance_id, exercise_id, exercise_order, set_number, reps_actual, completed_at)
+      `INSERT INTO tracking_sets_logged (seance_id, exercise_id, exercise_order, set_number, valeur_actual, completed_at)
        VALUES (?, ?, ?, ?, ?, ?)`,
     )
     .run(seanceId, exercise.id, exerciseOrder, setNumber, repsActual, completedAt);
@@ -115,7 +115,7 @@ export function listCompletedSeances(db: Database.Database): TrackingSeanceSumma
   return db
     .prepare(
       `SELECT s.id, s.started_at AS startedAt, s.completed_at AS completedAt,
-              COALESCE(SUM(sl.reps_actual), 0) AS totalReps,
+              COALESCE(SUM(sl.valeur_actual), 0) AS totalReps,
               COUNT(DISTINCT sl.exercise_id) AS exerciseCount
        FROM tracking_seances s
        LEFT JOIN tracking_sets_logged sl ON sl.seance_id = s.id
