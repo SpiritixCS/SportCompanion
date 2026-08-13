@@ -8,6 +8,7 @@ const HEADER_NAME = "cf-access-authenticated-user-email";
 // function reads never arrives outside of production. Never set this in
 // deploy/sportcompanion.service.
 function devForcedUser(): UserProfile | undefined {
+  if (process.env.NODE_ENV === "production") return undefined;
   const slug = process.env.DEV_FORCE_USER_SLUG;
   if (!slug) return undefined;
   return knownUsers().find((u) => u.slug === slug);

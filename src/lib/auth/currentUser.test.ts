@@ -56,4 +56,13 @@ describe("currentUser", () => {
     expect(user.slug).toBe("clement");
     expect(headersMock).not.toHaveBeenCalled();
   });
+
+  it("ignores DEV_FORCE_USER_SLUG in production, even when set", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.DEV_FORCE_USER_SLUG = "clement";
+    headersMock.mockResolvedValue(new Headers({ "cf-access-authenticated-user-email": "mathis@example.com" }));
+    const user = await currentUser();
+    expect(user.slug).toBe("mathis");
+    expect(headersMock).toHaveBeenCalled();
+  });
 });
