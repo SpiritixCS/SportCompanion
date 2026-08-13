@@ -7,18 +7,24 @@ const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 const logTrackingSetAction = vi.fn();
+const updateTrackingSetAction = vi.fn();
+const deleteTrackingSetAction = vi.fn();
 const completeTrackingSeanceAction = vi.fn();
 vi.mock("@/lib/tracking/actions", () => ({
   logTrackingSetAction: (...args: unknown[]) => logTrackingSetAction(...args),
+  updateTrackingSetAction: (...args: unknown[]) => updateTrackingSetAction(...args),
+  deleteTrackingSetAction: (...args: unknown[]) => deleteTrackingSetAction(...args),
   completeTrackingSeanceAction: (...args: unknown[]) => completeTrackingSeanceAction(...args),
 }));
 
-// Module-level mocks (vi.mock hoisting) otherwise accumulate implementations
-// across tests in this file — reset between tests so each test controls its
-// own resolve/reject behaviour.
 beforeEach(() => {
   vi.clearAllMocks();
 });
+
+const SQUATS_SET = {
+  id: 1, seanceId: 1, exerciseId: 10, exerciseName: "Squats", exerciseUnit: "reps" as const,
+  exerciseOrder: 0, setNumber: 1, valeurActual: 12, completedAt: "2026-08-13T10:00:00.000Z",
+};
 
 describe("TrackingSeanceScreen", () => {
   it("prompts to add the first exercise when the seance is empty", () => {
@@ -26,33 +32,112 @@ describe("TrackingSeanceScreen", () => {
     expect(screen.getByText("Ajoute ton premier exercice ci-dessous.")).toBeInTheDocument();
   });
 
-  it("groups initial sets by exercise", () => {
+  it("groups initial sets by exercise, showing each value as its own tap target", () => {
     render(
       <TrackingSeanceScreen
         seanceId={1}
         completed={false}
-        initialSets={[
-          { id: 1, seanceId: 1, exerciseId: 10, exerciseName: "Squats", exerciseOrder: 0, setNumber: 1, repsActual: 12, completedAt: "2026-08-13T10:00:00.000Z" },
-          { id: 2, seanceId: 1, exerciseId: 10, exerciseName: "Squats", exerciseOrder: 0, setNumber: 2, repsActual: 10, completedAt: "2026-08-13T10:01:00.000Z" },
-        ]}
-        exerciseSuggestions={["Squats"]}
+        initialSets={[SQUATS_SET, { ...SQUATS_SET, id: 2, setNumber: 2, valeurActual: 10 }]}
+        exerciseSuggestions={[{ name: "Squats", unit: "reps" }]}
       />,
     );
     expect(screen.getByText("Squats")).toBeInTheDocument();
-    expect(screen.getByText("12 · 10")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "12" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "10" })).toBeInTheDocument();
   });
 
-  it("adds a set immediately on Ajouter la série, using the server's authoritative record", async () => {
-    logTrackingSetAction.mockResolvedValue({
-      id: 5, seanceId: 1, exerciseId: 20, exerciseName: "Fentes", exerciseOrder: 0, setNumber: 1, repsActual: 10, completedAt: "2026-08-13T10:02:00.000Z",
-    });
+  it("shows a seconds suffix on a seconds exercise's set values", () => {
+    render(
+      <TrackingSeanceScreen
+        seanceId={1}
+        completed={false}
+        initialSets={[{ ...SQUATS_SET, id: 3, exerciseName: "Planche", exerciseUnit: "seconds", valeurActual: 30 }]}
+        exerciseSuggestions={[{ name: "Planche", unit: "seconds" }]}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "30 s" })).toBeInTheDocument();
+  });
+
+  it("locks the unit picker to a known exercise's unit and hides the reps/seconds toggle", async () => {
+    render(
+      <TrackingSeanceScreen
+        seanceId={1}
+        completed={false}
+        initialSets={[]}
+        exerciseSuggestions={[{ name: "Planche", unit: "seconds" }]}
+      />,
+    );
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Planche");
+    expect(screen.getByText("Unité : secondes")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reps" })).not.toBeInTheDocument();
+  });
+
+  it("shows the reps/seconds toggle, defaulting to reps, for an unknown exercise name", async () => {
+    render(<TrackingSeanceScreen seanceId={1} completed={false} initialSets={[]} exerciseSuggestions={[]} />);
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Fentes bulgares");
+    expect(screen.getByRole("button", { name: "Reps" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Secondes" })).toBeInTheDocument();
+  });
+
+  it("adds count separate sets in one call, using the server's authoritative records", async () => {
+    logTrackingSetAction.mockResolvedValue([
+      { ...SQUATS_SET, id: 21, exerciseName: "Fentes", setNumber: 1 },
+      { ...SQUATS_SET, id: 22, exerciseName: "Fentes", setNumber: 2 },
+    ]);
     render(<TrackingSeanceScreen seanceId={1} completed={false} initialSets={[]} exerciseSuggestions={[]} />);
 
     await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Fentes");
+    await userEvent.click(screen.getByRole("button", { name: "Ajouter une série au lot" }));
     await userEvent.click(screen.getByRole("button", { name: "Ajouter la série" }));
 
-    expect(logTrackingSetAction).toHaveBeenCalledWith({ seanceId: 1, exerciseName: "Fentes", repsActual: 10 });
-    expect(await screen.findByText("Fentes")).toBeInTheDocument();
+    expect(logTrackingSetAction).toHaveBeenCalledWith({ seanceId: 1, exerciseName: "Fentes", unit: "reps", valeurActual: 10, count: 2 });
+    expect(await screen.findAllByText("Fentes")).toHaveLength(1);
+  });
+
+  it("edits a set's value through the reuse sheet, calling updateTrackingSetAction", async () => {
+    render(
+      <TrackingSeanceScreen
+        seanceId={1}
+        completed={false}
+        initialSets={[SQUATS_SET]}
+        exerciseSuggestions={[{ name: "Squats", unit: "reps" }]}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "12" }));
+    expect(screen.getByText("Ajuster les reps")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "+" }));
+    await userEvent.click(screen.getByRole("button", { name: "Valider" }));
+    expect(updateTrackingSetAction).toHaveBeenCalledWith(1, 13);
+    expect(await screen.findByRole("button", { name: "13" })).toBeInTheDocument();
+  });
+
+  it("deletes a set through the sheet, calling deleteTrackingSetAction", async () => {
+    render(
+      <TrackingSeanceScreen
+        seanceId={1}
+        completed={false}
+        initialSets={[SQUATS_SET]}
+        exerciseSuggestions={[{ name: "Squats", unit: "reps" }]}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "12" }));
+    await userEvent.click(screen.getByRole("button", { name: "Supprimer la série" }));
+    expect(deleteTrackingSetAction).toHaveBeenCalledWith(1);
+    expect(screen.queryByRole("button", { name: "12" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the entry form and edit/delete available on an already-completed seance", async () => {
+    render(
+      <TrackingSeanceScreen
+        seanceId={1}
+        completed
+        initialSets={[SQUATS_SET]}
+        exerciseSuggestions={[{ name: "Squats", unit: "reps" }]}
+      />,
+    );
+    expect(screen.getByPlaceholderText("Nom de l'exercice")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "12" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Terminer la séance" })).not.toBeInTheDocument();
   });
 
   it("completes the seance and navigates back to the list", async () => {
@@ -60,10 +145,8 @@ describe("TrackingSeanceScreen", () => {
       <TrackingSeanceScreen
         seanceId={1}
         completed={false}
-        initialSets={[
-          { id: 1, seanceId: 1, exerciseId: 10, exerciseName: "Squats", exerciseOrder: 0, setNumber: 1, repsActual: 12, completedAt: "2026-08-13T10:00:00.000Z" },
-        ]}
-        exerciseSuggestions={["Squats"]}
+        initialSets={[SQUATS_SET]}
+        exerciseSuggestions={[{ name: "Squats", unit: "reps" }]}
       />,
     );
     await userEvent.click(screen.getByRole("button", { name: "Terminer la séance" }));
@@ -80,20 +163,5 @@ describe("TrackingSeanceScreen", () => {
 
     expect(await screen.findByText("Une erreur est survenue. Réessaie.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ajouter la série" })).not.toBeDisabled();
-  });
-
-  it("hides the entry form and the finish button once the seance is completed", () => {
-    render(
-      <TrackingSeanceScreen
-        seanceId={1}
-        completed
-        initialSets={[
-          { id: 1, seanceId: 1, exerciseId: 10, exerciseName: "Squats", exerciseOrder: 0, setNumber: 1, repsActual: 12, completedAt: "2026-08-13T10:00:00.000Z" },
-        ]}
-        exerciseSuggestions={["Squats"]}
-      />,
-    );
-    expect(screen.queryByPlaceholderText("Nom de l'exercice")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Terminer la séance" })).not.toBeInTheDocument();
   });
 });
