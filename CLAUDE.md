@@ -13,7 +13,7 @@ Contexte permanent du projet. À lire au début de chaque session.
 
 ## 1. Ce qu'est ce projet
 
-Une web app personnelle de suivi d'entraînement, **utilisateur unique** (Mathis). Pas de produit, pas de multi-utilisateur, pas d'onboarding générique, pas d'abstraction « au cas où quelqu'un d'autre l'utiliserait ». Chaque décision est prise pour un seul usage réel.
+Une web app personnelle de suivi d'entraînement, à l'origine pensée pour **utilisateur unique** (Mathis). Elle sert maintenant **deux personnes réelles et connues à l'avance**, Mathis et Clément — identifiées par le header Cloudflare Access (`Cf-Access-Authenticated-User-Email`) et cloisonnées dans leur propre fichier SQLite (voir `src/lib/auth/`). Ce n'est toujours pas un produit multi-tenant générique : pas d'inscription, pas de compte à créer, pas d'abstraction « au cas où quelqu'un d'autre l'utiliserait » — deux utilisateurs nommés, un seul point d'entrée par email connu.
 
 Deux programmes déjà écrits et validés, que l'app **sert** sans les réinventer :
 
@@ -164,9 +164,13 @@ Logique complète et déjà figée dans `BackPainProgram.md` — **source de vé
 
 **Avertissement** — ce protocole vient de recommandations générales, pas d'un examen clinique. Outil de suivi personnel, jamais une source d'avis médical. Ne pas ajouter de diagnostic, d'interprétation de symptômes ou de conseil thérapeutique automatisé. Les critères d'alerte peuvent être affichés comme rappels, jamais évalués automatiquement.
 
+### Axe Tracking (Clément)
+
+Journal de séance libre, remplace l'onglet Dos dans la navigation de Clément (Mathis n'y a pas accès). Pas de programme prédéfini : à chaque série, Clément saisit un nom d'exercice (saisie libre, autocomplétion depuis son historique) et un nombre de reps — logique dans `src/lib/tracking/db.ts`. Ces séries alimentent aussi le cumul Trophées de Clément au même titre que le reste.
+
 ### Trophées
 
-Cumul all-time des répétitions par exercice (`countsInStats: true` uniquement), tous programmes confondus. Incrémenté à la validation de chaque séance. Paliers : 100 / 500 / 1000 / 5000 / 10000 / 25000 répétitions, marque laiton sobre au franchissement.
+Cumul all-time des répétitions par exercice (`countsInStats: true` uniquement pour l'axe Programme), tous programmes confondus, par utilisateur. Incrémenté à la validation de chaque séance. Paliers : 100 / 500 / 1000 / 5000 / 10000 / 25000 répétitions, marque laiton sobre au franchissement.
 
 ---
 
