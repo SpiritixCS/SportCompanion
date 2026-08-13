@@ -6,7 +6,7 @@ import { ARBRE_EXERCISE_ID } from "@/lib/dos/bilan";
 
 export type TrophyCard = {
   id: string;
-  module: "programme" | "dos";
+  module: "programme" | "dos" | "tracking";
   name: string;
   total: number;
   firstAt: string;
@@ -31,7 +31,7 @@ export function isReplogEligible(exerciseId: string, countsInStats: boolean, sem
 }
 
 type Accumulator = {
-  module: "programme" | "dos";
+  module: "programme" | "dos" | "tracking";
   name: string;
   total: number;
   firstAt: string;
@@ -121,6 +121,30 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
       acc.set(arbre, entry);
     }
     touch(entry, row.valeurActual, row.completedAt, cran);
+  }
+
+  const trackingRows = db
+    .prepare(
+      `SELECT tsl.exercise_id AS exerciseId, te.name AS exerciseName, tsl.reps_actual AS repsActual, tsl.completed_at AS completedAt
+       FROM tracking_sets_logged tsl JOIN tracking_exercises te ON tsl.exercise_id = te.id`,
+    )
+    .all() as { exerciseId: number; exerciseName: string; repsActual: number; completedAt: string }[];
+
+  for (const row of trackingRows) {
+    const id = `tracking-${row.exerciseId}`;
+    let entry = acc.get(id);
+    if (!entry) {
+      entry = {
+        module: "tracking",
+        name: row.exerciseName,
+        total: 0,
+        firstAt: row.completedAt,
+        lastAt: row.completedAt,
+        byCran: new Map(),
+      };
+      acc.set(id, entry);
+    }
+    touch(entry, row.repsActual, row.completedAt);
   }
 
   return [...acc.entries()].map(([id, entry]) => ({

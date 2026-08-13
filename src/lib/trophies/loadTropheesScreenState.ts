@@ -16,7 +16,8 @@ export function loadTropheesScreenState(db: Database.Database): TropheesScreenSt
     .prepare(
       `SELECT
          (SELECT COUNT(*) FROM seances WHERE completed_at IS NOT NULL) +
-         (SELECT COUNT(*) FROM dos_seances WHERE completed_at IS NOT NULL) AS seanceCount`,
+         (SELECT COUNT(*) FROM dos_seances WHERE completed_at IS NOT NULL) +
+         (SELECT COUNT(*) FROM tracking_seances WHERE completed_at IS NOT NULL) AS seanceCount`,
     )
     .get() as { seanceCount: number };
 
@@ -35,6 +36,8 @@ export function loadTropheesScreenState(db: Database.Database): TropheesScreenSt
          SELECT date(completed_at) AS jour FROM seances WHERE completed_at IS NOT NULL
          UNION
          SELECT date AS jour FROM dos_seances WHERE completed_at IS NOT NULL
+         UNION
+         SELECT date(completed_at) AS jour FROM tracking_seances WHERE completed_at IS NOT NULL
        )`,
     )
     .get() as { joursActivite: number };

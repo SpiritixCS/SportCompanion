@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
 import { startSeance, logSet } from "@/lib/player/db";
 import { startDosSeance, logDosSet } from "@/lib/dos/db";
+import { logSetForExercise, startSeance as startTrackingSeance } from "@/lib/tracking/db";
 import { computeTrophies, resolveTrophyCardId, isReplogEligible } from "./computeTrophies";
 
 let tmpDir: string;
@@ -106,5 +107,29 @@ describe("computeTrophies — Dos", () => {
     const cards = computeTrophies(db);
     expect(cards.find((c) => c.id === "lundi-hip-hinge-echauffement")).toBeUndefined();
     expect(cards).toHaveLength(0);
+  });
+});
+
+describe("computeTrophies — Tracking", () => {
+  it("creates one card per tracking exercise, cumulating reps across seances", () => {
+    const db = setup();
+    const seanceA = startTrackingSeance(db);
+    logSetForExercise(db, seanceA.id, "Squats", 12);
+    const seanceB = startTrackingSeance(db);
+    logSetForExercise(db, seanceB.id, "Squats", 8);
+
+    const cards = computeTrophies(db);
+    const squats = cards.find((c) => c.name === "Squats" && c.module === "tracking");
+    expect(squats).toMatchObject({ module: "tracking", name: "Squats", total: 20 });
+  });
+
+  it("keeps distinct tracking exercises as separate cards", () => {
+    const db = setup();
+    const seance = startTrackingSeance(db);
+    logSetForExercise(db, seance.id, "Squats", 12);
+    logSetForExercise(db, seance.id, "Fentes", 10);
+
+    const cards = computeTrophies(db).filter((c) => c.module === "tracking");
+    expect(cards).toHaveLength(2);
   });
 });
