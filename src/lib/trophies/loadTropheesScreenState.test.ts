@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
 import { startSeance, logSet, completeSeance } from "@/lib/player/db";
 import { startDosSeance, logDosSet, completeDosSeance } from "@/lib/dos/db";
+import { startSeance as startTrackingSeance, logSetForExercise, completeSeance as completeTrackingSeance } from "@/lib/tracking/db";
 import { loadTropheesScreenState } from "./loadTropheesScreenState";
 
 let tmpDir: string;
@@ -51,5 +52,20 @@ describe("loadTropheesScreenState", () => {
     startSeance(db, "beginner", 0, 0);
     const state = loadTropheesScreenState(db);
     expect(state.seanceCount).toBe(0);
+  });
+
+  it("never mixes reps and seconds totals: a Tracking séance logged in seconds does not inflate totalReps", () => {
+    const db = setup();
+    // beginner[0][0] exerciseOrder 6 = "squats", countsInStats: true
+    const seanceA = startSeance(db, "beginner", 0, 0);
+    logSet(db, { seanceId: seanceA.id, exerciseOrder: 6, setNumber: 1, repsTarget: "12", repsActual: 12, restSeconds: 90 });
+    completeSeance(db, seanceA.id);
+
+    const trackingSeance = startTrackingSeance(db);
+    logSetForExercise(db, trackingSeance.id, "Planche", "seconds", 45);
+    completeTrackingSeance(db, trackingSeance.id);
+
+    const state = loadTropheesScreenState(db);
+    expect(state.totalReps).toBe(12);
   });
 });
