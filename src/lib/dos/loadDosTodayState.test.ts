@@ -42,7 +42,7 @@ describe("loadDosTodayState", () => {
     expect(loadDosTodayState(db)).toEqual({ phase: "rest" });
   });
 
-  it("reports normal with the right intitulé and a 3-exercise preview on Monday", () => {
+  it("reports normal with the right intitulé and the full exercise list on Monday", () => {
     const db = setup();
     setStartDate(db, "2026-08-17");
     freezeToMonday();

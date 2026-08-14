@@ -66,7 +66,7 @@ describe("loadTodayState", () => {
     expect(loadTodayState(db, ALL_PARCOURS)).toEqual({ phase: "empty" });
   });
 
-  it("reports normal with an exercise preview and duration estimate for an unvalidated day", () => {
+  it("reports normal with the full exercise list and duration estimate for an unvalidated day", () => {
     const db = setup();
     setCurrentPosition(db, "beginner", 0, 0);
     const state = loadTodayState(db, ALL_PARCOURS);

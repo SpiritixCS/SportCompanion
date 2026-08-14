@@ -54,8 +54,8 @@ export function ProgrammeCard({
 
       {exercises.length > 0 && (
         <div className="flex flex-col gap-2.5 mt-5">
-          {visibleExercises.map((e) => (
-            <div key={e.name} className="flex items-baseline justify-between gap-4">
+          {visibleExercises.map((e, i) => (
+            <div key={`${e.name}-${i}`} className="flex items-baseline justify-between gap-4">
               <span className="text-15">{e.name}</span>
               <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
                 {e.dose}

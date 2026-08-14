@@ -23,6 +23,6 @@ const ICONS_BY_FAMILY: Record<MovementFamily, ComponentType<FamilyIconProps>> = 
 };
 
 export function ExerciseFamilyIcon({ family, size, className }: { family: MovementFamily } & FamilyIconProps) {
-  const IconComponent = ICONS_BY_FAMILY[family];
+  const IconComponent = ICONS_BY_FAMILY[family] ?? IconFamilyOther;
   return <IconComponent size={size} className={className} />;
 }
