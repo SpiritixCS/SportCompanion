@@ -45,7 +45,15 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
       </div>
 
       {state.activeSeance !== null && (
-        <ResumeBanner exerciseName="ta séance en cours" href={`/tracking/${state.activeSeance.id}`} accent="sage" />
+        <ResumeBanner
+          exerciseName="ta séance en cours"
+          href={
+            state.activeSeance.templateId !== null
+              ? `/player/tracking?templateId=${state.activeSeance.templateId}`
+              : `/tracking/${state.activeSeance.id}`
+          }
+          accent="sage"
+        />
       )}
 
       {error && (

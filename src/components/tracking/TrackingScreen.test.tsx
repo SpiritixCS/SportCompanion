@@ -117,11 +117,19 @@ describe("TrackingScreen", () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
-  it("shows a resume banner when a seance is already active", () => {
+  it("shows a resume banner pointing at the freeform seance when it has no template", () => {
     render(
       <TrackingScreen state={{ activeSeance: { id: 7, templateId: null }, seances: [], todayTemplate: null, rotationTemplates: [] }} />,
     );
     expect(screen.getByText("Séance interrompue")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Reprendre/ })).toHaveAttribute("href", "/tracking/7");
+  });
+
+  it("shows a resume banner pointing at the guided player when the seance has a template", () => {
+    render(
+      <TrackingScreen state={{ activeSeance: { id: 7, templateId: 3 }, seances: [], todayTemplate: null, rotationTemplates: [] }} />,
+    );
+    expect(screen.getByRole("link", { name: /Reprendre/ })).toHaveAttribute("href", "/player/tracking?templateId=3");
   });
 
   it("starts a freeform seance and navigates to it on button click", async () => {
