@@ -54,11 +54,37 @@ describe("loadTemplatePlayerState", () => {
     expect(loadTemplatePlayerState(db, 1, DAY).phase).toBe("pending-validation");
   });
 
-  it("reports completed once the seance is validated", () => {
+  it("starts a fresh seance once the previous one is validated (a template stays redoable)", () => {
     const db = setup();
     const seance = startSeance(db, 1);
     completeSeance(db, seance.id);
-    expect(loadTemplatePlayerState(db, 1, DAY)).toEqual({ phase: "completed", seanceId: seance.id });
+
+    const state = loadTemplatePlayerState(db, 1, DAY);
+    expect(state.phase).toBe("in-progress");
+    if (state.phase === "in-progress") {
+      expect(state.seanceId).not.toBe(seance.id);
+      expect(state.next).toEqual({ exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: false, isLastExerciseOfDay: true });
+    }
+  });
+
+  it("stays playable across a full rotation cycle (complete, replay, complete, replay)", () => {
+    const db = setup();
+
+    const first = startSeance(db, 1);
+    logSetForExercise(db, first.id, "Développé couché", "reps", 8, 2, 0);
+    completeSeance(db, first.id);
+
+    const second = loadTemplatePlayerState(db, 1, DAY);
+    expect(second.phase).toBe("in-progress");
+    expect(second.seanceId).not.toBe(first.id);
+
+    logSetForExercise(db, second.seanceId, "Développé couché", "reps", 8, 2, 0);
+    completeSeance(db, second.seanceId);
+
+    const third = loadTemplatePlayerState(db, 1, DAY);
+    expect(third.phase).toBe("in-progress");
+    expect(third.seanceId).not.toBe(first.id);
+    expect(third.seanceId).not.toBe(second.seanceId);
   });
 
   it("flags wrong-seance when the active seance belongs to a different template", () => {
