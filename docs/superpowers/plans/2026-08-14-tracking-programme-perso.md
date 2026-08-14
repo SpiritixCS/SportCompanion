@@ -20,6 +20,17 @@
 - Français partout, tutoiement, l'app constate — pas de coaching motivationnel.
 - Accès aux routes `/tracking/*` et `/player/tracking` réservé à `user.slug === "clement"` (`redirect("/")` sinon), comme toutes les routes Tracking existantes.
 
+## Post-implémentation — revue finale de branche
+
+Les 13 tâches ont chacune passé leur revue individuelle, mais la revue finale de branche (après Task 13) a trouvé 4 défauts réels aux coutures entre code neuf et chemins existants, absents des revues par tâche parce qu'ils n'émergent qu'une fois toutes les pièces assemblées :
+
+1. **Critique** — un modèle devenait injouable pour toujours après sa première séance validée (voir la correction détaillée dans la section Task 7 ci-dessus).
+2. `deleteSeance` (`src/lib/tracking/db.ts`) ne nettoyait pas `tracking_skipped_exercises` avant de supprimer la séance → `FOREIGN KEY constraint failed` pour toute séance avec un exercice sauté. Corrigé : ajout du `DELETE` manquant, même logique que le nettoyage déjà existant de `tracking_sets_logged`.
+3. `TrackingScreen.tsx` (onglet Tracking) n'avait pas été mis à jour pour router la reprise d'une séance guidée vers `/player/tracking` — contrairement à `TrackingCard.tsx` qui le faisait déjà correctement. Corrigé pour matcher exactement.
+4. Suppression d'un modèle sans confirmation, contrairement à ce que demandait le design spec. Corrigé avec une `Sheet` de confirmation, action destructive sur le token `--alert`.
+
+Correctifs appliqués et re-revus (commits `4fceec7`..`61f2674`), voir le ledger SDD pour le détail. Deux correctifs mineurs supplémentaires : modèle vide non ajoutable à la rotation, lien de retour sur les écrans d'erreur de `/player/tracking`.
+
 ---
 
 ### Task 1: Migration SQL — schéma programme personnel
@@ -1262,14 +1273,17 @@ Expected: FAIL — `./loadTemplatePlayerState` doesn't exist yet.
 
 - [ ] **Step 3: Write `loadTemplatePlayerState.ts`**
 
-**Correction post-implémentation :** la version ci-dessous initialement prévue avait un défaut — `getOrStartSeance(db, templateId)` seul ne retrouve que la séance *active* (non complétée) ; une fois une séance validée, elle sort de `getActiveSeance` et un appel ultérieur en démarrerait une toute nouvelle au lieu de retrouver celle qui vient d'être complétée, cassant le test « reports completed once the seance is validated ». Version corrigée, implémentée telle quelle par la Task 7 :
+**Deux corrections post-implémentation, dans cet ordre :**
+
+1. **Pendant la Task 7** : un implémenteur a cru trouver un défaut dans la version ci-dessous — « `getOrStartSeance(db, templateId)` seul ne retrouve que la séance *active* (non complétée) ; une fois une séance validée, elle sort de `getActiveSeance`, donc `seance.completedAt` semble injoignable ». Il a « corrigé » ça en ajoutant une recherche non bornée dans le temps (« la séance la plus récente jamais faite pour ce modèle ») pour détecter une séance complétée et renvoyer `phase: "completed"`.
+2. **Pendant la revue finale de branche** : cette « correction » s'est révélée être un bug **critique** — une fois n'importe quel modèle complété une seule fois, il devenait injouable *pour toujours* (la rotation revient dessus, `loadTemplatePlayerState` retrouve l'ancienne séance complétée et bloque sur « Séance déjà validée. »). Diagnostic complet : `seance.completedAt` est bel et bien **toujours** `null` dans le code ci-dessous (`getOrStartSeance` ne renvoie jamais autre chose que la séance active ou une toute nouvelle) — exactement comme dans `src/lib/player/loadPlayerState.ts` où la même branche `if (seance.completedAt)` est **elle aussi morte, et c'est voulu** : un jour de Programme se rejoue librement (CLAUDE.md §5, « refaire un niveau »), il n'y a jamais de mur « déjà validé ». Il n'y avait donc pas de bug à corriger à la Task 7 — seul le test qui affirmait `phase: "completed"` encodait la mauvaise attente. La version originale ci-dessous (avec l'ajout `wrong-seance`, qui lui est correct et nécessaire) est la bonne :
 
 ```ts
 // src/lib/tracking/loadTemplatePlayerState.ts
 import type Database from "better-sqlite3";
 import type { TrainDay } from "@/lib/workout/types";
 import { deriveState, type NextSet } from "@/lib/player/deriveState";
-import { getActiveSeance, getOrStartSeance, getSetsForSeance, getSkippedExercises } from "./db";
+import { getOrStartSeance, getSetsForSeance, getSkippedExercises } from "./db";
 
 export type TemplatePlayerState =
   | { phase: "in-progress"; seanceId: number; startedAt: string; next: NextSet; skippedExerciseOrders: number[] }
@@ -1277,59 +1291,6 @@ export type TemplatePlayerState =
   | { phase: "completed"; seanceId: number }
   | { phase: "wrong-seance"; seanceId: number };
 
-function progressForActiveSeance(
-  db: Database.Database,
-  seanceId: number,
-  startedAt: string,
-  day: TrainDay,
-): TemplatePlayerState {
-  const sets = getSetsForSeance(db, seanceId);
-  const skippedExerciseOrders = getSkippedExercises(db, seanceId);
-  const progress = deriveState(day, sets, new Set(skippedExerciseOrders));
-
-  if (progress.allSetsDone) {
-    return { phase: "pending-validation", seanceId, startedAt };
-  }
-  return { phase: "in-progress", seanceId, startedAt, next: progress.next, skippedExerciseOrders };
-}
-
-// db.ts only tracks "the" currently active seance across templates (product
-// invariant: at most one active at a time) — it has no lookup for "the most
-// recent seance of this specific template, active or not". Once that seance
-// is validated it drops out of getActiveSeance entirely, so without this we
-// couldn't tell "just completed, show the recap" apart from "never started".
-function getMostRecentSeanceForTemplate(
-  db: Database.Database,
-  templateId: number,
-): { id: number; completedAt: string | null } | null {
-  const row = db
-    .prepare(`SELECT id, completed_at AS completedAt FROM tracking_seances WHERE template_id = ? ORDER BY id DESC LIMIT 1`)
-    .get(templateId) as { id: number; completedAt: string | null } | undefined;
-  return row ?? null;
-}
-
-export function loadTemplatePlayerState(db: Database.Database, templateId: number, day: TrainDay): TemplatePlayerState {
-  const active = getActiveSeance(db);
-  if (active) {
-    if (active.templateId !== templateId) {
-      return { phase: "wrong-seance", seanceId: active.id };
-    }
-    return progressForActiveSeance(db, active.id, active.startedAt, day);
-  }
-
-  const mostRecent = getMostRecentSeanceForTemplate(db, templateId);
-  if (mostRecent && mostRecent.completedAt) {
-    return { phase: "completed", seanceId: mostRecent.id };
-  }
-
-  const seance = getOrStartSeance(db, templateId);
-  return progressForActiveSeance(db, seance.id, seance.startedAt, day);
-}
-```
-
-<details><summary>Version initialement prévue (bug — conservée pour trace)</summary>
-
-```ts
 export function loadTemplatePlayerState(db: Database.Database, templateId: number, day: TrainDay): TemplatePlayerState {
   const seance = getOrStartSeance(db, templateId);
 
@@ -1337,6 +1298,12 @@ export function loadTemplatePlayerState(db: Database.Database, templateId: numbe
     return { phase: "wrong-seance", seanceId: seance.id };
   }
 
+  // seance.completedAt est toujours null ici — getOrStartSeance ne renvoie
+  // jamais que la séance active ou une toute nouvelle — donc un modèle est
+  // toujours rejouable, exactement comme un jour de Programme (CLAUDE.md
+  // §5, « refaire un niveau »). Cette branche est morte, gardée pour la
+  // parité structurelle avec loadPlayerState.ts qui a la même branche,
+  // morte pour la même raison.
   if (seance.completedAt) {
     return { phase: "completed", seanceId: seance.id };
   }
@@ -1359,7 +1326,7 @@ export function loadTemplatePlayerState(db: Database.Database, templateId: numbe
 }
 ```
 
-</details>
+Le test qui affirmait `phase: "completed"` après validation a été corrigé pour affirmer le vrai comportement : un appel ultérieur démarre une séance fraîche (`phase: "in-progress"`, `seanceId` différent) — avec un test de régression complet enchaînant compléter → rejouer → compléter → rejouer sur trois `seanceId` distincts.
 
 - [ ] **Step 4: Run the tests, verify they pass**
 
