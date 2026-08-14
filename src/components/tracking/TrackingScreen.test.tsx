@@ -1,3 +1,4 @@
+// src/components/tracking/TrackingScreen.test.tsx
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -14,16 +15,13 @@ vi.mock("@/lib/tracking/actions", () => ({
   deleteTrackingSeanceAction: (...args: unknown[]) => deleteTrackingSeanceAction(...args),
 }));
 
-// Module-level mocks (vi.mock hoisting) otherwise accumulate implementations
-// across tests in this file — reset between tests so each test controls its
-// own resolve/reject behaviour.
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe("TrackingScreen", () => {
   it("shows the empty state with no history", () => {
-    render(<TrackingScreen state={{ activeSeanceId: null, seances: [] }} />);
+    render(<TrackingScreen state={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }} />);
     expect(screen.getByText("Aucune séance enregistrée pour l'instant.")).toBeInTheDocument();
   });
 
@@ -31,8 +29,10 @@ describe("TrackingScreen", () => {
     render(
       <TrackingScreen
         state={{
-          activeSeanceId: null,
+          activeSeance: null,
           seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          todayTemplate: null,
+          rotationTemplates: [],
         }}
       />,
     );
@@ -44,8 +44,10 @@ describe("TrackingScreen", () => {
     render(
       <TrackingScreen
         state={{
-          activeSeanceId: null,
+          activeSeance: null,
           seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 90, exerciseCount: 4 }],
+          todayTemplate: null,
+          rotationTemplates: [],
         }}
       />,
     );
@@ -57,8 +59,10 @@ describe("TrackingScreen", () => {
     render(
       <TrackingScreen
         state={{
-          activeSeanceId: null,
+          activeSeance: null,
           seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 0, totalSeconds: 60, exerciseCount: 1 }],
+          todayTemplate: null,
+          rotationTemplates: [],
         }}
       />,
     );
@@ -70,8 +74,10 @@ describe("TrackingScreen", () => {
     render(
       <TrackingScreen
         state={{
-          activeSeanceId: null,
+          activeSeance: null,
           seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          todayTemplate: null,
+          rotationTemplates: [],
         }}
       />,
     );
@@ -82,8 +88,10 @@ describe("TrackingScreen", () => {
     render(
       <TrackingScreen
         state={{
-          activeSeanceId: null,
+          activeSeance: null,
           seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          todayTemplate: null,
+          rotationTemplates: [],
         }}
       />,
     );
@@ -97,8 +105,10 @@ describe("TrackingScreen", () => {
     render(
       <TrackingScreen
         state={{
-          activeSeanceId: null,
+          activeSeance: null,
           seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          todayTemplate: null,
+          rotationTemplates: [],
         }}
       />,
     );
@@ -108,22 +118,24 @@ describe("TrackingScreen", () => {
   });
 
   it("shows a resume banner when a seance is already active", () => {
-    render(<TrackingScreen state={{ activeSeanceId: 7, seances: [] }} />);
+    render(
+      <TrackingScreen state={{ activeSeance: { id: 7, templateId: null }, seances: [], todayTemplate: null, rotationTemplates: [] }} />,
+    );
     expect(screen.getByText("Séance interrompue")).toBeInTheDocument();
   });
 
-  it("starts a seance and navigates to it on button click", async () => {
+  it("starts a freeform seance and navigates to it on button click", async () => {
     startTrackingSeanceAction.mockResolvedValue(9);
-    render(<TrackingScreen state={{ activeSeanceId: null, seances: [] }} />);
-    await userEvent.click(screen.getByRole("button", { name: "Enregistrer une séance" }));
+    render(<TrackingScreen state={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Enregistrer une séance libre" }));
     expect(startTrackingSeanceAction).toHaveBeenCalledOnce();
     expect(push).toHaveBeenCalledWith("/tracking/9");
   });
 
   it("shows an error affordance instead of navigating when startTrackingSeanceAction fails", async () => {
     startTrackingSeanceAction.mockRejectedValueOnce(new Error("boom"));
-    render(<TrackingScreen state={{ activeSeanceId: null, seances: [] }} />);
-    await userEvent.click(screen.getByRole("button", { name: "Enregistrer une séance" }));
+    render(<TrackingScreen state={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Enregistrer une séance libre" }));
     expect(await screen.findByText("Une erreur est survenue. Réessaie.")).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
   });

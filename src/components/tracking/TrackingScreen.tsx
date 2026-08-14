@@ -44,8 +44,8 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
         <div className="font-archivo text-32 font-semibold leading-[1.05] mt-2">Tes séances</div>
       </div>
 
-      {state.activeSeanceId !== null && (
-        <ResumeBanner exerciseName="ta séance en cours" href={`/tracking/${state.activeSeanceId}`} accent="sage" />
+      {state.activeSeance !== null && (
+        <ResumeBanner exerciseName="ta séance en cours" href={`/tracking/${state.activeSeance.id}`} accent="sage" />
       )}
 
       {error && (
@@ -59,7 +59,7 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
         onClick={handleStart}
         className="h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
       >
-        Enregistrer une séance
+        Enregistrer une séance libre
       </button>
 
       {state.seances.length === 0 ? (
