@@ -160,3 +160,33 @@ describe("computeTrophies — Programme and Dos cards are always unit: reps", ()
     expect(cards.every((c) => c.unit === "reps")).toBe(true);
   });
 });
+
+describe("computeTrophies — movementFamily", () => {
+  it("carries the exercise's movementFamily for a Programme card", () => {
+    const db = setup();
+    // beginner[0][0] exerciseOrder 6 = "Squats", movementFamily "squat"
+    const seance = startSeance(db, "beginner", 0, 0);
+    logSet(db, { seanceId: seance.id, exerciseOrder: 6, setNumber: 1, repsTarget: "15", repsActual: 15, restSeconds: 90 });
+
+    const cards = computeTrophies(db);
+    expect(cards.find((c) => c.id === "squats")?.movementFamily).toBe("squat");
+  });
+
+  it("maps a Dos arbre to its fixed movementFamily", () => {
+    const db = setup();
+    const seance = startDosSeance(db, "2026-01-05", "lundi", 1);
+    logDosSet(db, { seanceId: seance.id, exerciseOrder: 0, exerciseId: "A-1", setNumber: 1, valeurTarget: "8-10", valeurActual: 8, restSeconds: 60 });
+
+    const cards = computeTrophies(db);
+    expect(cards.find((c) => c.id === "A")?.movementFamily).toBe("squat");
+  });
+
+  it("always tags a Tracking card as other", () => {
+    const db = setup();
+    const seance = startTrackingSeance(db);
+    logSetForExercise(db, seance.id, "Squats", "reps", 12);
+
+    const cards = computeTrophies(db).filter((c) => c.module === "tracking");
+    expect(cards[0]?.movementFamily).toBe("other");
+  });
+});

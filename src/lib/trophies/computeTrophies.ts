@@ -3,12 +3,14 @@ import { getParcours } from "@/lib/programme/parcours";
 import { computeBlock } from "@/lib/backpain/periode";
 import { ARBRES, type ArbreId } from "@/lib/backpain/arbres";
 import { ARBRE_EXERCISE_ID } from "@/lib/dos/bilan";
+import { DOS_ARBRE_MOVEMENT_FAMILY, type MovementFamily } from "./movementFamily";
 
 export type TrophyCard = {
   id: string;
   module: "programme" | "dos" | "tracking";
   name: string;
   unit: "reps" | "seconds";
+  movementFamily: MovementFamily;
   total: number;
   firstAt: string;
   lastAt: string;
@@ -35,6 +37,7 @@ type Accumulator = {
   module: "programme" | "dos" | "tracking";
   name: string;
   unit: "reps" | "seconds";
+  movementFamily: MovementFamily;
   total: number;
   firstAt: string;
   lastAt: string;
@@ -81,6 +84,7 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
         module: "programme",
         name: exercise.name,
         unit: "reps",
+        movementFamily: exercise.movementFamily as MovementFamily,
         total: 0,
         firstAt: row.completedAt,
         lastAt: row.completedAt,
@@ -117,6 +121,7 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
         module: "dos",
         name: ARBRES[arbre].nom,
         unit: "reps",
+        movementFamily: DOS_ARBRE_MOVEMENT_FAMILY[arbre],
         total: 0,
         firstAt: row.completedAt,
         lastAt: row.completedAt,
@@ -143,6 +148,7 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
         module: "tracking",
         name: row.exerciseName,
         unit: row.unit,
+        movementFamily: "other",
         total: 0,
         firstAt: row.completedAt,
         lastAt: row.completedAt,
@@ -158,6 +164,7 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
     module: entry.module,
     name: entry.name,
     unit: entry.unit,
+    movementFamily: entry.movementFamily,
     total: entry.total,
     firstAt: entry.firstAt,
     lastAt: entry.lastAt,
