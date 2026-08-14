@@ -74,12 +74,12 @@ describe("loadTodayState", () => {
     expect(state.parcoursLabel).toBe("Débutant");
     expect(state.dayTitle).toBe("Jour 1");
     expect(state.totalExercises).toBe(4);
-    expect(state.exercisesPreview).toEqual([
+    expect(state.exercises).toEqual([
       { name: "Push ups", dose: "3 × 12" },
       { name: "Squats", dose: "3 × 15" },
       { name: "Dips", dose: "3 × 10" },
+      { name: "Lunges", dose: "3 × 10" },
     ]);
-    expect(state.exercisesRestCount).toBe(1);
     expect(state.durationEstimateMinutes).toBe(18 + 4 * 4);
     expect(state.done).toBe(false);
     expect(state.resume).toBeNull();

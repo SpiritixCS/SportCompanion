@@ -18,8 +18,7 @@ export type TodayState =
       level: number;
       dayIndex: number;
       dayTitle: string;
-      exercisesPreview: { name: string; dose: string }[];
-      exercisesRestCount: number;
+      exercises: { name: string; dose: string }[];
       totalExercises: number;
       durationEstimateMinutes: number;
       pastilles: PastilleState[];
@@ -89,8 +88,7 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
     level: position.level,
     dayIndex: position.dayIndex,
     dayTitle: `Jour ${position.dayIndex + 1}`,
-    exercisesPreview: day.exercises.slice(0, 3).map((e) => ({ name: e.name, dose: formatTarget(e.sets, e.target) })),
-    exercisesRestCount: Math.max(0, day.exercises.length - 3),
+    exercises: day.exercises.map((e) => ({ name: e.name, dose: formatTarget(e.sets, e.target) })),
     totalExercises: day.exercises.length,
     durationEstimateMinutes: estimateDurationMinutes(day.exercises.length),
     pastilles,

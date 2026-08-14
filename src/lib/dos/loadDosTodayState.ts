@@ -25,8 +25,7 @@ export type DosTodayState =
       phase: "normal";
       jourLabel: string;
       intitule: string;
-      exercisesPreview: { name: string; dose: string }[];
-      exercisesRestCount: number;
+      exercises: { name: string; dose: string }[];
       done: boolean;
       doneReps: number | null;
       resume: { exerciseName: string } | null;
@@ -72,8 +71,7 @@ export function loadDosTodayState(db: Database.Database): DosTodayState {
     phase: "normal",
     jourLabel: jourSemaine[0]!.toUpperCase() + jourSemaine.slice(1),
     intitule: INTITULES[jourSemaine],
-    exercisesPreview: day.exercises.slice(0, 3).map((e) => ({ name: e.name, dose: formatTarget(e.sets, e.target) })),
-    exercisesRestCount: Math.max(0, day.exercises.length - 3),
+    exercises: day.exercises.map((e) => ({ name: e.name, dose: formatTarget(e.sets, e.target) })),
     done,
     doneReps,
     resume,

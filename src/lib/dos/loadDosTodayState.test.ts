@@ -50,7 +50,7 @@ describe("loadDosTodayState", () => {
     if (state.phase !== "normal") throw new Error("unreachable");
     expect(state.jourLabel).toBe("Lundi");
     expect(state.intitule).toBe("Charnière & chaîne postérieure");
-    expect(state.exercisesPreview).toHaveLength(3);
+    expect(state.exercises).toHaveLength(4); // 1 fixe (lundi) + arbres A, B, C
     expect(state.done).toBe(false);
     expect(state.resume).toBeNull();
   });
