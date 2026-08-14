@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { TrophyCard } from "./TrophyCard";
 import type { TrophyCard as TrophyCardData } from "@/lib/trophies/computeTrophies";
 
@@ -25,6 +25,7 @@ const PROGRAMME_CARD: TrophyCardData = {
   total: 340,
   firstAt: "2026-01-01T10:00:00.000Z",
   lastAt: "2026-08-01T10:00:00.000Z",
+  movementFamily: "squat",
 };
 
 const DOS_CARD: TrophyCardData = {
@@ -36,6 +37,7 @@ const DOS_CARD: TrophyCardData = {
   firstAt: "2026-01-01T10:00:00.000Z",
   lastAt: "2026-08-01T10:00:00.000Z",
   byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 80 }],
+  movementFamily: "squat",
 };
 
 describe("TrophyCard", () => {
@@ -61,8 +63,25 @@ describe("TrophyCard", () => {
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
+  it("shows a family icon in place of a photo for a Dos card", () => {
+    render(<TrophyCard card={DOS_CARD} index={0} />);
+    expect(screen.getByTestId("exercise-family-icon")).toBeInTheDocument();
+  });
+
+  it("shows no family icon while the Programme photo is displayed", () => {
+    render(<TrophyCard card={PROGRAMME_CARD} index={0} />);
+    expect(screen.queryByTestId("exercise-family-icon")).not.toBeInTheDocument();
+  });
+
+  it("falls back to the family icon when the Programme photo fails to load", () => {
+    render(<TrophyCard card={PROGRAMME_CARD} index={0} />);
+    fireEvent.error(screen.getByRole("img"));
+    expect(screen.getByTestId("exercise-family-icon")).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
   it("shows no palier and an 's' suffix for a seconds card, regardless of total", () => {
-    render(<TrophyCard card={{ ...PROGRAMME_CARD, id: "tracking-1", module: "tracking", unit: "seconds", total: 900 }} index={0} />);
+    render(<TrophyCard card={{ ...PROGRAMME_CARD, id: "tracking-1", module: "tracking", unit: "seconds", total: 900, movementFamily: "other" }} index={0} />);
     expect(screen.getByText("s")).toBeInTheDocument();
     expect(screen.queryByText(/Palier/)).not.toBeInTheDocument();
   });

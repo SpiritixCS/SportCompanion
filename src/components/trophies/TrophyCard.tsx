@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Card } from "@/components/Card";
 import { useCountUp } from "./useCountUp";
+import { ExerciseFamilyIcon } from "./ExerciseFamilyIcon";
 import { palierAtteint } from "@/lib/trophies/paliers";
 import type { TrophyCard as TrophyCardData } from "@/lib/trophies/computeTrophies";
 
@@ -16,7 +17,7 @@ export function TrophyCard({ card, index }: { card: TrophyCardData; index: numbe
   return (
     <Link href={`/trophees/${card.id}`} className="block">
       <Card className="overflow-hidden h-full">
-        {hasImage && (
+        {hasImage ? (
           <div className="aspect-square bg-canvas">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -25,6 +26,13 @@ export function TrophyCard({ card, index }: { card: TrophyCardData; index: numbe
               className="w-full h-full object-cover"
               onError={() => setImageFailed(true)}
             />
+          </div>
+        ) : (
+          <div
+            data-testid="exercise-family-icon"
+            className="aspect-square bg-canvas flex items-center justify-center text-graphite"
+          >
+            <ExerciseFamilyIcon family={card.movementFamily} size={40} />
           </div>
         )}
         <div className="p-4">
