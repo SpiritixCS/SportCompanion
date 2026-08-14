@@ -1022,9 +1022,41 @@ git commit -m "feat(trophies): ajoute le jeu d'icônes par famille de mouvement"
 **Files:**
 - Modify: `src/components/trophies/TrophyCard.tsx` (fichier entier, 48 lignes)
 - Test: `src/components/trophies/TrophyCard.test.tsx` (fichier entier)
+- Test: `src/components/trophies/TropheesScreen.test.tsx:36-37` (deux fixtures `TrophyCard` littérales)
 
 **Interfaces:**
 - Consumes: `ExerciseFamilyIcon` (Task 5), `TrophyCard.movementFamily` (Task 4).
+
+- [ ] **Step 0: Compléter les fixtures de `TropheesScreen.test.tsx` (champ requis depuis la Task 4)**
+
+`TrophyCard.movementFamily` est un champ requis depuis la Task 4. `TropheesScreen.test.tsx` construit deux littéraux `TrophyCard` (lignes 36-37) qui ne le portent pas encore — `npx tsc --noEmit` échoue dessus tant que ce n'est pas fait. Ce n'est pas visible en exécutant seulement `vitest` (pas de vérification de type à l'exécution), d'où l'oubli initial du plan — mais `tsc --noEmit` fait partie de la Validation finale, donc à corriger ici.
+
+Remplacer (ligne 36) :
+
+```ts
+    { id: "squats", module: "programme", name: "Squats", unit: "reps", total: 300, firstAt: "2026-01-01T10:00:00.000Z", lastAt: "2026-08-01T10:00:00.000Z" },
+```
+
+par :
+
+```ts
+    { id: "squats", module: "programme", name: "Squats", unit: "reps", total: 300, firstAt: "2026-01-01T10:00:00.000Z", lastAt: "2026-08-01T10:00:00.000Z", movementFamily: "squat" },
+```
+
+Remplacer (ligne 37) :
+
+```ts
+    { id: "A", module: "dos", name: "Charnière & ischios", unit: "reps", total: 120, firstAt: "2026-02-01T10:00:00.000Z", lastAt: "2026-08-05T10:00:00.000Z", byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 120 }] },
+```
+
+par :
+
+```ts
+    { id: "A", module: "dos", name: "Charnière & ischios", unit: "reps", total: 120, firstAt: "2026-02-01T10:00:00.000Z", lastAt: "2026-08-05T10:00:00.000Z", byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 120 }], movementFamily: "squat" },
+```
+
+Run: `npx tsc --noEmit 2>&1 | grep TropheesScreen`
+Expected: aucune sortie (plus d'erreur sur ce fichier).
 
 - [ ] **Step 1: Mettre à jour `TrophyCard.test.tsx`**
 
