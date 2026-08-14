@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Une seule séance active à la fois, tous contextes confondus (invariant déjà existant) — jamais deux séances « en cours » simultanées, ni pour le journal libre ni pour un modèle.
-- Aucune contrainte `FOREIGN KEY` n'est appliquée à l'exécution dans ce projet (`PRAGMA foreign_keys` n'est jamais activé) — toute suppression en cascade (modèle → ses exercices → sa place en rotation → le pointeur) est faite à la main dans le code applicatif.
+- **Correction (constatée pendant l'implémentation de Task 2) :** `better-sqlite3` active `PRAGMA foreign_keys` par défaut dans ce projet — les contraintes `REFERENCES` du schéma sont réellement appliquées à l'exécution (vérifié : `db.pragma('foreign_keys', {simple:true})` → `1`). Toute suppression doit donc retirer les lignes filles avant la ligne mère (modèle → ses exercices → sa place en rotation → le pointeur), sous peine d'un `FOREIGN KEY constraint failed` — ce n'est pas une habitude défensive, c'est requis. Seule exception : `tracking_seances.template_id` n'a délibérément pas de `REFERENCES`, pour qu'une séance déjà loggée garde son `template_id` même après suppression du modèle, sans jamais bloquer cette suppression.
 - Cible unique par exercice de modèle, appliquée à toutes ses séries — pas de cible variable par série (pas de pyramidal).
 - Une fonction passée d'un Server Component à `PlayerScreen` (Client Component) doit être une Server Action, jamais une closure inline — utiliser `.bind(null, …)` pour lui attacher un argument supplémentaire (ex. `templateId`).
 - État toujours relu depuis la DB, jamais reconstruit côté client — CLAUDE.md §2/§7 ; une séance interrompue doit toujours pouvoir être reprise sans perte silencieuse.
@@ -679,9 +679,11 @@ export function updateTemplate(
   return getTemplate(db, templateId)!;
 }
 
-// No FOREIGN KEY enforcement in this project (see migration 0010's note) —
-// every reference to a deleted template is cleaned up by hand here, the same
-// way deleteSeance already hand-cleans tracking_sets_logged.
+// FOREIGN KEY constraints ARE enforced in this project (better-sqlite3
+// defaults PRAGMA foreign_keys to on) — child rows must be deleted before
+// the template row itself, or this throws FOREIGN KEY constraint failed.
+// tracking_seances.template_id has no REFERENCES (see migration 0010), so
+// past séances are untouched here and keep their template_id after deletion.
 export function deleteTemplate(db: Database.Database, templateId: number): void {
   const apply = db.transaction(() => {
     db.prepare(`DELETE FROM tracking_template_exercises WHERE template_id = ?`).run(templateId);
