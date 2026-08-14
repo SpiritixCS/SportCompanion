@@ -32,8 +32,7 @@ export function DosScreen({ state }: { state: DosScreenState }) {
         <BackPainCard
           jourLabel={state.today.jourLabel}
           intitule={state.today.intitule}
-          exercisesPreview={state.today.exercisesPreview}
-          exercisesRestCount={state.today.exercisesRestCount}
+          exercises={state.today.exercises}
           done={state.today.done}
           doneReps={state.today.doneReps}
           href="/player/dos"

@@ -46,8 +46,7 @@ function DosCard({ dosState }: { dosState: DosTodayState }) {
     <BackPainCard
       jourLabel={dosState.jourLabel}
       intitule={dosState.intitule}
-      exercisesPreview={dosState.exercisesPreview}
-      exercisesRestCount={dosState.exercisesRestCount}
+      exercises={dosState.exercises}
       done={dosState.done}
       doneReps={dosState.doneReps}
       href="/player/dos"

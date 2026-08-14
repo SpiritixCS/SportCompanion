@@ -1,24 +1,31 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/Card";
 import { IconCheck } from "@/components/icons/IconCheck";
 
+const PREVIEW_COUNT = 3;
+
 export function BackPainCard({
   jourLabel,
   intitule,
-  exercisesPreview,
-  exercisesRestCount,
+  exercises,
   done,
   doneReps,
   href,
 }: {
   jourLabel: string;
   intitule: string;
-  exercisesPreview: { name: string; dose: string }[];
-  exercisesRestCount: number;
+  exercises: { name: string; dose: string }[];
   done: boolean;
   doneReps: number | null;
   href: string;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const restCount = Math.max(0, exercises.length - PREVIEW_COUNT);
+  const visibleExercises = expanded ? exercises : exercises.slice(0, PREVIEW_COUNT);
+
   return (
     <Card className="p-5">
       <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Dos</span>
@@ -27,9 +34,9 @@ export function BackPainCard({
         {jourLabel} · {intitule}
       </div>
 
-      {exercisesPreview.length > 0 && (
+      {exercises.length > 0 && (
         <div className="flex flex-col gap-2.5 mt-5">
-          {exercisesPreview.map((e) => (
+          {visibleExercises.map((e) => (
             <div key={e.name} className="flex items-baseline justify-between gap-4">
               <span className="text-15">{e.name}</span>
               <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
@@ -37,10 +44,14 @@ export function BackPainCard({
               </span>
             </div>
           ))}
-          {exercisesRestCount > 0 && (
-            <div className="text-13 text-graphite">
-              {exercisesRestCount === 1 ? "et 1 autre" : `et ${exercisesRestCount} autres`}
-            </div>
+          {restCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="min-h-11 flex items-center text-13 text-graphite text-left"
+            >
+              {expanded ? "Voir moins" : restCount === 1 ? "et 1 autre" : `et ${restCount} autres`}
+            </button>
           )}
         </div>
       )}
