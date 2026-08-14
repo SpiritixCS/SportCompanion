@@ -55,11 +55,32 @@ describe("ProgrammeScreen", () => {
     expect(screen.getByText("Dips")).toBeInTheDocument();
   });
 
-  it("deletes a template and refreshes", async () => {
+  it("asks for confirmation before deleting a template", async () => {
     render(<ProgrammeScreen templates={[PUSH]} rotation={{ entries: [], pointerTemplateId: null }} exerciseSuggestions={[]} />);
     await userEvent.click(screen.getByRole("button", { name: "Supprimer Push" }));
+    expect(screen.getByText("Supprimer ce modèle ?")).toBeInTheDocument();
+    expect(deleteTemplateAction).not.toHaveBeenCalled();
+  });
+
+  it("deletes a template and refreshes once confirmed", async () => {
+    render(<ProgrammeScreen templates={[PUSH]} rotation={{ entries: [], pointerTemplateId: null }} exerciseSuggestions={[]} />);
+    await userEvent.click(screen.getByRole("button", { name: "Supprimer Push" }));
+    await userEvent.click(screen.getByRole("button", { name: "Supprimer" }));
     expect(deleteTemplateAction).toHaveBeenCalledWith(1);
     expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it("closes the confirmation without deleting on Annuler", async () => {
+    render(<ProgrammeScreen templates={[PUSH]} rotation={{ entries: [], pointerTemplateId: null }} exerciseSuggestions={[]} />);
+    await userEvent.click(screen.getByRole("button", { name: "Supprimer Push" }));
+    await userEvent.click(screen.getByRole("button", { name: "Annuler" }));
+    expect(screen.queryByText("Supprimer ce modèle ?")).not.toBeInTheDocument();
+    expect(deleteTemplateAction).not.toHaveBeenCalled();
+  });
+
+  it("does not let an empty template be added to the rotation", () => {
+    render(<ProgrammeScreen templates={[PULL]} rotation={{ entries: [], pointerTemplateId: null }} exerciseSuggestions={[]} />);
+    expect(screen.getByRole("button", { name: "Ajouter à la rotation" })).toBeDisabled();
   });
 
   it("adds a template to the rotation", async () => {
@@ -102,6 +123,7 @@ describe("ProgrammeScreen", () => {
     deleteTemplateAction.mockRejectedValueOnce(new Error("boom"));
     render(<ProgrammeScreen templates={[PUSH]} rotation={{ entries: [], pointerTemplateId: null }} exerciseSuggestions={[]} />);
     await userEvent.click(screen.getByRole("button", { name: "Supprimer Push" }));
+    await userEvent.click(screen.getByRole("button", { name: "Supprimer" }));
     expect(await screen.findByText("Une erreur est survenue. Réessaie.")).toBeInTheDocument();
   });
 });

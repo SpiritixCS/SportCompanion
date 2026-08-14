@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/Card";
+import { Sheet } from "@/components/Sheet";
 import { IconClose } from "@/components/icons/IconClose";
 import { TemplateEditor } from "./TemplateEditor";
 import { createTemplateAction, updateTemplateAction, deleteTemplateAction, setRotationAction } from "@/lib/tracking/actions";
@@ -31,6 +32,7 @@ export function ProgrammeScreen({
   const [editor, setEditor] = useState<EditorState>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<Template | null>(null);
 
   async function handleSave(nom: string, exercises: TemplateExerciseInput[]) {
     setSaving(true);
@@ -52,6 +54,7 @@ export function ProgrammeScreen({
 
   async function handleDelete(templateId: number) {
     setError(false);
+    setPendingDelete(null);
     try {
       await deleteTemplateAction(templateId);
       router.refresh();
@@ -106,6 +109,7 @@ export function ProgrammeScreen({
   const rotationIds = new Set(rotation.entries.map((e) => e.templateId));
 
   return (
+    <>
     <div className="p-5 flex flex-col gap-8">
       <div>
         <Link href="/tracking" className="text-15 text-graphite">
@@ -146,7 +150,7 @@ export function ProgrammeScreen({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(template.id)}
+                    onClick={() => setPendingDelete(template)}
                     aria-label={`Supprimer ${template.nom}`}
                     className="text-graphite flex-none w-9 h-9 flex items-center justify-center"
                   >
@@ -154,7 +158,14 @@ export function ProgrammeScreen({
                   </button>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
-                  <button type="button" onClick={() => handleToggleRotation(template.id)} className={pillClass(inRotation)}>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleRotation(template.id)}
+                    // Un modèle vide n'a rien à jouer — il ne peut pas entrer dans la rotation.
+                    disabled={!inRotation && template.exercises.length === 0}
+                    title={!inRotation && template.exercises.length === 0 ? "Ajoute au moins un exercice" : undefined}
+                    className={`${pillClass(inRotation)} disabled:opacity-30`}
+                  >
                     {inRotation ? "Dans la rotation" : "Ajouter à la rotation"}
                   </button>
                   {inRotation && (
@@ -186,5 +197,27 @@ export function ProgrammeScreen({
         </Card>
       )}
     </div>
+    <Sheet open={pendingDelete !== null} onClose={() => setPendingDelete(null)} title="Supprimer ce modèle ?">
+      <p className="text-15 text-graphite leading-relaxed">
+        « {pendingDelete?.nom} » sera supprimé et retiré de la rotation. C&apos;est définitif.
+      </p>
+      <div className="flex flex-col gap-2.5 mt-6">
+        <button
+          type="button"
+          onClick={() => pendingDelete && handleDelete(pendingDelete.id)}
+          className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold"
+        >
+          Supprimer
+        </button>
+        <button
+          type="button"
+          onClick={() => setPendingDelete(null)}
+          className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
+        >
+          Annuler
+        </button>
+      </div>
+    </Sheet>
+    </>
   );
 }

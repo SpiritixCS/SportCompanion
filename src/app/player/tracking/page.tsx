@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
@@ -26,6 +27,9 @@ export default async function TrackingPlayerPage({
     return (
       <main className="p-5">
         <p className="text-15 text-graphite">Modèle introuvable.</p>
+        <Link href="/" className="text-15 text-graphite underline mt-4 inline-block">
+          Retour à Aujourd&apos;hui
+        </Link>
       </main>
     );
   }
@@ -39,6 +43,9 @@ export default async function TrackingPlayerPage({
         <p className="text-15 text-graphite">
           Une autre séance est déjà en cours. Termine-la ou quitte-la avant d&apos;en commencer une nouvelle.
         </p>
+        <Link href="/" className="text-15 text-graphite underline mt-4 inline-block">
+          Retour à Aujourd&apos;hui
+        </Link>
       </main>
     );
   }
