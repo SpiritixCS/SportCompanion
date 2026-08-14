@@ -16,6 +16,8 @@ import {
   logSetForExercise,
   updateSet,
   deleteSet,
+  deleteSetsForExercise,
+  deleteSeance,
   completeSeance,
   listCompletedSeances,
 } from "./db";
@@ -184,6 +186,54 @@ describe("updateSet / deleteSet", () => {
     expect(getSetsForSeance(db, seance.id)[0]!.valeurActual).toBe(15);
     deleteSet(db, set!.id);
     expect(getSetsForSeance(db, seance.id)).toHaveLength(0);
+  });
+});
+
+describe("deleteSetsForExercise", () => {
+  it("removes all sets for one exercise, leaves other exercises' sets intact", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    logSetForExercise(db, seance.id, "Squats", "reps", 12, 2);
+    const [fentes] = logSetForExercise(db, seance.id, "Fentes", "reps", 8);
+    deleteSetsForExercise(db, seance.id, fentes!.exerciseId);
+    const remaining = getSetsForSeance(db, seance.id);
+    expect(remaining).toHaveLength(2);
+    expect(remaining.every((s) => s.exerciseName === "Squats")).toBe(true);
+  });
+
+  it("works on an already-completed seance", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    const [set] = logSetForExercise(db, seance.id, "Squats", "reps", 12);
+    completeSeance(db, seance.id);
+    deleteSetsForExercise(db, seance.id, set!.exerciseId);
+    expect(getSetsForSeance(db, seance.id)).toHaveLength(0);
+  });
+});
+
+describe("deleteSeance", () => {
+  it("removes the seance and all its sets", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    logSetForExercise(db, seance.id, "Squats", "reps", 12);
+    completeSeance(db, seance.id);
+    deleteSeance(db, seance.id);
+    expect(getSeanceById(db, seance.id)).toBeNull();
+    expect(getSetsForSeance(db, seance.id)).toHaveLength(0);
+  });
+
+  it("does not affect a different seance", () => {
+    const db = setup();
+    const seanceA = startSeance(db);
+    logSetForExercise(db, seanceA.id, "Squats", "reps", 12);
+    completeSeance(db, seanceA.id);
+    const seanceB = startSeance(db);
+    logSetForExercise(db, seanceB.id, "Fentes", "reps", 8);
+    completeSeance(db, seanceB.id);
+
+    deleteSeance(db, seanceA.id);
+    expect(getSeanceById(db, seanceB.id)).not.toBeNull();
+    expect(getSetsForSeance(db, seanceB.id)).toHaveLength(1);
   });
 });
 

@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { RepsSheet } from "@/components/player/RepsSheet";
+import { IconClose } from "@/components/icons/IconClose";
 import {
   logTrackingSetAction,
   updateTrackingSetAction,
   deleteTrackingSetAction,
+  deleteTrackingExerciseAction,
   completeTrackingSeanceAction,
 } from "@/lib/tracking/actions";
 import type { TrackingSetWithExercise, TrackingUnit } from "@/lib/tracking/db";
@@ -109,6 +111,18 @@ export function TrackingSeanceScreen({
     }
   }
 
+  async function handleDeleteExercise(group: ExerciseGroup) {
+    const exerciseId = group.sets[0]?.exerciseId;
+    if (exerciseId === undefined) return;
+    setError(false);
+    try {
+      await deleteTrackingExerciseAction(seanceId, exerciseId);
+      setSets((prev) => prev.filter((s) => s.exerciseId !== exerciseId));
+    } catch {
+      setError(true);
+    }
+  }
+
   async function handleFinish() {
     setError(false);
     try {
@@ -135,7 +149,17 @@ export function TrackingSeanceScreen({
         <Card className="overflow-hidden">
           {groups.map((group, i) => (
             <div key={group.exerciseOrder} className={`px-5 py-3.5 ${i > 0 ? "border-t border-hairline" : ""}`}>
-              <div className="text-15 font-medium">{group.exerciseName}</div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-15 font-medium">{group.exerciseName}</div>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteExercise(group)}
+                  aria-label={`Supprimer ${group.exerciseName}`}
+                  className="text-graphite flex-none w-7 h-7 flex items-center justify-center"
+                >
+                  <IconClose size={14} />
+                </button>
+              </div>
               <div className="flex flex-wrap gap-1.5 mt-1.5">
                 {group.sets.map((s) => (
                   <button

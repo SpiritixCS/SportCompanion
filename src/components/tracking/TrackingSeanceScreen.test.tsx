@@ -9,11 +9,13 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 const logTrackingSetAction = vi.fn();
 const updateTrackingSetAction = vi.fn();
 const deleteTrackingSetAction = vi.fn();
+const deleteTrackingExerciseAction = vi.fn();
 const completeTrackingSeanceAction = vi.fn();
 vi.mock("@/lib/tracking/actions", () => ({
   logTrackingSetAction: (...args: unknown[]) => logTrackingSetAction(...args),
   updateTrackingSetAction: (...args: unknown[]) => updateTrackingSetAction(...args),
   deleteTrackingSetAction: (...args: unknown[]) => deleteTrackingSetAction(...args),
+  deleteTrackingExerciseAction: (...args: unknown[]) => deleteTrackingExerciseAction(...args),
   completeTrackingSeanceAction: (...args: unknown[]) => completeTrackingSeanceAction(...args),
 }));
 
@@ -142,6 +144,33 @@ describe("TrackingSeanceScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Supprimer la série" }));
     expect(deleteTrackingSetAction).toHaveBeenCalledWith(1);
     expect(screen.queryByRole("button", { name: "12" })).not.toBeInTheDocument();
+  });
+
+  it("deletes a whole exercise's sets through the exercise-level delete button", async () => {
+    render(
+      <TrackingSeanceScreen
+        seanceId={1}
+        completed={false}
+        initialSets={[SQUATS_SET, { ...SQUATS_SET, id: 2, setNumber: 2, valeurActual: 10 }]}
+        exerciseSuggestions={[{ name: "Squats", unit: "reps" }]}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Supprimer Squats" }));
+    expect(deleteTrackingExerciseAction).toHaveBeenCalledWith(1, 10);
+    expect(screen.queryByText("Squats")).not.toBeInTheDocument();
+    expect(screen.getByText("Ajoute ton premier exercice ci-dessous.")).toBeInTheDocument();
+  });
+
+  it("exercise-level delete stays available on an already-completed seance", async () => {
+    render(
+      <TrackingSeanceScreen
+        seanceId={1}
+        completed
+        initialSets={[SQUATS_SET]}
+        exerciseSuggestions={[{ name: "Squats", unit: "reps" }]}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Supprimer Squats" })).toBeInTheDocument();
   });
 
   it("keeps the entry form and edit/delete available on an already-completed seance", async () => {

@@ -171,4 +171,30 @@ describe("AujourdhuiScreen", () => {
     );
     expect(screen.getByRole("button", { name: "Enregistrer une séance" })).toBeInTheDocument();
   });
+
+  it("shows the Tracking card for Clément even before he's set a Programme point de départ", () => {
+    render(
+      <AujourdhuiScreen
+        state={{ phase: "empty" }}
+        dosState={null}
+        trackingState={{ activeSeanceId: null, seances: [] }}
+        user={CLEMENT}
+      />,
+    );
+    expect(screen.getByText("Premier jour")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Enregistrer une séance" })).toBeInTheDocument();
+  });
+
+  it("shows the Tracking card for Clément on the level-up prompt too", () => {
+    render(
+      <AujourdhuiScreen
+        state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
+        dosState={null}
+        trackingState={{ activeSeanceId: 3, seances: [] }}
+        user={CLEMENT}
+      />,
+    );
+    expect(screen.getByText("Débutant · Niveau 1 terminé")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Reprendre" })).toHaveAttribute("href", "/tracking/3");
+  });
 });

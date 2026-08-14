@@ -129,6 +129,15 @@ export function deleteSet(db: Database.Database, setId: number): void {
   db.prepare(`DELETE FROM tracking_sets_logged WHERE id = ?`).run(setId);
 }
 
+export function deleteSetsForExercise(db: Database.Database, seanceId: number, exerciseId: number): void {
+  db.prepare(`DELETE FROM tracking_sets_logged WHERE seance_id = ? AND exercise_id = ?`).run(seanceId, exerciseId);
+}
+
+export function deleteSeance(db: Database.Database, seanceId: number): void {
+  db.prepare(`DELETE FROM tracking_sets_logged WHERE seance_id = ?`).run(seanceId);
+  db.prepare(`DELETE FROM tracking_seances WHERE id = ?`).run(seanceId);
+}
+
 export function completeSeance(db: Database.Database, seanceId: number): void {
   db.prepare(`UPDATE tracking_seances SET completed_at = ? WHERE id = ?`).run(new Date().toISOString(), seanceId);
 }

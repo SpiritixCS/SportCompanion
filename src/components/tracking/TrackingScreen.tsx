@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { ResumeBanner } from "@/components/today/ResumeBanner";
-import { startTrackingSeanceAction } from "@/lib/tracking/actions";
+import { IconClose } from "@/components/icons/IconClose";
+import { startTrackingSeanceAction, deleteTrackingSeanceAction } from "@/lib/tracking/actions";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 
 function formatDateFr(iso: string): string {
@@ -20,6 +22,16 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
     try {
       const seanceId = await startTrackingSeanceAction();
       router.push(`/tracking/${seanceId}`);
+    } catch {
+      setError(true);
+    }
+  }
+
+  async function handleDeleteSeance(seanceId: number) {
+    setError(false);
+    try {
+      await deleteTrackingSeanceAction(seanceId);
+      router.refresh();
     } catch {
       setError(true);
     }
@@ -57,28 +69,38 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
           {state.seances.map((seance, i) => (
             <div
               key={seance.id}
-              className={`flex items-center justify-between gap-4 px-5 py-3.5 ${i > 0 ? "border-t border-hairline" : ""}`}
+              className={`flex items-center gap-2 px-5 py-3.5 ${i > 0 ? "border-t border-hairline" : ""}`}
             >
-              <div>
-                <div className="text-15 font-medium">{formatDateFr(seance.completedAt)}</div>
-                <div className="text-13 text-graphite mt-0.5">
-                  {seance.exerciseCount} exercice{seance.exerciseCount > 1 ? "s" : ""}
-                </div>
-              </div>
-              <div className="text-right">
-                {seance.totalReps > 0 && (
-                  <div className="font-archivo text-18 font-semibold tabular-nums">{seance.totalReps}</div>
-                )}
-                {seance.totalSeconds > 0 && (
-                  <div
-                    className={`font-archivo tabular-nums ${
-                      seance.totalReps > 0 ? "text-13 text-graphite" : "text-18 font-semibold"
-                    }`}
-                  >
-                    {seance.totalSeconds} s
+              <Link href={`/tracking/${seance.id}`} className="flex-1 flex items-center justify-between gap-4 min-w-0">
+                <div>
+                  <div className="text-15 font-medium">{formatDateFr(seance.completedAt)}</div>
+                  <div className="text-13 text-graphite mt-0.5">
+                    {seance.exerciseCount} exercice{seance.exerciseCount > 1 ? "s" : ""}
                   </div>
-                )}
-              </div>
+                </div>
+                <div className="text-right">
+                  {seance.totalReps > 0 && (
+                    <div className="font-archivo text-18 font-semibold tabular-nums">{seance.totalReps}</div>
+                  )}
+                  {seance.totalSeconds > 0 && (
+                    <div
+                      className={`font-archivo tabular-nums ${
+                        seance.totalReps > 0 ? "text-13 text-graphite" : "text-18 font-semibold"
+                      }`}
+                    >
+                      {seance.totalSeconds} s
+                    </div>
+                  )}
+                </div>
+              </Link>
+              <button
+                type="button"
+                onClick={() => handleDeleteSeance(seance.id)}
+                aria-label="Supprimer la séance"
+                className="text-graphite flex-none w-9 h-9 flex items-center justify-center"
+              >
+                <IconClose size={16} />
+              </button>
             </div>
           ))}
         </Card>

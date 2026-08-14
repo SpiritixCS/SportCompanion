@@ -7,6 +7,8 @@ import {
   logSetForExercise,
   updateSet as updateSetDb,
   deleteSet as deleteSetDb,
+  deleteSetsForExercise as deleteSetsForExerciseDb,
+  deleteSeance as deleteSeanceDb,
   completeSeance as completeSeanceDb,
   type TrackingSetWithExercise,
   type TrackingUnit,
@@ -37,6 +39,14 @@ export async function updateTrackingSetAction(setId: number, valeurActual: numbe
 
 export async function deleteTrackingSetAction(setId: number): Promise<void> {
   deleteSetDb(await db(), setId);
+}
+
+export async function deleteTrackingExerciseAction(seanceId: number, exerciseId: number): Promise<void> {
+  deleteSetsForExerciseDb(await db(), seanceId, exerciseId);
+}
+
+export async function deleteTrackingSeanceAction(seanceId: number): Promise<void> {
+  deleteSeanceDb(await db(), seanceId);
 }
 
 export async function completeTrackingSeanceAction(seanceId: number): Promise<void> {

@@ -116,6 +116,7 @@ export function AujourdhuiScreen({
             Définir mon point de départ
           </button>
         </Card>
+        {trackingState && <TrackingCard state={trackingState} />}
       </div>
     );
   }
@@ -130,6 +131,7 @@ export function AujourdhuiScreen({
           level={state.level}
           onResolved={() => router.refresh()}
         />
+        {trackingState && <TrackingCard state={trackingState} />}
       </div>
     );
   }
