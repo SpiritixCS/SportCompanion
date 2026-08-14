@@ -139,4 +139,9 @@ describe("TrackingScreen", () => {
     expect(await screen.findByText("Une erreur est survenue. Réessaie.")).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
   });
+
+  it("links to the templates/rotation management screen", () => {
+    render(<TrackingScreen state={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }} />);
+    expect(screen.getByRole("link", { name: "Mon programme" })).toHaveAttribute("href", "/tracking/programme");
+  });
 });

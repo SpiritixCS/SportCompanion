@@ -62,6 +62,13 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
         Enregistrer une séance libre
       </button>
 
+      <Link
+        href="/tracking/programme"
+        className="h-14 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15 font-semibold"
+      >
+        Mon programme
+      </Link>
+
       {state.seances.length === 0 ? (
         <p className="text-15 text-graphite">Aucune séance enregistrée pour l&apos;instant.</p>
       ) : (
