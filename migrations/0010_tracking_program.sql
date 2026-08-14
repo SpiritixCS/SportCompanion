@@ -1,3 +1,5 @@
+-- No REFERENCES here (unlike the columns below): a séance keeps its template_id after the template is deleted.
+-- Deleting a template must never fail because old séances still point to it; Task 3 will delete in this order.
 ALTER TABLE tracking_seances ADD COLUMN template_id INTEGER;
 
 CREATE TABLE tracking_templates (
