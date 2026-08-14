@@ -1887,6 +1887,7 @@ git commit -m "feat(tracking): l'état d'écran porte le modèle du jour et la r
 **Files:**
 - Modify: `src/components/today/TrackingCard.tsx`
 - Modify: `src/components/today/TrackingCard.test.tsx`
+- Modify: `src/components/today/AujourdhuiScreen.test.tsx` (3 stale `trackingState` fixtures — gap found during Task 9, see Step 5)
 
 **Interfaces:**
 - Consumes: `TrackingScreenState` (Task 9).
@@ -2126,15 +2127,29 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 Run: `npx vitest run src/components/today/TrackingCard.test.tsx`
 Expected: all 6 tests PASS.
 
-- [ ] **Step 5: Run the full suite**
+- [ ] **Step 5: Fix `AujourdhuiScreen.test.tsx`'s stale fixtures (found during Task 9)**
 
-Run: `npm test`
-Expected: all tests PASS.
+Task 9's rename of `TrackingScreenState` broke type-checking in one more place than originally scoped: `src/components/today/AujourdhuiScreen.test.tsx` constructs `trackingState` fixtures passed into `AujourdhuiScreen` (which forwards them to `TrackingCard`), and 3 of them still use the old `{ activeSeanceId, seances }` shape. `npm test` doesn't catch this (Vitest's esbuild transform strips types without checking them), but `npx tsc --noEmit` does. Update the three fixtures in `src/components/today/AujourdhuiScreen.test.tsx`:
 
-- [ ] **Step 6: Commit**
+```tsx
+// line ~167 and ~179 — both currently `trackingState={{ activeSeanceId: null, seances: [] }}`
+trackingState={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }}
+```
+
+```tsx
+// line ~192 — currently `trackingState={{ activeSeanceId: 3, seances: [] }}`
+trackingState={{ activeSeance: { id: 3, templateId: null }, seances: [], todayTemplate: null, rotationTemplates: [] }}
+```
+
+- [ ] **Step 6: Run the full suite and typecheck**
+
+Run: `npm test && npx tsc --noEmit`
+Expected: all tests PASS, zero type errors anywhere in the project.
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/components/today/TrackingCard.tsx src/components/today/TrackingCard.test.tsx
+git add src/components/today/TrackingCard.tsx src/components/today/TrackingCard.test.tsx src/components/today/AujourdhuiScreen.test.tsx
 git commit -m "feat(tracking): la carte Aujourd'hui propose le modèle du jour et permet de le changer"
 ```
 
