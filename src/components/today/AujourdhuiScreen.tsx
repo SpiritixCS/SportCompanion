@@ -154,8 +154,7 @@ export function AujourdhuiScreen({
         level={state.level}
         dayTitle={state.dayTitle}
         pastilles={state.pastilles}
-        exercisesPreview={state.exercisesPreview}
-        exercisesRestCount={state.exercisesRestCount}
+        exercises={state.exercises}
         durationEstimateMinutes={state.durationEstimateMinutes}
         done={state.done}
         doneReps={state.doneReps}

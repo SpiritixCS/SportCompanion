@@ -43,7 +43,7 @@ const DOS_NORMAL: DosTodayState = {
 
 const NORMAL_PROGRAMME_STATE: TodayState = {
   phase: "normal", parcours: "beginner", parcoursLabel: "Débutant", level: 0, dayIndex: 0,
-  dayTitle: "Jour 1", exercisesPreview: [], exercisesRestCount: 0, totalExercises: 0,
+  dayTitle: "Jour 1", exercises: [], totalExercises: 0,
   durationEstimateMinutes: 18, pastilles: [], done: false, doneReps: null, resume: null,
 };
 

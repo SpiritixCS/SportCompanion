@@ -1,20 +1,28 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ProgrammeCard } from "./ProgrammeCard";
 import type { PastilleState } from "@/components/Pastille";
 
 const PASTILLES: PastilleState[] = ["done", "restOrWalk", "today", "upcoming", "restOrWalk", "upcoming", "upcoming"];
 
+const FIVE_EXERCISES = [
+  { name: "Push ups", dose: "3 × 12" },
+  { name: "Squats", dose: "3 × 15" },
+  { name: "Dips", dose: "3 × 10" },
+  { name: "Pull ups", dose: "3 × 8" },
+  { name: "Plank", dose: "3 × 20-40" },
+];
+
 describe("ProgrammeCard", () => {
-  it("shows position, exercise preview, and the rest-count line", () => {
+  it("shows position, the first 3 exercises, and a rest-count toggle beyond that", () => {
     render(
       <ProgrammeCard
         parcoursLabel="Intermédiaire"
         level={2}
         dayTitle="Jour 5"
         pastilles={PASTILLES}
-        exercisesPreview={[{ name: "Push ups", dose: "3 × 12" }, { name: "Squats", dose: "3 × 15" }]}
-        exercisesRestCount={2}
+        exercises={FIVE_EXERCISES}
         durationEstimateMinutes={26}
         done={false}
         doneReps={null}
@@ -24,15 +32,33 @@ describe("ProgrammeCard", () => {
     expect(screen.getByText("Intermédiaire · Niveau 3 · Jour 5")).toBeInTheDocument();
     expect(screen.getByText("Push ups")).toBeInTheDocument();
     expect(screen.getByText("3 × 12")).toBeInTheDocument();
-    expect(screen.getByText("et 2 autres")).toBeInTheDocument();
+    expect(screen.queryByText("Pull ups")).not.toBeInTheDocument();
     expect(screen.getByText("26 min")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "et 2 autres" })).toBeInTheDocument();
+  });
+
+  it("expands to show every exercise on click, then collapses back on a second click", async () => {
+    const user = userEvent.setup();
+    render(
+      <ProgrammeCard
+        parcoursLabel="Intermédiaire" level={2} dayTitle="Jour 5" pastilles={PASTILLES}
+        exercises={FIVE_EXERCISES} durationEstimateMinutes={26}
+        done={false} doneReps={null} href="/player?parcours=intermediate&level=2&day=4"
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "et 2 autres" }));
+    expect(screen.getByText("Pull ups")).toBeInTheDocument();
+    expect(screen.getByText("Plank")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Voir moins" }));
+    expect(screen.queryByText("Pull ups")).not.toBeInTheDocument();
   });
 
   it("shows Commencer la séance and no accomplished block when not done", () => {
     render(
       <ProgrammeCard
         parcoursLabel="Intermédiaire" level={2} dayTitle="Jour 5" pastilles={PASTILLES}
-        exercisesPreview={[]} exercisesRestCount={0} durationEstimateMinutes={18}
+        exercises={[]} durationEstimateMinutes={18}
         done={false} doneReps={null} href="/player?parcours=intermediate&level=2&day=4"
       />,
     );
@@ -46,7 +72,7 @@ describe("ProgrammeCard", () => {
     render(
       <ProgrammeCard
         parcoursLabel="Intermédiaire" level={2} dayTitle="Jour 5" pastilles={PASTILLES}
-        exercisesPreview={[]} exercisesRestCount={0} durationEstimateMinutes={18}
+        exercises={[]} durationEstimateMinutes={18}
         done doneReps={42} href="/player?parcours=intermediate&level=2&day=4"
       />,
     );
@@ -55,14 +81,14 @@ describe("ProgrammeCard", () => {
     expect(screen.queryByRole("link", { name: "Commencer la séance" })).not.toBeInTheDocument();
   });
 
-  it("omits the rest-count line when there's nothing left to preview", () => {
+  it("omits the toggle when there's nothing left beyond the first 3", () => {
     render(
       <ProgrammeCard
         parcoursLabel="Intermédiaire" level={2} dayTitle="Jour 5" pastilles={PASTILLES}
-        exercisesPreview={[{ name: "Plank", dose: "3 × 20-40" }]} exercisesRestCount={0} durationEstimateMinutes={18}
+        exercises={[{ name: "Plank", dose: "3 × 20-40" }]} durationEstimateMinutes={18}
         done={false} doneReps={null} href="/player?parcours=intermediate&level=2&day=4"
       />,
     );
-    expect(screen.queryByText(/autres?$/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^et .* autres?$/ })).not.toBeInTheDocument();
   });
 });
