@@ -20,6 +20,8 @@ import {
   deleteSeance,
   completeSeance,
   listCompletedSeances,
+  skipExercise,
+  getSkippedExercises,
 } from "./db";
 
 let tmpDir: string;
@@ -269,5 +271,71 @@ describe("listCompletedSeances", () => {
     const summaries = listCompletedSeances(db);
     expect(summaries).toHaveLength(2);
     expect(summaries[0]!.id).toBe(seanceB.id);
+  });
+});
+
+describe("seance templateId", () => {
+  it("defaults to null when no template is given", () => {
+    const db = setup();
+    expect(startSeance(db).templateId).toBeNull();
+  });
+
+  it("carries the template id through to getOrStartSeance and getActiveSeance", () => {
+    const db = setup();
+    startSeance(db, 5);
+    expect(getActiveSeance(db)!.templateId).toBe(5);
+    expect(getOrStartSeance(db, 5).templateId).toBe(5);
+  });
+
+  it("resumes whatever is active regardless of the templateId requested", () => {
+    const db = setup();
+    const started = startSeance(db, 5);
+    const resumed = getOrStartSeance(db, 9);
+    expect(resumed.id).toBe(started.id);
+    expect(resumed.templateId).toBe(5);
+  });
+});
+
+describe("logSetForExercise with an explicit exerciseOrder", () => {
+  it("uses the given order instead of deriving it from insertion, numbering sets within that order", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    const [first] = logSetForExercise(db, seance.id, "Dips", "reps", 12, 1, 3);
+    expect(first).toMatchObject({ exerciseOrder: 3, setNumber: 1 });
+    const [second] = logSetForExercise(db, seance.id, "Dips", "reps", 10, 1, 3);
+    expect(second).toMatchObject({ exerciseOrder: 3, setNumber: 2 });
+  });
+
+  it("keeps the auto-derived order unchanged when exerciseOrder is omitted", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    logSetForExercise(db, seance.id, "Squats", "reps", 12);
+    const [second] = logSetForExercise(db, seance.id, "Fentes", "reps", 10);
+    expect(second).toMatchObject({ exerciseOrder: 1, setNumber: 1 });
+  });
+});
+
+describe("skipExercise / getSkippedExercises", () => {
+  it("records a skipped exercise order and lists it back", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    skipExercise(db, seance.id, 2);
+    expect(getSkippedExercises(db, seance.id)).toEqual([2]);
+  });
+
+  it("ignores a duplicate skip of the same order", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    skipExercise(db, seance.id, 2);
+    skipExercise(db, seance.id, 2);
+    expect(getSkippedExercises(db, seance.id)).toEqual([2]);
+  });
+
+  it("scopes skipped exercises to their own seance", () => {
+    const db = setup();
+    const seanceA = startSeance(db);
+    const seanceB = startSeance(db);
+    skipExercise(db, seanceA.id, 1);
+    expect(getSkippedExercises(db, seanceB.id)).toEqual([]);
   });
 });

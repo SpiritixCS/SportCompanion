@@ -2,7 +2,7 @@ import type Database from "better-sqlite3";
 
 export type TrackingUnit = "reps" | "seconds";
 export type TrackingExercise = { id: number; name: string; unit: TrackingUnit; createdAt: string };
-export type TrackingSeance = { id: number; startedAt: string; completedAt: string | null };
+export type TrackingSeance = { id: number; startedAt: string; completedAt: string | null; templateId: number | null };
 export type TrackingSetWithExercise = {
   id: number;
   seanceId: number;
@@ -43,8 +43,8 @@ export function listExercises(db: Database.Database): { name: string; unit: Trac
   }[];
 }
 
-function mapSeance(row: { id: number; started_at: string; completed_at: string | null }): TrackingSeance {
-  return { id: row.id, startedAt: row.started_at, completedAt: row.completed_at };
+function mapSeance(row: { id: number; started_at: string; completed_at: string | null; template_id: number | null }): TrackingSeance {
+  return { id: row.id, startedAt: row.started_at, completedAt: row.completed_at, templateId: row.template_id };
 }
 
 export function getActiveSeance(db: Database.Database): TrackingSeance | null {
@@ -54,14 +54,20 @@ export function getActiveSeance(db: Database.Database): TrackingSeance | null {
   return row ? mapSeance(row) : null;
 }
 
-export function startSeance(db: Database.Database): TrackingSeance {
+export function startSeance(db: Database.Database, templateId: number | null = null): TrackingSeance {
   const startedAt = new Date().toISOString();
-  const result = db.prepare(`INSERT INTO tracking_seances (started_at) VALUES (?)`).run(startedAt);
-  return { id: Number(result.lastInsertRowid), startedAt, completedAt: null };
+  const result = db
+    .prepare(`INSERT INTO tracking_seances (started_at, template_id) VALUES (?, ?)`)
+    .run(startedAt, templateId);
+  return { id: Number(result.lastInsertRowid), startedAt, completedAt: null, templateId };
 }
 
-export function getOrStartSeance(db: Database.Database): TrackingSeance {
-  return getActiveSeance(db) ?? startSeance(db);
+// Resumes whatever seance is active, regardless of the templateId requested —
+// only one seance is ever active at a time (product invariant). Callers that
+// care whether the resumed seance actually matches their context must check
+// its .templateId themselves (see loadTemplatePlayerState's "wrong-seance" phase).
+export function getOrStartSeance(db: Database.Database, templateId: number | null = null): TrackingSeance {
+  return getActiveSeance(db) ?? startSeance(db, templateId);
 }
 
 export function getSeanceById(db: Database.Database, id: number): TrackingSeance | null {
@@ -88,12 +94,16 @@ export function logSetForExercise(
   unit: TrackingUnit,
   valeurActual: number,
   count: number = 1,
+  exerciseOrder?: number,
 ): TrackingSetWithExercise[] {
   const exercise = findOrCreateExercise(db, exerciseName, unit);
   const seanceSets = getSetsForSeance(db, seanceId);
-  const exerciseSets = seanceSets.filter((s) => s.exerciseId === exercise.id);
-  const exerciseOrder =
-    exerciseSets[0]?.exerciseOrder ?? 1 + seanceSets.reduce((max, s) => Math.max(max, s.exerciseOrder), -1);
+  const existingForExercise = seanceSets.filter((s) => s.exerciseId === exercise.id);
+  const resolvedOrder =
+    exerciseOrder ??
+    existingForExercise[0]?.exerciseOrder ??
+    1 + seanceSets.reduce((max, s) => Math.max(max, s.exerciseOrder), -1);
+  const existingAtOrder = seanceSets.filter((s) => s.exerciseOrder === resolvedOrder);
 
   const insert = db.prepare(
     `INSERT INTO tracking_sets_logged (seance_id, exercise_id, exercise_order, set_number, valeur_actual, completed_at)
@@ -101,17 +111,17 @@ export function logSetForExercise(
   );
 
   const created: TrackingSetWithExercise[] = [];
-  let setNumber = exerciseSets.length + 1;
+  let setNumber = existingAtOrder.length + 1;
   for (let i = 0; i < count; i++) {
     const completedAt = new Date().toISOString();
-    const result = insert.run(seanceId, exercise.id, exerciseOrder, setNumber, valeurActual, completedAt);
+    const result = insert.run(seanceId, exercise.id, resolvedOrder, setNumber, valeurActual, completedAt);
     created.push({
       id: Number(result.lastInsertRowid),
       seanceId,
       exerciseId: exercise.id,
       exerciseName: exercise.name,
       exerciseUnit: exercise.unit,
-      exerciseOrder,
+      exerciseOrder: resolvedOrder,
       setNumber,
       valeurActual,
       completedAt,
@@ -157,4 +167,17 @@ export function listCompletedSeances(db: Database.Database): TrackingSeanceSumma
        ORDER BY s.completed_at DESC, s.id DESC`,
     )
     .all() as TrackingSeanceSummary[];
+}
+
+export function skipExercise(db: Database.Database, seanceId: number, exerciseOrder: number): void {
+  db.prepare(
+    `INSERT OR IGNORE INTO tracking_skipped_exercises (seance_id, exercise_order, skipped_at) VALUES (?, ?, ?)`,
+  ).run(seanceId, exerciseOrder, new Date().toISOString());
+}
+
+export function getSkippedExercises(db: Database.Database, seanceId: number): number[] {
+  const rows = db
+    .prepare(`SELECT exercise_order AS exerciseOrder FROM tracking_skipped_exercises WHERE seance_id = ?`)
+    .all(seanceId) as { exerciseOrder: number }[];
+  return rows.map((r) => r.exerciseOrder);
 }

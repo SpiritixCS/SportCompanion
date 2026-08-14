@@ -1,4 +1,4 @@
-ALTER TABLE tracking_seances ADD COLUMN template_id INTEGER REFERENCES tracking_templates(id);
+ALTER TABLE tracking_seances ADD COLUMN template_id INTEGER;
 
 CREATE TABLE tracking_templates (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
