@@ -340,7 +340,7 @@ export function ProgrammeCard({
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="text-13 text-graphite text-left"
+              className="min-h-11 flex items-center text-13 text-graphite text-left"
             >
               {expanded ? "Voir moins" : restCount === 1 ? "et 1 autre" : `et ${restCount} autres`}
             </button>
@@ -380,6 +380,8 @@ export function ProgrammeCard({
   );
 }
 ```
+
+Note : `min-h-11` (44px, échelle Tailwind par défaut) satisfait la contrainte de cible tactile ≥44px des Global Constraints — le texte reste visuellement `text-13`, seule la zone cliquable grandit, cohérent avec le pattern déjà utilisé pour une ligne texte tappable ailleurs dans l'app (`src/components/programme/ProgrammeScreen.tsx:73`, `min-h-11 ... text-left`).
 
 - [ ] **Step 4: Lancer le test, vérifier qu'il passe**
 
@@ -568,7 +570,7 @@ export function BackPainCard({
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="text-13 text-graphite text-left"
+              className="min-h-11 flex items-center text-13 text-graphite text-left"
             >
               {expanded ? "Voir moins" : restCount === 1 ? "et 1 autre" : `et ${restCount} autres`}
             </button>
