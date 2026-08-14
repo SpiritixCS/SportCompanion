@@ -16,6 +16,8 @@ Hors périmètre : plusieurs rotations/programmes actifs en parallèle, cible va
 Additive, aucune donnée existante affectée.
 
 ```sql
+ALTER TABLE tracking_seances ADD COLUMN template_id INTEGER REFERENCES tracking_templates(id);
+
 CREATE TABLE tracking_templates (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nom TEXT NOT NULL,
@@ -24,7 +26,7 @@ CREATE TABLE tracking_templates (
 
 CREATE TABLE tracking_template_exercises (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  template_id INTEGER NOT NULL REFERENCES tracking_templates(id) ON DELETE CASCADE,
+  template_id INTEGER NOT NULL REFERENCES tracking_templates(id),
   ordre INTEGER NOT NULL,
   exercise_name TEXT NOT NULL,
   unit TEXT NOT NULL CHECK (unit IN ('reps', 'seconds')),
@@ -34,24 +36,28 @@ CREATE TABLE tracking_template_exercises (
 );
 
 CREATE TABLE tracking_program_rotation (
-  template_id INTEGER PRIMARY KEY REFERENCES tracking_templates(id) ON DELETE CASCADE,
+  template_id INTEGER PRIMARY KEY REFERENCES tracking_templates(id),
   position INTEGER NOT NULL UNIQUE
 );
 
 CREATE TABLE tracking_program_state (
   id INTEGER PRIMARY KEY CHECK (id = 1),
-  pointer_template_id INTEGER REFERENCES tracking_templates(id) ON DELETE SET NULL
+  pointer_template_id INTEGER REFERENCES tracking_templates(id)
 );
 
 CREATE TABLE tracking_skipped_exercises (
-  seance_id INTEGER NOT NULL REFERENCES tracking_seances(id) ON DELETE CASCADE,
+  seance_id INTEGER NOT NULL REFERENCES tracking_seances(id),
   exercise_order INTEGER NOT NULL,
   skipped_at TEXT NOT NULL,
   PRIMARY KEY (seance_id, exercise_order)
 );
 ```
 
-`tracking_program_state` est un singleton (`id = 1`, pattern déjà utilisé par `current_position` et `app_settings`). `pointer_template_id NULL` signifie « pas de rotation active » (aucun modèle dans `tracking_program_rotation`, ou rotation vidée). Supprimer un modèle référencé par la rotation le retire de `tracking_program_rotation` en cascade ; si c'était le pointeur, celui-ci retombe sur le premier modèle restant de la rotation (ou `NULL` si la rotation est vide).
+`tracking_seances.template_id` (nullable) marque une séance comme issue d'un modèle plutôt que du journal libre — nécessaire pour la reprise : `getOrStartSeance` reprend la séance active telle quelle (l'app n'autorise qu'une séance active à la fois, invariant déjà existant), mais la page player doit savoir si elle correspond au modèle demandé ou à une autre séance (libre ou modèle différent) pour ne jamais mélanger les deux silencieusement — voir §Player guidé.
+
+`tracking_program_state` est un singleton (`id = 1`, pattern déjà utilisé par `current_position` et `app_settings`). `pointer_template_id NULL` signifie « pas de rotation active » (aucun modèle dans `tracking_program_rotation`, ou rotation vidée).
+
+Aucune contrainte `FOREIGN KEY` n'est appliquée à l'exécution dans ce projet (`PRAGMA foreign_keys` n'est jamais activé côté client DB — voir `src/lib/db/client.ts`) : les `REFERENCES` ci-dessus documentent l'intention mais ne suppriment rien automatiquement, comme c'est déjà le cas pour `tracking_sets_logged` → `tracking_seances`. Supprimer un modèle est donc une opération applicative qui nettoie explicitement `tracking_template_exercises`, sa ligne dans `tracking_program_rotation`, et recale le pointeur s'il pointait dessus (vers le premier modèle restant de la rotation, ou `NULL` si elle est vide) — même logique que `deleteSeance` qui nettoie déjà `tracking_sets_logged` à la main.
 
 Les séries réellement loggées vivent dans `tracking_seances` / `tracking_sets_logged`, **inchangées** — voir §Player guidé.
 
@@ -82,7 +88,7 @@ Nouvelle fonction `templateAsTrainDay(template): TrainDay` (`src/lib/tracking/te
 
 Nouvelle route `/player/tracking?templateId=…`, miroir de `src/app/player/page.tsx` :
 1. Charge le modèle, le convertit en `TrainDay`.
-2. `getOrStartSeance` (fonction **existante** de `src/lib/tracking/db.ts`, réutilisée telle quelle — la séance est une `tracking_seances` normale).
+2. `getOrStartSeance(db, templateId)` (fonction **existante** de `src/lib/tracking/db.ts`, étendue d'un paramètre `templateId` optionnel — reprend la séance active telle quelle si elle existe, quel que soit son `template_id` : une seule séance active à la fois, invariant déjà en place). Si la séance active reprise ne correspond pas au `templateId` demandé (une autre séance, libre ou d'un autre modèle, est en cours), la page affiche un message explicite plutôt que de mélanger les deux silencieusement — cohérent avec CLAUDE.md §7 sur la persistance.
 3. État du player dérivé avec `deriveState` (fonction **existante** de `src/lib/player/deriveState.ts` — générique sur `{exerciseOrder, setNumber}[]`, aucune dépendance au schéma Programme, réutilisable tel quel sur des lignes `tracking_sets_logged` qui portent déjà ces deux colonnes) + `tracking_skipped_exercises` pour les exercices passés.
 4. `onLogSet` → nouvelle action `logTemplateSetAction`, qui appelle `logSetForExercise` avec un paramètre `exerciseOrder` optionnel ajouté à sa signature (`src/lib/tracking/db.ts`) : quand fourni, la ligne est insérée à cet ordre explicite (position du modèle) au lieu de le déduire de l'ordre d'apparition — nécessaire car un exercice sauté ne doit pas décaler l'ordre des suivants. Le journal libre existant continue d'appeler la fonction sans ce paramètre, comportement inchangé.
 5. `onSeanceFinish` → `completeTrackingSeanceAction` (**existante**), puis `advancePointer(db, templateId)`.
