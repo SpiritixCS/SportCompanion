@@ -164,7 +164,7 @@ describe("AujourdhuiScreen", () => {
       <AujourdhuiScreen
         state={NORMAL_PROGRAMME_STATE}
         dosState={null}
-        trackingState={{ activeSeanceId: null, seances: [] }}
+        trackingState={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }}
         user={CLEMENT}
       />,
     );
@@ -176,7 +176,7 @@ describe("AujourdhuiScreen", () => {
       <AujourdhuiScreen
         state={{ phase: "empty" }}
         dosState={null}
-        trackingState={{ activeSeanceId: null, seances: [] }}
+        trackingState={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }}
         user={CLEMENT}
       />,
     );
@@ -189,7 +189,7 @@ describe("AujourdhuiScreen", () => {
       <AujourdhuiScreen
         state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
         dosState={null}
-        trackingState={{ activeSeanceId: 3, seances: [] }}
+        trackingState={{ activeSeance: { id: 3, templateId: null }, seances: [], todayTemplate: null, rotationTemplates: [] }}
         user={CLEMENT}
       />,
     );
