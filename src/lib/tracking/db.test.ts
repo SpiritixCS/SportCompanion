@@ -237,6 +237,16 @@ describe("deleteSeance", () => {
     expect(getSeanceById(db, seanceB.id)).not.toBeNull();
     expect(getSetsForSeance(db, seanceB.id)).toHaveLength(1);
   });
+
+  it("removes a seance that has skipped exercises", () => {
+    const db = setup();
+    const seance = startSeance(db);
+    skipExercise(db, seance.id, 0);
+    completeSeance(db, seance.id);
+    expect(() => deleteSeance(db, seance.id)).not.toThrow();
+    expect(getSeanceById(db, seance.id)).toBeNull();
+    expect(getSkippedExercises(db, seance.id)).toHaveLength(0);
+  });
 });
 
 describe("listCompletedSeances", () => {

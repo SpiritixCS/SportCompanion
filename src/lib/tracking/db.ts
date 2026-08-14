@@ -145,6 +145,7 @@ export function deleteSetsForExercise(db: Database.Database, seanceId: number, e
 
 export function deleteSeance(db: Database.Database, seanceId: number): void {
   db.prepare(`DELETE FROM tracking_sets_logged WHERE seance_id = ?`).run(seanceId);
+  db.prepare(`DELETE FROM tracking_skipped_exercises WHERE seance_id = ?`).run(seanceId);
   db.prepare(`DELETE FROM tracking_seances WHERE id = ?`).run(seanceId);
 }
 
