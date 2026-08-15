@@ -284,25 +284,25 @@ describe("listCompletedSeances", () => {
   });
 });
 
-describe("seance templateId", () => {
-  it("defaults to null when no template is given", () => {
+describe("seance dayOfWeek", () => {
+  it("defaults to null when no day is given", () => {
     const db = setup();
-    expect(startSeance(db).templateId).toBeNull();
+    expect(startSeance(db).dayOfWeek).toBeNull();
   });
 
-  it("carries the template id through to getOrStartSeance and getActiveSeance", () => {
+  it("carries the day of week through to getOrStartSeance and getActiveSeance", () => {
     const db = setup();
     startSeance(db, 5);
-    expect(getActiveSeance(db)!.templateId).toBe(5);
-    expect(getOrStartSeance(db, 5).templateId).toBe(5);
+    expect(getActiveSeance(db)!.dayOfWeek).toBe(5);
+    expect(getOrStartSeance(db, 5).dayOfWeek).toBe(5);
   });
 
-  it("resumes whatever is active regardless of the templateId requested", () => {
+  it("resumes whatever is active regardless of the dayOfWeek requested", () => {
     const db = setup();
     const started = startSeance(db, 5);
     const resumed = getOrStartSeance(db, 9);
     expect(resumed.id).toBe(started.id);
-    expect(resumed.templateId).toBe(5);
+    expect(resumed.dayOfWeek).toBe(5);
   });
 });
 

@@ -2,7 +2,7 @@ import type Database from "better-sqlite3";
 
 export type TrackingUnit = "reps" | "seconds";
 export type TrackingExercise = { id: number; name: string; unit: TrackingUnit; createdAt: string };
-export type TrackingSeance = { id: number; startedAt: string; completedAt: string | null; templateId: number | null };
+export type TrackingSeance = { id: number; startedAt: string; completedAt: string | null; dayOfWeek: number | null };
 export type TrackingSetWithExercise = {
   id: number;
   seanceId: number;
@@ -43,8 +43,8 @@ export function listExercises(db: Database.Database): { name: string; unit: Trac
   }[];
 }
 
-function mapSeance(row: { id: number; started_at: string; completed_at: string | null; template_id: number | null }): TrackingSeance {
-  return { id: row.id, startedAt: row.started_at, completedAt: row.completed_at, templateId: row.template_id };
+function mapSeance(row: { id: number; started_at: string; completed_at: string | null; program_day_of_week: number | null }): TrackingSeance {
+  return { id: row.id, startedAt: row.started_at, completedAt: row.completed_at, dayOfWeek: row.program_day_of_week };
 }
 
 export function getActiveSeance(db: Database.Database): TrackingSeance | null {
@@ -54,20 +54,20 @@ export function getActiveSeance(db: Database.Database): TrackingSeance | null {
   return row ? mapSeance(row) : null;
 }
 
-export function startSeance(db: Database.Database, templateId: number | null = null): TrackingSeance {
+export function startSeance(db: Database.Database, dayOfWeek: number | null = null): TrackingSeance {
   const startedAt = new Date().toISOString();
   const result = db
-    .prepare(`INSERT INTO tracking_seances (started_at, template_id) VALUES (?, ?)`)
-    .run(startedAt, templateId);
-  return { id: Number(result.lastInsertRowid), startedAt, completedAt: null, templateId };
+    .prepare(`INSERT INTO tracking_seances (started_at, program_day_of_week) VALUES (?, ?)`)
+    .run(startedAt, dayOfWeek);
+  return { id: Number(result.lastInsertRowid), startedAt, completedAt: null, dayOfWeek };
 }
 
-// Resumes whatever seance is active, regardless of the templateId requested —
+// Resumes whatever seance is active, regardless of the dayOfWeek requested —
 // only one seance is ever active at a time (product invariant). Callers that
 // care whether the resumed seance actually matches their context must check
-// its .templateId themselves (see loadTemplatePlayerState's "wrong-seance" phase).
-export function getOrStartSeance(db: Database.Database, templateId: number | null = null): TrackingSeance {
-  return getActiveSeance(db) ?? startSeance(db, templateId);
+// its .dayOfWeek themselves (see loadDayPlayerState's "wrong-seance" phase).
+export function getOrStartSeance(db: Database.Database, dayOfWeek: number | null = null): TrackingSeance {
+  return getActiveSeance(db) ?? startSeance(db, dayOfWeek);
 }
 
 export function getSeanceById(db: Database.Database, id: number): TrackingSeance | null {
