@@ -4,8 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
-import { createTemplate } from "./templates";
-import { getRotation, setRotation, advancePointer, getTodayTemplateId } from "./program";
+import { getProgramDays, getProgramDay, setDayRest, setDayExercises, getPointer, advancePointer, WEEKDAY_LABELS } from "./program";
 
 let tmpDir: string;
 
@@ -20,75 +19,71 @@ function setup() {
   return db;
 }
 
-describe("getRotation", () => {
-  it("returns an empty rotation and a null pointer initially", () => {
+describe("getProgramDays", () => {
+  it("returns all 7 days in order, resting with no exercises", () => {
     const db = setup();
-    expect(getRotation(db)).toEqual({ entries: [], pointerTemplateId: null });
+    const days = getProgramDays(db);
+    expect(days).toHaveLength(7);
+    expect(days.map((d) => d.dayOfWeek)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(days.map((d) => d.label)).toEqual([...WEEKDAY_LABELS]);
+    expect(days.every((d) => d.isRest)).toBe(true);
+    expect(days.every((d) => d.exercises.length === 0)).toBe(true);
   });
 });
 
-describe("setRotation", () => {
-  it("orders entries as given and points to the first one when nothing was set before", () => {
+describe("getProgramDay", () => {
+  it("returns a single day by index", () => {
     const db = setup();
-    const push = createTemplate(db, "Push", []);
-    const pull = createTemplate(db, "Pull", []);
-    const rotation = setRotation(db, [push.id, pull.id]);
-    expect(rotation.entries.map((e) => e.templateId)).toEqual([push.id, pull.id]);
-    expect(rotation.pointerTemplateId).toBe(push.id);
-  });
-
-  it("keeps the current pointer when it's still in the new rotation", () => {
-    const db = setup();
-    const push = createTemplate(db, "Push", []);
-    const pull = createTemplate(db, "Pull", []);
-    setRotation(db, [push.id, pull.id]);
-    advancePointer(db, push.id);
-
-    const rotation = setRotation(db, [pull.id, push.id]);
-    expect(rotation.pointerTemplateId).toBe(pull.id);
-  });
-
-  it("falls back to the first entry when the current pointer drops out of the rotation", () => {
-    const db = setup();
-    const push = createTemplate(db, "Push", []);
-    const pull = createTemplate(db, "Pull", []);
-    const legs = createTemplate(db, "Legs", []);
-    setRotation(db, [push.id, pull.id]);
-
-    const rotation = setRotation(db, [legs.id]);
-    expect(rotation.pointerTemplateId).toBe(legs.id);
-  });
-
-  it("falls back to a null pointer for an empty rotation", () => {
-    const db = setup();
-    const push = createTemplate(db, "Push", []);
-    setRotation(db, [push.id]);
-    expect(setRotation(db, []).pointerTemplateId).toBeNull();
+    expect(getProgramDay(db, 2)).toEqual({ dayOfWeek: 2, label: "Mercredi", isRest: true, exercises: [] });
   });
 });
 
-describe("advancePointer", () => {
-  it("moves to the next entry, wrapping around at the end", () => {
+describe("setDayRest", () => {
+  it("toggles a day to séance and back to repos", () => {
     const db = setup();
-    const push = createTemplate(db, "Push", []);
-    const pull = createTemplate(db, "Pull", []);
-    setRotation(db, [push.id, pull.id]);
-
-    advancePointer(db, push.id);
-    expect(getTodayTemplateId(db)).toBe(pull.id);
-
-    advancePointer(db, pull.id);
-    expect(getTodayTemplateId(db)).toBe(push.id);
+    expect(setDayRest(db, 1, false).isRest).toBe(false);
+    expect(getProgramDay(db, 1).isRest).toBe(false);
+    expect(setDayRest(db, 1, true).isRest).toBe(true);
   });
 
-  it("does nothing when the completed template is no longer in the rotation", () => {
+  it("preserves exercises when toggling back to repos then séance", () => {
     const db = setup();
-    const push = createTemplate(db, "Push", []);
-    const pull = createTemplate(db, "Pull", []);
-    setRotation(db, [push.id, pull.id]);
-    setRotation(db, [pull.id]);
+    setDayRest(db, 0, false);
+    setDayExercises(db, 0, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
+    setDayRest(db, 0, true);
+    const day = setDayRest(db, 0, false);
+    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
+  });
+});
 
-    advancePointer(db, push.id);
-    expect(getTodayTemplateId(db)).toBe(pull.id);
+describe("setDayExercises", () => {
+  it("replaces the exercise list in block, in order", () => {
+    const db = setup();
+    setDayExercises(db, 0, [
+      { name: "Développé couché", unit: "reps", setsCount: 4, targetValue: 8 },
+      { name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 },
+    ]);
+    const updated = setDayExercises(db, 0, [{ name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15 }]);
+    expect(updated.exercises).toEqual([{ ordre: 0, name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15 }]);
+  });
+
+  it("rejects an unknown dayOfWeek", () => {
+    const db = setup();
+    expect(() => setDayExercises(db, 9, [])).toThrow();
+  });
+});
+
+describe("pointer", () => {
+  it("starts at day 0", () => {
+    const db = setup();
+    expect(getPointer(db)).toBe(0);
+  });
+
+  it("advances by 1 and wraps around after day 6", () => {
+    const db = setup();
+    for (let expected = 1; expected <= 6; expected++) {
+      expect(advancePointer(db)).toBe(expected);
+    }
+    expect(advancePointer(db)).toBe(0);
   });
 });

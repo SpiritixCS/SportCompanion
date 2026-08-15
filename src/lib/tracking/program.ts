@@ -1,51 +1,68 @@
+// src/lib/tracking/program.ts
 import type Database from "better-sqlite3";
+import type { TrackingUnit } from "./db";
 
-export type RotationEntry = { templateId: number; nom: string; position: number };
-export type Rotation = { entries: RotationEntry[]; pointerTemplateId: number | null };
+export const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"] as const;
 
-export function getRotation(db: Database.Database): Rotation {
-  const entries = db
+export type DayExerciseInput = { name: string; unit: TrackingUnit; setsCount: number; targetValue: number };
+export type DayExercise = DayExerciseInput & { ordre: number };
+export type TrackingProgramDay = { dayOfWeek: number; label: string; isRest: boolean; exercises: DayExercise[] };
+
+function getDayExercises(db: Database.Database, dayOfWeek: number): DayExercise[] {
+  return db
     .prepare(
-      `SELECT r.template_id AS templateId, t.nom AS nom, r.position AS position
-       FROM tracking_program_rotation r JOIN tracking_templates t ON t.id = r.template_id
-       ORDER BY r.position ASC`,
+      `SELECT ordre, exercise_name AS name, unit, sets_count AS setsCount, target_value AS targetValue
+       FROM tracking_program_day_exercises WHERE day_of_week = ? ORDER BY ordre ASC`,
     )
-    .all() as RotationEntry[];
-  const state = db
-    .prepare(`SELECT pointer_template_id AS pointerTemplateId FROM tracking_program_state WHERE id = 1`)
-    .get() as { pointerTemplateId: number | null } | undefined;
-  return { entries, pointerTemplateId: state?.pointerTemplateId ?? null };
+    .all(dayOfWeek) as DayExercise[];
 }
 
-export function setRotation(db: Database.Database, templateIds: number[]): Rotation {
-  const apply = db.transaction(() => {
-    db.prepare(`DELETE FROM tracking_program_rotation`).run();
-    const insert = db.prepare(`INSERT INTO tracking_program_rotation (template_id, position) VALUES (?, ?)`);
-    templateIds.forEach((templateId, position) => insert.run(templateId, position));
+export function getProgramDay(db: Database.Database, dayOfWeek: number): TrackingProgramDay {
+  const row = db.prepare(`SELECT is_rest AS isRest FROM tracking_program_days WHERE day_of_week = ?`).get(dayOfWeek) as
+    | { isRest: number }
+    | undefined;
+  if (!row) throw new Error(`Jour de semaine inconnu : ${dayOfWeek}`);
+  return {
+    dayOfWeek,
+    label: WEEKDAY_LABELS[dayOfWeek]!,
+    isRest: row.isRest === 1,
+    exercises: getDayExercises(db, dayOfWeek),
+  };
+}
 
-    const current = db
-      .prepare(`SELECT pointer_template_id AS pointerTemplateId FROM tracking_program_state WHERE id = 1`)
-      .get() as { pointerTemplateId: number | null } | undefined;
-    const pointerStillValid = current?.pointerTemplateId != null && templateIds.includes(current.pointerTemplateId);
-    const nextPointer = pointerStillValid ? current!.pointerTemplateId : (templateIds[0] ?? null);
-    db.prepare(`INSERT OR REPLACE INTO tracking_program_state (id, pointer_template_id) VALUES (1, ?)`).run(nextPointer);
+export function getProgramDays(db: Database.Database): TrackingProgramDay[] {
+  return Array.from({ length: 7 }, (_, dayOfWeek) => getProgramDay(db, dayOfWeek));
+}
+
+export function setDayRest(db: Database.Database, dayOfWeek: number, isRest: boolean): TrackingProgramDay {
+  db.prepare(`UPDATE tracking_program_days SET is_rest = ? WHERE day_of_week = ?`).run(isRest ? 1 : 0, dayOfWeek);
+  return getProgramDay(db, dayOfWeek);
+}
+
+export function setDayExercises(db: Database.Database, dayOfWeek: number, exercises: DayExerciseInput[]): TrackingProgramDay {
+  const apply = db.transaction(() => {
+    db.prepare(`DELETE FROM tracking_program_day_exercises WHERE day_of_week = ?`).run(dayOfWeek);
+    const insert = db.prepare(
+      `INSERT INTO tracking_program_day_exercises (day_of_week, ordre, exercise_name, unit, sets_count, target_value)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    );
+    exercises.forEach((exercise, ordre) =>
+      insert.run(dayOfWeek, ordre, exercise.name, exercise.unit, exercise.setsCount, exercise.targetValue),
+    );
   });
   apply();
-  return getRotation(db);
+  return getProgramDay(db, dayOfWeek);
 }
 
-// Advances by array position within the current rotation, never by raw
-// `position` column values — those can have gaps once a template has been
-// removed and re-added, but the array order read back from getRotation is
-// always contiguous.
-export function advancePointer(db: Database.Database, completedTemplateId: number): void {
-  const { entries } = getRotation(db);
-  const index = entries.findIndex((e) => e.templateId === completedTemplateId);
-  if (index === -1) return;
-  const next = entries[(index + 1) % entries.length]!;
-  db.prepare(`INSERT OR REPLACE INTO tracking_program_state (id, pointer_template_id) VALUES (1, ?)`).run(next.templateId);
+export function getPointer(db: Database.Database): number {
+  const row = db.prepare(`SELECT pointer_day_of_week AS pointerDayOfWeek FROM tracking_program_state WHERE id = 1`).get() as {
+    pointerDayOfWeek: number;
+  };
+  return row.pointerDayOfWeek;
 }
 
-export function getTodayTemplateId(db: Database.Database): number | null {
-  return getRotation(db).pointerTemplateId;
+export function advancePointer(db: Database.Database): number {
+  const next = (getPointer(db) + 1) % 7;
+  db.prepare(`UPDATE tracking_program_state SET pointer_day_of_week = ? WHERE id = 1`).run(next);
+  return next;
 }
