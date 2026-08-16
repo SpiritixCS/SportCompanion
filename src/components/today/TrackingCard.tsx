@@ -112,12 +112,24 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
         </div>
       )}
 
-      <Link
-        href={`/player/tracking?day=${programDay.dayOfWeek}`}
-        className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
-      >
-        Commencer
-      </Link>
+      {programDay.exercises.length === 0 ? (
+        <>
+          <p className="mt-5 text-15 text-graphite">Aucun exercice configuré pour ce jour.</p>
+          <Link
+            href="/tracking/programme"
+            className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+          >
+            Configurer le programme
+          </Link>
+        </>
+      ) : (
+        <Link
+          href={`/player/tracking?day=${programDay.dayOfWeek}`}
+          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+        >
+          Commencer
+        </Link>
+      )}
     </Card>
   );
 }

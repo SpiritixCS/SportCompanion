@@ -49,6 +49,24 @@ describe("TrackingCard", () => {
     expect(screen.getByRole("link", { name: "Commencer" })).toHaveAttribute("href", "/player/tracking?day=0");
   });
 
+  it("shows a fallback message and a link to the programme instead of Commencer when a séance day has no exercises", () => {
+    render(
+      <TrackingCard
+        state={{
+          ...REST_STATE,
+          programDay: { dayOfWeek: 0, label: "Lundi", isRest: false, exercises: [] },
+        }}
+      />,
+    );
+    expect(screen.getByText("Lundi")).toBeInTheDocument();
+    expect(screen.getByText("Aucun exercice configuré pour ce jour.")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Commencer" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Configurer le programme" })).toHaveAttribute(
+      "href",
+      "/tracking/programme",
+    );
+  });
+
   it("shows Reprendre linking to the guided player when a seance is active for a day", () => {
     render(
       <TrackingCard
