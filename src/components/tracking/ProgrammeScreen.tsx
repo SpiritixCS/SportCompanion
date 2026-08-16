@@ -5,45 +5,43 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/Card";
-import { Sheet } from "@/components/Sheet";
-import { IconClose } from "@/components/icons/IconClose";
-import { TemplateEditor } from "./TemplateEditor";
-import { createTemplateAction, updateTemplateAction, deleteTemplateAction, setRotationAction } from "@/lib/tracking/actions";
-import type { TemplateExerciseInput, Template } from "@/lib/tracking/templates";
+import { DayEditor } from "./DayEditor";
+import { setDayRestAction, setDayExercisesAction } from "@/lib/tracking/actions";
+import type { DayExerciseInput, TrackingProgramDay } from "@/lib/tracking/program";
 import type { TrackingUnit } from "@/lib/tracking/db";
-import type { Rotation } from "@/lib/tracking/program";
-
-type EditorState = { mode: "create" } | { mode: "edit"; template: Template } | null;
 
 function pillClass(active: boolean): string {
   return `h-9 px-3 rounded-pill text-13 font-medium ${active ? "bg-ink text-paper" : "bg-paper border border-hairline text-ink"}`;
 }
 
 export function ProgrammeScreen({
-  templates,
-  rotation,
+  days,
   exerciseSuggestions,
 }: {
-  templates: Template[];
-  rotation: Rotation;
+  days: TrackingProgramDay[];
   exerciseSuggestions: { name: string; unit: TrackingUnit }[];
 }) {
   const router = useRouter();
-  const [editor, setEditor] = useState<EditorState>(null);
+  const [editingDay, setEditingDay] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<Template | null>(null);
 
-  async function handleSave(nom: string, exercises: TemplateExerciseInput[]) {
+  async function handleToggleRest(dayOfWeek: number, isRest: boolean) {
+    setError(false);
+    try {
+      await setDayRestAction(dayOfWeek, isRest);
+      router.refresh();
+    } catch {
+      setError(true);
+    }
+  }
+
+  async function handleSaveExercises(dayOfWeek: number, exercises: DayExerciseInput[]) {
     setSaving(true);
     setError(false);
     try {
-      if (editor?.mode === "edit") {
-        await updateTemplateAction(editor.template.id, nom, exercises);
-      } else {
-        await createTemplateAction(nom, exercises);
-      }
-      setEditor(null);
+      await setDayExercisesAction(dayOfWeek, exercises);
+      setEditingDay(null);
       router.refresh();
     } catch {
       setError(true);
@@ -52,64 +50,21 @@ export function ProgrammeScreen({
     }
   }
 
-  async function handleDelete(templateId: number) {
-    setError(false);
-    setPendingDelete(null);
-    try {
-      await deleteTemplateAction(templateId);
-      router.refresh();
-    } catch {
-      setError(true);
-    }
-  }
-
-  async function handleToggleRotation(templateId: number) {
-    setError(false);
-    const currentIds = rotation.entries.map((e) => e.templateId);
-    const nextIds = currentIds.includes(templateId)
-      ? currentIds.filter((id) => id !== templateId)
-      : [...currentIds, templateId];
-    try {
-      await setRotationAction(nextIds);
-      router.refresh();
-    } catch {
-      setError(true);
-    }
-  }
-
-  async function handleMoveRotation(templateId: number, direction: -1 | 1) {
-    setError(false);
-    const ids = rotation.entries.map((e) => e.templateId);
-    const index = ids.indexOf(templateId);
-    const target = index + direction;
-    if (target < 0 || target >= ids.length) return;
-    [ids[index], ids[target]] = [ids[target]!, ids[index]!];
-    try {
-      await setRotationAction(ids);
-      router.refresh();
-    } catch {
-      setError(true);
-    }
-  }
-
-  if (editor) {
+  if (editingDay !== null) {
+    const day = days.find((d) => d.dayOfWeek === editingDay)!;
     return (
-      <TemplateEditor
-        initialNom={editor.mode === "edit" ? editor.template.nom : ""}
-        initialExercises={editor.mode === "edit" ? editor.template.exercises : []}
+      <DayEditor
+        initialExercises={day.exercises}
         exerciseSuggestions={exerciseSuggestions}
         saving={saving}
         error={error}
-        onSave={handleSave}
-        onCancel={() => setEditor(null)}
+        onSave={(exercises) => handleSaveExercises(editingDay, exercises)}
+        onCancel={() => setEditingDay(null)}
       />
     );
   }
 
-  const rotationIds = new Set(rotation.entries.map((e) => e.templateId));
-
   return (
-    <>
     <div className="p-5 flex flex-col gap-8">
       <div>
         <Link href="/tracking" className="text-15 text-graphite">
@@ -124,100 +79,39 @@ export function ProgrammeScreen({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => setEditor({ mode: "create" })}
-        className="h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
-      >
-        Nouveau modèle
-      </button>
-
-      {templates.length === 0 ? (
-        <p className="text-15 text-graphite">Aucun modèle pour l&apos;instant.</p>
-      ) : (
-        <Card className="overflow-hidden">
-          {templates.map((template, i) => {
-            const inRotation = rotationIds.has(template.id);
-            const rotationIndex = rotation.entries.findIndex((e) => e.templateId === template.id);
-            return (
-              <div key={template.id} className={`px-5 py-3.5 ${i > 0 ? "border-t border-hairline" : ""}`}>
-                <div className="flex items-center gap-2">
-                  <button type="button" onClick={() => setEditor({ mode: "edit", template })} className="flex-1 text-left min-w-0">
-                    <div className="text-15 font-medium">{template.nom}</div>
-                    <div className="text-13 text-graphite mt-0.5">
-                      {template.exercises.length} exercice{template.exercises.length > 1 ? "s" : ""}
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPendingDelete(template)}
-                    aria-label={`Supprimer ${template.nom}`}
-                    className="text-graphite flex-none w-9 h-9 flex items-center justify-center"
-                  >
-                    <IconClose size={16} />
-                  </button>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleRotation(template.id)}
-                    // Un modèle vide n'a rien à jouer — il ne peut pas entrer dans la rotation.
-                    disabled={!inRotation && template.exercises.length === 0}
-                    title={!inRotation && template.exercises.length === 0 ? "Ajoute au moins un exercice" : undefined}
-                    className={`${pillClass(inRotation)} disabled:opacity-30`}
-                  >
-                    {inRotation ? "Dans la rotation" : "Ajouter à la rotation"}
-                  </button>
-                  {inRotation && (
-                    <>
-                      <button
-                        type="button"
-                        aria-label={`Monter ${template.nom} dans la rotation`}
-                        onClick={() => handleMoveRotation(template.id, -1)}
-                        disabled={rotationIndex === 0}
-                        className="w-9 h-9 flex items-center justify-center text-graphite disabled:opacity-30"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Descendre ${template.nom} dans la rotation`}
-                        onClick={() => handleMoveRotation(template.id, 1)}
-                        disabled={rotationIndex === rotation.entries.length - 1}
-                        className="w-9 h-9 flex items-center justify-center text-graphite disabled:opacity-30"
-                      >
-                        ↓
-                      </button>
-                    </>
-                  )}
-                </div>
+      <Card className="overflow-hidden">
+        {days.map((day, i) => (
+          <div key={day.dayOfWeek} className={`px-5 py-3.5 ${i > 0 ? "border-t border-hairline" : ""}`}>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="text-15 font-medium">{day.label}</div>
+                {!day.isRest && (
+                  <div className="text-13 text-graphite mt-0.5">
+                    {day.exercises.length} exercice{day.exercises.length > 1 ? "s" : ""}
+                  </div>
+                )}
               </div>
-            );
-          })}
-        </Card>
-      )}
+              {!day.isRest && (
+                <button
+                  type="button"
+                  onClick={() => setEditingDay(day.dayOfWeek)}
+                  className="h-9 px-3 rounded-pill border border-hairline text-13 font-medium text-ink"
+                >
+                  Modifier
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <button type="button" onClick={() => handleToggleRest(day.dayOfWeek, false)} className={pillClass(!day.isRest)}>
+                Séance
+              </button>
+              <button type="button" onClick={() => handleToggleRest(day.dayOfWeek, true)} className={pillClass(day.isRest)}>
+                Repos
+              </button>
+            </div>
+          </div>
+        ))}
+      </Card>
     </div>
-    <Sheet open={pendingDelete !== null} onClose={() => setPendingDelete(null)} title="Supprimer ce modèle ?">
-      <p className="text-15 text-graphite leading-relaxed">
-        « {pendingDelete?.nom} » sera supprimé et retiré de la rotation. C&apos;est définitif.
-      </p>
-      <div className="flex flex-col gap-2.5 mt-6">
-        <button
-          type="button"
-          onClick={() => pendingDelete && handleDelete(pendingDelete.id)}
-          className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold"
-        >
-          Supprimer
-        </button>
-        <button
-          type="button"
-          onClick={() => setPendingDelete(null)}
-          className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
-        >
-          Annuler
-        </button>
-      </div>
-    </Sheet>
-    </>
   );
 }
