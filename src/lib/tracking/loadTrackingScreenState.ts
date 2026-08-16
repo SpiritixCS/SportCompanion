@@ -37,7 +37,10 @@ function summarizeActiveSets(sets: TrackingSetWithExercise[]): ActiveSeanceExerc
 export function loadTrackingScreenState(db: Database.Database): TrackingScreenState {
   const active = getActiveSeance(db);
   const programDay = getProgramDay(db, getPointer(db));
-  const activeDay = active && active.dayOfWeek !== null ? getProgramDay(db, active.dayOfWeek) : null;
+  const activeDay =
+    active && active.dayOfWeek !== null && active.dayOfWeek >= 0 && active.dayOfWeek <= 6
+      ? getProgramDay(db, active.dayOfWeek)
+      : null;
 
   return {
     programDay,

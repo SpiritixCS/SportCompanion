@@ -89,4 +89,19 @@ describe("loadTrackingScreenState", () => {
     expect(loadTrackingScreenState(db).programDay.dayOfWeek).toBe(1);
     expect(loadTrackingScreenState(db).programDay.label).toBe("Mardi");
   });
+
+  it("treats an out-of-range dayOfWeek on the active seance like a legacy/freeform seance instead of throwing", () => {
+    const db = setup();
+    const active = startSeance(db, 9);
+    logSetForExercise(db, active.id, "Squats", "reps", 10, 3);
+
+    const state = loadTrackingScreenState(db);
+    expect(state.activeSeance).toEqual({
+      id: active.id,
+      dayOfWeek: 9,
+      dayLabel: null,
+      plannedExercises: null,
+      loggedExercises: [{ name: "Squats", unit: "reps", setsCount: 3, totalValue: 30 }],
+    });
+  });
 });

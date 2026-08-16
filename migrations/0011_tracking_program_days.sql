@@ -32,3 +32,9 @@ CREATE TABLE tracking_program_state (
 INSERT INTO tracking_program_state (id, pointer_day_of_week) VALUES (1, 0);
 
 ALTER TABLE tracking_seances RENAME COLUMN template_id TO program_day_of_week;
+
+-- Les anciennes valeurs de template_id (ids arbitraires du modèle "modèles + rotation")
+-- n'ont aucun rapport avec un jour de semaine 0-6 : les préserver ferait planter ou
+-- mal attribuer les séances actives. On les remet à NULL, ce qui fait suivre à ces
+-- séances le chemin de secours "legacy/freeform" déjà géré par l'application.
+UPDATE tracking_seances SET program_day_of_week = NULL;

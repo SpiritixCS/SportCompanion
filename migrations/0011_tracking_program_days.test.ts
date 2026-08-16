@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, copyFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
@@ -16,6 +16,22 @@ function setup() {
   const db = getDb(path.join(tmpDir, "test.db"));
   runMigrations(db, path.join(process.cwd(), "migrations"));
   return db;
+}
+
+// Applies only migrations 0001-0010 (pre-0011 schema, template_id still present on
+// tracking_seances), so a test can insert a row the way it would have looked BEFORE
+// 0011 renamed/nulled the column, then apply 0011 separately to exercise that step.
+function setupBefore0011() {
+  tmpDir = mkdtempSync(path.join(tmpdir(), "sportcompanion-migration-0011-pre-"));
+  const migrationsDir = path.join(process.cwd(), "migrations");
+  const preDir = path.join(tmpDir, "migrations-pre");
+  mkdirSync(preDir);
+  for (const filename of readdirSync(migrationsDir).filter((f) => f.endsWith(".sql") && f < "0011")) {
+    copyFileSync(path.join(migrationsDir, filename), path.join(preDir, filename));
+  }
+  const db = getDb(path.join(tmpDir, "test.db"));
+  runMigrations(db, preDir);
+  return { db, migrationsDir };
 }
 
 describe("0011_tracking_program_days migration", () => {
@@ -71,6 +87,19 @@ describe("0011_tracking_program_days migration", () => {
   it("renames tracking_seances.template_id to program_day_of_week, nullable", () => {
     const db = setup();
     db.prepare(`INSERT INTO tracking_seances (started_at) VALUES (?)`).run("2026-08-15T00:00:00.000Z");
+    const row = db.prepare(`SELECT program_day_of_week AS programDayOfWeek FROM tracking_seances`).get();
+    expect(row).toEqual({ programDayOfWeek: null });
+  });
+
+  it("nulls out a pre-existing template_id value when renaming the column to program_day_of_week", () => {
+    const { db, migrationsDir } = setupBefore0011();
+    db.prepare(`INSERT INTO tracking_seances (started_at, template_id) VALUES (?, ?)`).run(
+      "2026-08-10T00:00:00.000Z",
+      42,
+    );
+
+    runMigrations(db, migrationsDir);
+
     const row = db.prepare(`SELECT program_day_of_week AS programDayOfWeek FROM tracking_seances`).get();
     expect(row).toEqual({ programDayOfWeek: null });
   });
