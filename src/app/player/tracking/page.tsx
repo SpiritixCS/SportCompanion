@@ -6,7 +6,7 @@ import { getSettings } from "@/lib/settings/db";
 import { getProgramDay } from "@/lib/tracking/program";
 import { dayAsTrainDay } from "@/lib/tracking/dayAsTrainDay";
 import { loadDayPlayerState } from "@/lib/tracking/loadDayPlayerState";
-import { getSetsForSeance } from "@/lib/tracking/db";
+import { getActiveSeance, getSetsForSeance } from "@/lib/tracking/db";
 import { logDaySetAction, skipDayExerciseAction, completeDaySeanceAction } from "@/lib/tracking/actions";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
 
@@ -40,6 +40,14 @@ export default async function TrackingPlayerPage({
   const programDay = getProgramDay(db, dayOfWeek);
 
   if (programDay.isRest || programDay.exercises.length === 0) {
+    // Le pointeur a pu être remis en repos / vidé de ses exercices pendant qu'une
+    // séance restait active dessus (autre onglet, reconfiguration depuis
+    // /tracking/programme) : ne pas piéger cette séance derrière "Jour introuvable.",
+    // rediriger vers l'écran freeform où elle reste terminable/supprimable.
+    const activeSeance = getActiveSeance(db);
+    if (activeSeance?.dayOfWeek === dayOfWeek) {
+      redirect(`/tracking/${activeSeance.id}`);
+    }
     return notFoundScreen;
   }
 
