@@ -87,6 +87,22 @@ describe("loadDayPlayerState", () => {
     expect(third.seanceId).not.toBe(second.seanceId);
   });
 
+  it("resumes mid-séance on a fresh call after logging fewer than all sets (CLAUDE.md §2 lesson)", () => {
+    const db = setup();
+    const seance = startSeance(db, 0);
+    logSetForExercise(db, seance.id, "Développé couché", "reps", 8, 1, 0);
+
+    // Simulate "navigate away and come back": a brand new call, as if it
+    // were a fresh HTTP request hitting a fresh Server Component render —
+    // nothing here shares in-memory state with the call above.
+    const state = loadDayPlayerState(db, 0, DAY);
+    expect(state.phase).toBe("in-progress");
+    if (state.phase === "in-progress") {
+      expect(state.seanceId).toBe(seance.id);
+      expect(state.next).toEqual({ exerciseOrder: 0, setNumber: 2, isLastSetOfExercise: true, isLastExerciseOfDay: true });
+    }
+  });
+
   it("flags wrong-seance when the active seance belongs to a different day", () => {
     const db = setup();
     startSeance(db, 1);
