@@ -24,7 +24,7 @@ vi.mock("@/lib/settings/actions", () => ({
   }),
   updateSettingsAction: vi.fn(),
 }));
-vi.mock("@/lib/tracking/actions", () => ({ startTrackingSeanceAction: vi.fn() }));
+vi.mock("@/lib/tracking/actions", () => ({ advanceProgramDayAction: vi.fn() }));
 
 const MATHIS = { slug: "mathis" as const, label: "Mathis" };
 const CLEMENT = { slug: "clement" as const, label: "Clément" };
