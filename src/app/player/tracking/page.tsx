@@ -20,18 +20,27 @@ export default async function TrackingPlayerPage({
 
   const { day: dayParam } = await searchParams;
   const dayOfWeek = Number(dayParam);
+
+  // Graceful error screen for invalid/out-of-range day
+  const notFoundScreen = (
+    <main className="p-5">
+      <p className="text-15 text-graphite">Jour introuvable.</p>
+      <Link href="/" className="text-15 text-graphite underline mt-4 inline-block">
+        Retour à Aujourd&apos;hui
+      </Link>
+    </main>
+  );
+
+  // Validate dayOfWeek before calling getProgramDay to avoid unhandled throw
+  if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+    return notFoundScreen;
+  }
+
   const db = getDbForUser(user);
   const programDay = getProgramDay(db, dayOfWeek);
 
   if (programDay.isRest || programDay.exercises.length === 0) {
-    return (
-      <main className="p-5">
-        <p className="text-15 text-graphite">Jour introuvable.</p>
-        <Link href="/" className="text-15 text-graphite underline mt-4 inline-block">
-          Retour à Aujourd&apos;hui
-        </Link>
-      </main>
-    );
+    return notFoundScreen;
   }
 
   const day = dayAsTrainDay(programDay);
