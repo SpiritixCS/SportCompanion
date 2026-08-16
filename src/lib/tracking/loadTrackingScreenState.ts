@@ -1,27 +1,55 @@
 // src/lib/tracking/loadTrackingScreenState.ts
 import type Database from "better-sqlite3";
-import { getActiveSeance, listCompletedSeances, type TrackingSeanceSummary } from "./db";
-import { getTemplate, type TemplateExercise } from "./templates";
-import { getRotation } from "./program";
+import { getActiveSeance, getSetsForSeance, listCompletedSeances, type TrackingSeanceSummary, type TrackingSetWithExercise, type TrackingUnit } from "./db";
+import { getPointer, getProgramDay, type DayExercise, type TrackingProgramDay } from "./program";
+
+type ActiveSeanceExercise = { name: string; unit: TrackingUnit; setsCount: number; totalValue: number };
 
 export type TrackingScreenState = {
-  activeSeance: { id: number; templateId: number | null } | null;
+  programDay: TrackingProgramDay;
+  activeSeance: {
+    id: number;
+    dayOfWeek: number | null;
+    dayLabel: string | null;
+    plannedExercises: DayExercise[] | null;
+    loggedExercises: ActiveSeanceExercise[];
+  } | null;
   seances: TrackingSeanceSummary[];
-  todayTemplate: { templateId: number; nom: string; exercises: TemplateExercise[] } | null;
-  rotationTemplates: { templateId: number; nom: string }[];
 };
+
+function summarizeActiveSets(sets: TrackingSetWithExercise[]): ActiveSeanceExercise[] {
+  const byExercise = new Map<number, ActiveSeanceExercise & { order: number }>();
+  for (const set of sets) {
+    const entry = byExercise.get(set.exerciseId) ?? {
+      name: set.exerciseName,
+      unit: set.exerciseUnit,
+      setsCount: 0,
+      totalValue: 0,
+      order: set.exerciseOrder,
+    };
+    entry.setsCount += 1;
+    entry.totalValue += set.valeurActual;
+    byExercise.set(set.exerciseId, entry);
+  }
+  return [...byExercise.values()].sort((a, b) => a.order - b.order).map(({ order, ...rest }) => rest);
+}
 
 export function loadTrackingScreenState(db: Database.Database): TrackingScreenState {
   const active = getActiveSeance(db);
-  const rotation = getRotation(db);
-  const todayTemplate = rotation.pointerTemplateId !== null ? getTemplate(db, rotation.pointerTemplateId) : null;
+  const programDay = getProgramDay(db, getPointer(db));
+  const activeDay = active && active.dayOfWeek !== null ? getProgramDay(db, active.dayOfWeek) : null;
 
   return {
-    activeSeance: active ? { id: active.id, templateId: active.templateId } : null,
-    seances: listCompletedSeances(db),
-    todayTemplate: todayTemplate
-      ? { templateId: todayTemplate.id, nom: todayTemplate.nom, exercises: todayTemplate.exercises }
+    programDay,
+    activeSeance: active
+      ? {
+          id: active.id,
+          dayOfWeek: active.dayOfWeek,
+          dayLabel: activeDay?.label ?? null,
+          plannedExercises: activeDay?.exercises ?? null,
+          loggedExercises: summarizeActiveSets(getSetsForSeance(db, active.id)),
+        }
       : null,
-    rotationTemplates: rotation.entries.map((entry) => ({ templateId: entry.templateId, nom: entry.nom })),
+    seances: listCompletedSeances(db),
   };
 }

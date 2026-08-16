@@ -6,8 +6,7 @@ import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
 import { startSeance, logSetForExercise, completeSeance } from "./db";
-import { createTemplate } from "./templates";
-import { setRotation } from "./program";
+import { setDayRest, setDayExercises, advancePointer } from "./program";
 import { loadTrackingScreenState } from "./loadTrackingScreenState";
 
 let tmpDir: string;
@@ -24,40 +23,70 @@ function setup() {
 }
 
 describe("loadTrackingScreenState", () => {
-  it("reports no active seance, no history and no rotation when nothing was ever set up", () => {
+  it("reports the day at the pointer (Lundi, repos par défaut), no active seance, no history initially", () => {
     const db = setup();
     expect(loadTrackingScreenState(db)).toEqual({
+      programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
       activeSeance: null,
       seances: [],
-      todayTemplate: null,
-      rotationTemplates: [],
     });
   });
 
-  it("surfaces the active seance's id and template, separately from completed history", () => {
+  it("reports the séance day at the pointer with its planned exercises", () => {
     const db = setup();
-    const active = startSeance(db);
+    setDayRest(db, 0, false);
+    setDayExercises(db, 0, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
+
+    const state = loadTrackingScreenState(db);
+    expect(state.programDay).toEqual({
+      dayOfWeek: 0,
+      label: "Lundi",
+      isRest: false,
+      exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
+    });
+  });
+
+  it("surfaces the active seance's day, planned exercises and exercises logged so far, separately from completed history", () => {
+    const db = setup();
+    setDayRest(db, 0, false);
+    setDayExercises(db, 0, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
+    const active = startSeance(db, 0);
+    logSetForExercise(db, active.id, "Dips", "reps", 12, 2);
     const past = startSeance(db);
     logSetForExercise(db, past.id, "Squats", "reps", 10);
     completeSeance(db, past.id);
 
     const state = loadTrackingScreenState(db);
-    expect(state.activeSeance).toEqual({ id: active.id, templateId: null });
+    expect(state.activeSeance).toEqual({
+      id: active.id,
+      dayOfWeek: 0,
+      dayLabel: "Lundi",
+      plannedExercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
+      loggedExercises: [{ name: "Dips", unit: "reps", setsCount: 2, totalValue: 24 }],
+    });
     expect(state.seances).toHaveLength(1);
     expect(state.seances[0]!.id).toBe(past.id);
   });
 
-  it("surfaces today's template and the full rotation when one is active", () => {
+  it("surfaces exercises logged so far, and no planned exercises, for a legacy seance with no day (freeform)", () => {
     const db = setup();
-    const push = createTemplate(db, "Push", [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
-    const pull = createTemplate(db, "Pull", []);
-    setRotation(db, [push.id, pull.id]);
+    const active = startSeance(db);
+    logSetForExercise(db, active.id, "Squats", "reps", 10, 3);
 
     const state = loadTrackingScreenState(db);
-    expect(state.todayTemplate).toMatchObject({ templateId: push.id, nom: "Push" });
-    expect(state.rotationTemplates).toEqual([
-      { templateId: push.id, nom: "Push" },
-      { templateId: pull.id, nom: "Pull" },
-    ]);
+    expect(state.activeSeance).toEqual({
+      id: active.id,
+      dayOfWeek: null,
+      dayLabel: null,
+      plannedExercises: null,
+      loggedExercises: [{ name: "Squats", unit: "reps", setsCount: 3, totalValue: 30 }],
+    });
+  });
+
+  it("reflects the pointer after it has advanced", () => {
+    const db = setup();
+    advancePointer(db);
+    expect(loadTrackingScreenState(db).programDay.dayOfWeek).toBe(1);
+    expect(loadTrackingScreenState(db).programDay.label).toBe("Mardi");
   });
 });
