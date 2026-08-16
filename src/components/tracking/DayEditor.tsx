@@ -1,4 +1,3 @@
-// src/components/tracking/TemplateEditor.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,14 +5,13 @@ import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { IconClose } from "@/components/icons/IconClose";
 import type { TrackingUnit } from "@/lib/tracking/db";
-import type { TemplateExerciseInput } from "@/lib/tracking/templates";
+import type { DayExerciseInput } from "@/lib/tracking/program";
 
 function pillClass(active: boolean): string {
   return `h-9 px-3 rounded-pill text-13 font-medium ${active ? "bg-ink text-paper" : "bg-paper border border-hairline text-ink"}`;
 }
 
-export function TemplateEditor({
-  initialNom,
+export function DayEditor({
   initialExercises,
   exerciseSuggestions,
   saving,
@@ -21,16 +19,14 @@ export function TemplateEditor({
   onSave,
   onCancel,
 }: {
-  initialNom: string;
-  initialExercises: TemplateExerciseInput[];
+  initialExercises: DayExerciseInput[];
   exerciseSuggestions: { name: string; unit: TrackingUnit }[];
   saving: boolean;
   error: boolean;
-  onSave: (nom: string, exercises: TemplateExerciseInput[]) => void;
+  onSave: (exercises: DayExerciseInput[]) => void;
   onCancel: () => void;
 }) {
-  const [nom, setNom] = useState(initialNom);
-  const [exercises, setExercises] = useState<TemplateExerciseInput[]>(initialExercises);
+  const [exercises, setExercises] = useState<DayExerciseInput[]>(initialExercises);
   const [name, setName] = useState("");
   const [unit, setUnit] = useState<TrackingUnit>("reps");
   const [setsCount, setSetsCount] = useState(3);
@@ -64,21 +60,13 @@ export function TemplateEditor({
 
   return (
     <div className="p-5 flex flex-col gap-6">
-      <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Modèle</span>
+      <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Jour</span>
 
       {error && (
         <div className="bg-paper border border-hairline rounded-card p-6">
           <p className="text-15 text-graphite">Une erreur est survenue. Réessaie.</p>
         </div>
       )}
-
-      <input
-        type="text"
-        value={nom}
-        onChange={(e) => setNom(e.target.value)}
-        placeholder="Nom du modèle"
-        className="h-14 rounded-field border border-hairline px-4 text-15"
-      />
 
       {exercises.length === 0 ? (
         <p className="text-15 text-graphite">Ajoute ton premier exercice ci-dessous.</p>
@@ -127,13 +115,13 @@ export function TemplateEditor({
       <Card className="p-5 flex flex-col gap-4">
         <input
           type="text"
-          list="template-exercise-suggestions"
+          list="day-exercise-suggestions"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nom de l'exercice"
           className="h-14 rounded-field border border-hairline px-4 text-15"
         />
-        <datalist id="template-exercise-suggestions">
+        <datalist id="day-exercise-suggestions">
           {exerciseSuggestions.map((e) => (
             <option key={e.name} value={e.name} />
           ))}
@@ -204,13 +192,8 @@ export function TemplateEditor({
       </Card>
 
       <div className="flex flex-col gap-2.5">
-        <Button
-          variant="primary"
-          accent="sage"
-          onClick={() => onSave(nom, exercises)}
-          disabled={saving || nom.trim() === "" || exercises.length === 0}
-        >
-          Enregistrer le modèle
+        <Button variant="primary" accent="sage" onClick={() => onSave(exercises)} disabled={saving || exercises.length === 0}>
+          Enregistrer
         </Button>
         <button
           type="button"
