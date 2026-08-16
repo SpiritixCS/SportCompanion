@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { ResumeBanner } from "@/components/today/ResumeBanner";
 import { IconClose } from "@/components/icons/IconClose";
-import { startTrackingSeanceAction, deleteTrackingSeanceAction } from "@/lib/tracking/actions";
+import { deleteTrackingSeanceAction } from "@/lib/tracking/actions";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 
 function formatDateFr(iso: string): string {
@@ -16,16 +16,6 @@ function formatDateFr(iso: string): string {
 export function TrackingScreen({ state }: { state: TrackingScreenState }) {
   const router = useRouter();
   const [error, setError] = useState(false);
-
-  async function handleStart() {
-    setError(false);
-    try {
-      const seanceId = await startTrackingSeanceAction();
-      router.push(`/tracking/${seanceId}`);
-    } catch {
-      setError(true);
-    }
-  }
 
   async function handleDeleteSeance(seanceId: number) {
     setError(false);
@@ -48,8 +38,8 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
         <ResumeBanner
           exerciseName="ta séance en cours"
           href={
-            state.activeSeance.templateId !== null
-              ? `/player/tracking?templateId=${state.activeSeance.templateId}`
+            state.activeSeance.dayOfWeek !== null
+              ? `/player/tracking?day=${state.activeSeance.dayOfWeek}`
               : `/tracking/${state.activeSeance.id}`
           }
           accent="sage"
@@ -61,14 +51,6 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
           <p className="text-15 text-graphite">Une erreur est survenue. Réessaie.</p>
         </div>
       )}
-
-      <button
-        type="button"
-        onClick={handleStart}
-        className="h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
-      >
-        Enregistrer une séance libre
-      </button>
 
       <Link
         href="/tracking/programme"
