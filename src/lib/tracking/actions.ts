@@ -15,22 +15,16 @@ import {
   type TrackingUnit,
 } from "./db";
 import {
-  createTemplate as createTemplateDb,
-  updateTemplate as updateTemplateDb,
-  deleteTemplate as deleteTemplateDb,
-  getTemplate as getTemplateDb,
-  type Template,
-  type TemplateExerciseInput,
-} from "./templates";
-import { setRotation as setRotationDb, advancePointer, type Rotation } from "./program";
+  getProgramDay,
+  setDayRest as setDayRestDb,
+  setDayExercises as setDayExercisesDb,
+  advancePointer,
+  type TrackingProgramDay,
+  type DayExerciseInput,
+} from "./program";
 
 async function db() {
   return getDbForUser(await currentUser());
-}
-
-export async function startTrackingSeanceAction(): Promise<number> {
-  const seance = getOrStartSeance(await db());
-  return seance.id;
 }
 
 export async function logTrackingSetAction(params: {
@@ -63,32 +57,26 @@ export async function completeTrackingSeanceAction(seanceId: number): Promise<vo
   completeSeanceDb(await db(), seanceId);
 }
 
-export async function createTemplateAction(nom: string, exercises: TemplateExerciseInput[]): Promise<Template> {
-  return createTemplateDb(await db(), nom, exercises);
+export async function setDayRestAction(dayOfWeek: number, isRest: boolean): Promise<TrackingProgramDay> {
+  return setDayRestDb(await db(), dayOfWeek, isRest);
 }
 
-export async function updateTemplateAction(
-  templateId: number,
-  nom: string,
-  exercises: TemplateExerciseInput[],
-): Promise<Template> {
-  return updateTemplateDb(await db(), templateId, nom, exercises);
+export async function setDayExercisesAction(dayOfWeek: number, exercises: DayExerciseInput[]): Promise<TrackingProgramDay> {
+  return setDayExercisesDb(await db(), dayOfWeek, exercises);
 }
 
-export async function deleteTemplateAction(templateId: number): Promise<void> {
-  deleteTemplateDb(await db(), templateId);
+// Avance le pointeur sans passer par une séance — utilisée par le bouton
+// « Jour suivant » sur un jour repos, qui n'a rien à valider.
+export async function advanceProgramDayAction(): Promise<number> {
+  return advancePointer(await db());
 }
 
-export async function setRotationAction(templateIds: number[]): Promise<Rotation> {
-  return setRotationDb(await db(), templateIds);
-}
-
-// Bound with templateId via `.bind(null, templateId)` before being handed to
+// Bound with dayOfWeek via `.bind(null, dayOfWeek)` before being handed to
 // PlayerScreen (a Client Component): a Server Component can only pass a
 // Server Action reference across that boundary, never an inline closure —
-// binding is how the player page attaches the template id to each callback.
-export async function logTemplateSetAction(
-  templateId: number,
+// binding is how the player page attaches the day of week to each callback.
+export async function logDaySetAction(
+  dayOfWeek: number,
   params: {
     seanceId: number;
     exerciseOrder: number;
@@ -100,18 +88,18 @@ export async function logTemplateSetAction(
   },
 ): Promise<void> {
   const database = await db();
-  const template = getTemplateDb(database, templateId);
-  const exercise = template?.exercises.find((e) => e.ordre === params.exerciseOrder);
-  if (!exercise) throw new Error("Exercice introuvable pour ce modèle");
+  const day = getProgramDay(database, dayOfWeek);
+  const exercise = day.exercises.find((e) => e.ordre === params.exerciseOrder);
+  if (!exercise) throw new Error("Exercice introuvable pour ce jour");
   logSetForExercise(database, params.seanceId, exercise.name, exercise.unit, params.repsActual, 1, params.exerciseOrder);
 }
 
-export async function skipTemplateExerciseAction(seanceId: number, exerciseOrder: number): Promise<void> {
+export async function skipDayExerciseAction(seanceId: number, exerciseOrder: number): Promise<void> {
   skipExerciseDb(await db(), seanceId, exerciseOrder);
 }
 
-export async function completeTemplateSeanceAction(templateId: number, seanceId: number): Promise<void> {
+export async function completeDaySeanceAction(seanceId: number): Promise<void> {
   const database = await db();
   completeSeanceDb(database, seanceId);
-  advancePointer(database, templateId);
+  advancePointer(database);
 }
