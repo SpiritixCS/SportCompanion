@@ -164,11 +164,11 @@ describe("AujourdhuiScreen", () => {
       <AujourdhuiScreen
         state={NORMAL_PROGRAMME_STATE}
         dosState={null}
-        trackingState={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }}
+        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: null, seances: [] }}
         user={CLEMENT}
       />,
     );
-    expect(screen.getByRole("button", { name: "Enregistrer une séance" })).toBeInTheDocument();
+    expect(screen.getByText("Lundi · Repos")).toBeInTheDocument();
   });
 
   it("shows the Tracking card for Clément even before he's set a Programme point de départ", () => {
@@ -176,12 +176,12 @@ describe("AujourdhuiScreen", () => {
       <AujourdhuiScreen
         state={{ phase: "empty" }}
         dosState={null}
-        trackingState={{ activeSeance: null, seances: [], todayTemplate: null, rotationTemplates: [] }}
+        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: null, seances: [] }}
         user={CLEMENT}
       />,
     );
     expect(screen.getByText("Premier jour")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Enregistrer une séance" })).toBeInTheDocument();
+    expect(screen.getByText("Lundi · Repos")).toBeInTheDocument();
   });
 
   it("shows the Tracking card for Clément on the level-up prompt too", () => {
@@ -189,7 +189,7 @@ describe("AujourdhuiScreen", () => {
       <AujourdhuiScreen
         state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
         dosState={null}
-        trackingState={{ activeSeance: { id: 3, templateId: null }, seances: [], todayTemplate: null, rotationTemplates: [] }}
+        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: { id: 3, dayOfWeek: null, dayLabel: null, plannedExercises: null, loggedExercises: [] }, seances: [] }}
         user={CLEMENT}
       />,
     );

@@ -5,88 +5,119 @@ import userEvent from "@testing-library/user-event";
 import { TrackingCard } from "./TrackingCard";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 
-const push = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+const refresh = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 
-const startTrackingSeanceAction = vi.fn();
+const advanceProgramDayAction = vi.fn();
 vi.mock("@/lib/tracking/actions", () => ({
-  startTrackingSeanceAction: (...args: unknown[]) => startTrackingSeanceAction(...args),
+  advanceProgramDayAction: (...args: unknown[]) => advanceProgramDayAction(...args),
 }));
 
-const EMPTY_STATE: TrackingScreenState = {
+const REST_STATE: TrackingScreenState = {
+  programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
   activeSeance: null,
   seances: [],
-  todayTemplate: null,
-  rotationTemplates: [],
 };
 
 describe("TrackingCard", () => {
-  it("shows Enregistrer une séance and starts a freeform one on click when nothing is active or planned", async () => {
-    startTrackingSeanceAction.mockResolvedValue(9);
-    render(<TrackingCard state={EMPTY_STATE} />);
-    await userEvent.click(screen.getByRole("button", { name: "Enregistrer une séance" }));
-    expect(startTrackingSeanceAction).toHaveBeenCalledOnce();
-    expect(push).toHaveBeenCalledWith("/tracking/9");
+  it("shows Repos and advances the pointer on Jour suivant when today is a rest day", async () => {
+    advanceProgramDayAction.mockResolvedValue(1);
+    render(<TrackingCard state={REST_STATE} />);
+    expect(screen.getByText("Lundi · Repos")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Jour suivant" }));
+    expect(advanceProgramDayAction).toHaveBeenCalledOnce();
+    expect(refresh).toHaveBeenCalledOnce();
   });
 
-  it("shows Reprendre linking to the freeform journal when the active seance has no template", () => {
-    render(<TrackingCard state={{ ...EMPTY_STATE, activeSeance: { id: 7, templateId: null } }} />);
+  it("shows the day's name, exercises and a Commencer link into the guided player on a séance day", () => {
+    render(
+      <TrackingCard
+        state={{
+          ...REST_STATE,
+          programDay: {
+            dayOfWeek: 0,
+            label: "Lundi",
+            isRest: false,
+            exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
+          },
+        }}
+      />,
+    );
+    expect(screen.getByText("Lundi")).toBeInTheDocument();
+    expect(screen.getByText("Dips")).toBeInTheDocument();
+    expect(screen.getByText("3 × 12")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Commencer" })).toHaveAttribute("href", "/player/tracking?day=0");
+  });
+
+  it("shows Reprendre linking to the guided player when a seance is active for a day", () => {
+    render(
+      <TrackingCard
+        state={{
+          ...REST_STATE,
+          activeSeance: { id: 7, dayOfWeek: 3, dayLabel: "Jeudi", plannedExercises: [], loggedExercises: [] },
+        }}
+      />,
+    );
+    expect(screen.getByRole("link", { name: "Reprendre" })).toHaveAttribute("href", "/player/tracking?day=3");
+  });
+
+  it("shows Reprendre linking to the freeform journal for a legacy active seance with no day", () => {
+    render(
+      <TrackingCard
+        state={{
+          ...REST_STATE,
+          activeSeance: { id: 7, dayOfWeek: null, dayLabel: null, plannedExercises: null, loggedExercises: [] },
+        }}
+      />,
+    );
     expect(screen.getByRole("link", { name: "Reprendre" })).toHaveAttribute("href", "/tracking/7");
   });
 
-  it("shows Reprendre linking to the guided player when the active seance belongs to a template", () => {
-    render(<TrackingCard state={{ ...EMPTY_STATE, activeSeance: { id: 7, templateId: 3 } }} />);
-    expect(screen.getByRole("link", { name: "Reprendre" })).toHaveAttribute("href", "/player/tracking?templateId=3");
-  });
-
-  it("shows today's template name, exercises and a Commencer link into the guided player", () => {
+  it("shows the day's planned exercises for an active seance", () => {
     render(
       <TrackingCard
         state={{
-          ...EMPTY_STATE,
-          todayTemplate: {
-            templateId: 3,
-            nom: "Push",
-            exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
+          ...REST_STATE,
+          activeSeance: {
+            id: 7,
+            dayOfWeek: 0,
+            dayLabel: "Lundi",
+            plannedExercises: [
+              { ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 },
+              { ordre: 1, name: "Gainage", unit: "seconds", setsCount: 2, targetValue: 45 },
+            ],
+            loggedExercises: [{ name: "Dips", unit: "reps", setsCount: 2, totalValue: 24 }],
           },
-          rotationTemplates: [{ templateId: 3, nom: "Push" }],
         }}
       />,
     );
-    expect(screen.getByText("Push")).toBeInTheDocument();
+    expect(screen.getByText("Lundi")).toBeInTheDocument();
     expect(screen.getByText("Dips")).toBeInTheDocument();
     expect(screen.getByText("3 × 12")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Commencer" })).toHaveAttribute("href", "/player/tracking?templateId=3");
+    expect(screen.getByText("Gainage")).toBeInTheDocument();
+    expect(screen.getByText("2 × 45 s")).toBeInTheDocument();
   });
 
-  it("hides Changer when the rotation has no other template", () => {
+  it("shows exercises logged so far for a legacy active freeform seance (no day)", () => {
     render(
       <TrackingCard
         state={{
-          ...EMPTY_STATE,
-          todayTemplate: { templateId: 3, nom: "Push", exercises: [] },
-          rotationTemplates: [{ templateId: 3, nom: "Push" }],
+          ...REST_STATE,
+          activeSeance: {
+            id: 7,
+            dayOfWeek: null,
+            dayLabel: null,
+            plannedExercises: null,
+            loggedExercises: [
+              { name: "Dips", unit: "reps", setsCount: 2, totalValue: 24 },
+              { name: "Gainage", unit: "seconds", setsCount: 1, totalValue: 45 },
+            ],
+          },
         }}
       />,
     );
-    expect(screen.queryByRole("button", { name: "Changer" })).not.toBeInTheDocument();
-  });
-
-  it("opens a sheet listing the other rotation templates on Changer, each linking into the guided player", async () => {
-    render(
-      <TrackingCard
-        state={{
-          ...EMPTY_STATE,
-          todayTemplate: { templateId: 3, nom: "Push", exercises: [] },
-          rotationTemplates: [
-            { templateId: 3, nom: "Push" },
-            { templateId: 4, nom: "Pull" },
-          ],
-        }}
-      />,
-    );
-    await userEvent.click(screen.getByRole("button", { name: "Changer" }));
-    expect(screen.getByRole("link", { name: "Pull" })).toHaveAttribute("href", "/player/tracking?templateId=4");
-    expect(screen.queryByRole("link", { name: "Push" })).not.toBeInTheDocument();
+    expect(screen.getByText("Dips")).toBeInTheDocument();
+    expect(screen.getByText("24")).toBeInTheDocument();
+    expect(screen.getByText("45 s")).toBeInTheDocument();
   });
 });

@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
-import { Sheet } from "@/components/Sheet";
-import { startTrackingSeanceAction } from "@/lib/tracking/actions";
+import { advanceProgramDayAction } from "@/lib/tracking/actions";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 
 function doseLabel(exercise: { setsCount: number; targetValue: number; unit: "reps" | "seconds" }): string {
@@ -15,29 +14,57 @@ function doseLabel(exercise: { setsCount: number; targetValue: number; unit: "re
 
 export function TrackingCard({ state }: { state: TrackingScreenState }) {
   const router = useRouter();
-  const [starting, setStarting] = useState(false);
-  const [changerOpen, setChangerOpen] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
 
-  async function handleStartFreeform() {
-    if (starting) return;
-    setStarting(true);
+  async function handleAdvance() {
+    if (advancing) return;
+    setAdvancing(true);
     try {
-      const seanceId = await startTrackingSeanceAction();
-      router.push(`/tracking/${seanceId}`);
+      await advanceProgramDayAction();
+      router.refresh();
     } finally {
-      setStarting(false);
+      setAdvancing(false);
     }
   }
 
   if (state.activeSeance !== null) {
+    const { activeSeance } = state;
     const href =
-      state.activeSeance.templateId !== null
-        ? `/player/tracking?templateId=${state.activeSeance.templateId}`
-        : `/tracking/${state.activeSeance.id}`;
+      activeSeance.dayOfWeek !== null ? `/player/tracking?day=${activeSeance.dayOfWeek}` : `/tracking/${activeSeance.id}`;
     return (
       <Card className="p-5">
         <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-        <div className="font-archivo text-18 font-semibold mt-3">Séance en cours</div>
+        <div className="font-archivo text-18 font-semibold mt-3">{activeSeance.dayLabel ?? "Séance en cours"}</div>
+
+        {activeSeance.plannedExercises !== null ? (
+          activeSeance.plannedExercises.length > 0 && (
+            <div className="flex flex-col gap-2.5 mt-5">
+              {activeSeance.plannedExercises.map((exercise) => (
+                <div key={exercise.ordre} className="flex items-baseline justify-between gap-4">
+                  <span className="text-15">{exercise.name}</span>
+                  <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
+                    {doseLabel(exercise)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          activeSeance.loggedExercises.length > 0 && (
+            <div className="flex flex-col gap-2.5 mt-5">
+              {activeSeance.loggedExercises.map((exercise) => (
+                <div key={exercise.name} className="flex items-baseline justify-between gap-4">
+                  <span className="text-15">{exercise.name}</span>
+                  <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
+                    {exercise.totalValue}
+                    {exercise.unit === "seconds" ? " s" : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
         <Link
           href={href}
           className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
@@ -48,57 +75,21 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
     );
   }
 
-  if (state.todayTemplate !== null) {
-    const template = state.todayTemplate;
-    const alternatives = state.rotationTemplates.filter((t) => t.templateId !== template.templateId);
+  const { programDay } = state;
+
+  if (programDay.isRest) {
     return (
       <Card className="p-5">
         <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-        <div className="font-archivo text-24 font-semibold mt-3.5">{template.nom}</div>
-
-        {template.exercises.length > 0 && (
-          <div className="flex flex-col gap-2.5 mt-5">
-            {template.exercises.map((exercise) => (
-              <div key={exercise.ordre} className="flex items-baseline justify-between gap-4">
-                <span className="text-15">{exercise.name}</span>
-                <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
-                  {doseLabel(exercise)}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <Link
-          href={`/player/tracking?templateId=${template.templateId}`}
-          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+        <div className="font-archivo text-18 font-semibold mt-3">{programDay.label} · Repos</div>
+        <button
+          type="button"
+          onClick={handleAdvance}
+          disabled={advancing}
+          className="mt-5 w-full h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold disabled:opacity-40"
         >
-          Commencer
-        </Link>
-
-        {alternatives.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setChangerOpen(true)}
-            className="mt-3 h-11 flex items-center justify-center w-full text-15 text-graphite"
-          >
-            Changer
-          </button>
-        )}
-
-        <Sheet open={changerOpen} onClose={() => setChangerOpen(false)} title="Changer la séance du jour">
-          <div className="flex flex-col gap-2.5">
-            {alternatives.map((t) => (
-              <Link
-                key={t.templateId}
-                href={`/player/tracking?templateId=${t.templateId}`}
-                className="h-14 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15 font-semibold"
-              >
-                {t.nom}
-              </Link>
-            ))}
-          </div>
-        </Sheet>
+          Jour suivant
+        </button>
       </Card>
     );
   }
@@ -106,15 +97,27 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
   return (
     <Card className="p-5">
       <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-      <div className="font-archivo text-18 font-semibold mt-3">Log ta séance du jour</div>
-      <button
-        type="button"
-        onClick={handleStartFreeform}
-        disabled={starting}
-        className="mt-5 w-full h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold disabled:opacity-40"
+      <div className="font-archivo text-24 font-semibold mt-3.5">{programDay.label}</div>
+
+      {programDay.exercises.length > 0 && (
+        <div className="flex flex-col gap-2.5 mt-5">
+          {programDay.exercises.map((exercise) => (
+            <div key={exercise.ordre} className="flex items-baseline justify-between gap-4">
+              <span className="text-15">{exercise.name}</span>
+              <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
+                {doseLabel(exercise)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <Link
+        href={`/player/tracking?day=${programDay.dayOfWeek}`}
+        className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
       >
-        Enregistrer une séance
-      </button>
+        Commencer
+      </Link>
     </Card>
   );
 }
