@@ -3,30 +3,30 @@ import { redirect } from "next/navigation";
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
 import { getSettings } from "@/lib/settings/db";
-import { getTemplate } from "@/lib/tracking/templates";
-import { templateAsTrainDay } from "@/lib/tracking/templateAsTrainDay";
-import { loadTemplatePlayerState } from "@/lib/tracking/loadTemplatePlayerState";
+import { getProgramDay } from "@/lib/tracking/program";
+import { dayAsTrainDay } from "@/lib/tracking/dayAsTrainDay";
+import { loadDayPlayerState } from "@/lib/tracking/loadDayPlayerState";
 import { getSetsForSeance } from "@/lib/tracking/db";
-import { logTemplateSetAction, skipTemplateExerciseAction, completeTemplateSeanceAction } from "@/lib/tracking/actions";
+import { logDaySetAction, skipDayExerciseAction, completeDaySeanceAction } from "@/lib/tracking/actions";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
 
 export default async function TrackingPlayerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ templateId?: string }>;
+  searchParams: Promise<{ day?: string }>;
 }) {
   const user = await currentUser();
   if (user.slug !== "clement") redirect("/");
 
-  const { templateId: templateIdParam } = await searchParams;
-  const templateId = Number(templateIdParam);
+  const { day: dayParam } = await searchParams;
+  const dayOfWeek = Number(dayParam);
   const db = getDbForUser(user);
-  const template = getTemplate(db, templateId);
+  const programDay = getProgramDay(db, dayOfWeek);
 
-  if (!template || template.exercises.length === 0) {
+  if (programDay.isRest || programDay.exercises.length === 0) {
     return (
       <main className="p-5">
-        <p className="text-15 text-graphite">Modèle introuvable.</p>
+        <p className="text-15 text-graphite">Jour introuvable.</p>
         <Link href="/" className="text-15 text-graphite underline mt-4 inline-block">
           Retour à Aujourd&apos;hui
         </Link>
@@ -34,8 +34,8 @@ export default async function TrackingPlayerPage({
     );
   }
 
-  const day = templateAsTrainDay(template);
-  const state = loadTemplatePlayerState(db, templateId, day);
+  const day = dayAsTrainDay(programDay);
+  const state = loadDayPlayerState(db, dayOfWeek, day);
 
   if (state.phase === "wrong-seance") {
     return (
@@ -71,9 +71,9 @@ export default async function TrackingPlayerPage({
       restBetweenSetsSeconds={settings.restBetweenSetsSeconds}
       restBetweenExercisesSeconds={settings.restBetweenExercisesSeconds}
       keepScreenAwakeEnabled={settings.keepScreenAwakeEnabled}
-      onLogSet={logTemplateSetAction.bind(null, templateId)}
-      onSkipExercise={skipTemplateExerciseAction}
-      onSeanceFinish={completeTemplateSeanceAction.bind(null, templateId)}
+      onLogSet={logDaySetAction.bind(null, dayOfWeek)}
+      onSkipExercise={skipDayExerciseAction}
+      onSeanceFinish={completeDaySeanceAction}
     />
   );
 }
