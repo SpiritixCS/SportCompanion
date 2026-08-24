@@ -26,8 +26,8 @@ function setup() {
 const KIND_PATTERN: ("train" | "rest")[] = ["train", "rest", "train", "rest", "train", "rest", "rest"];
 const getDayKind: DayKindLookup = (_parcours, _level, dayIndex) => KIND_PATTERN[dayIndex];
 
-function validate(db: ReturnType<typeof getDb>, parcours: string, level: number, dayIndex: number) {
-  const seance = startSeance(db, parcours, level, dayIndex);
+function validate(db: ReturnType<typeof getDb>, parcours: string, level: number, dayIndex: number, cycle = 0) {
+  const seance = startSeance(db, parcours, level, dayIndex, cycle);
   completeSeance(db, seance.id);
 }
 
@@ -80,5 +80,21 @@ describe("syncPosition", () => {
     // day 5 is rest, would normally skip to day 6 — but day 6 is the last
     // index, the loop must not advance past it.
     expect(result).toMatchObject({ dayIndex: 6 });
+  });
+
+  it("preserves the cycle while advancing across days", () => {
+    const db = setup();
+    setCurrentPosition(db, "beginner", 0, 0, 2);
+    validate(db, "beginner", 0, 0, 2);
+    const result = syncPosition(db, getDayKind);
+    expect(result).toMatchObject({ dayIndex: 2, cycle: 2 });
+  });
+
+  it("does not treat a day validated in a different cycle as skippable (redo doesn't get instantly re-skipped)", () => {
+    const db = setup();
+    validate(db, "beginner", 0, 0, 0); // cycle 0's day 0 already done
+    setCurrentPosition(db, "beginner", 0, 0, 1); // now on a fresh cycle 1
+    const result = syncPosition(db, getDayKind);
+    expect(result).toMatchObject({ dayIndex: 0, cycle: 1 });
   });
 });

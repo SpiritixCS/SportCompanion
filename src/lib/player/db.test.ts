@@ -57,6 +57,19 @@ describe("seance lifecycle", () => {
     completeSeance(db, seance.id);
     expect(getActiveSeance(db, "beginner", 0, 0)).toBeNull();
   });
+
+  it("scopes seances by cycle — a completed cycle 0 doesn't block starting a fresh cycle 1", () => {
+    const db = setup();
+    const first = startSeance(db, "beginner", 0, 0, 0);
+    completeSeance(db, first.id);
+    expect(getActiveSeance(db, "beginner", 0, 0, 1)).toBeNull();
+
+    const second = startSeance(db, "beginner", 0, 0, 1);
+    expect(second.id).not.toBe(first.id);
+    expect(second.cycle).toBe(1);
+    expect(getActiveSeance(db, "beginner", 0, 0, 0)).toBeNull(); // cycle 0's seance is completed
+    expect(getActiveSeance(db, "beginner", 0, 0, 1)).toEqual(second);
+  });
 });
 
 describe("sets_logged", () => {

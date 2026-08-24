@@ -15,9 +15,10 @@ export function syncPosition(db: Database.Database, getDayKind: DayKindLookup): 
 
   while (position.dayIndex < LAST_DAY_INDEX) {
     const kind = getDayKind(position.parcours, position.level, position.dayIndex);
-    const skippable = kind === "rest" || isDayValidated(db, position.parcours, position.level, position.dayIndex);
+    const skippable =
+      kind === "rest" || isDayValidated(db, position.parcours, position.level, position.dayIndex, position.cycle);
     if (!skippable) break;
-    position = setCurrentPosition(db, position.parcours, position.level, position.dayIndex + 1);
+    position = setCurrentPosition(db, position.parcours, position.level, position.dayIndex + 1, position.cycle);
   }
 
   return position;

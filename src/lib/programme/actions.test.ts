@@ -5,6 +5,7 @@ import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
 import { getCurrentPosition } from "./db";
+import { startSeance, completeSeance } from "@/lib/player/db";
 import { PARCOURS } from "./parcours";
 
 let tmpDir: string;
@@ -34,5 +35,31 @@ describe("resolveLevelUpAction", () => {
     const lastLevel = PARCOURS.find((p) => p.id === "advanced")!.levelCount - 1;
     await resolveLevelUpAction("advance", "advanced", lastLevel);
     expect(getCurrentPosition(getDb(dbPath))?.level).toBe(lastLevel);
+  });
+
+  it("redo opens a new cycle so a fully-validated level doesn't get instantly re-skipped to level-up", async () => {
+    const db = getDb(dbPath);
+    const seance = startSeance(db, "beginner", 0, 0, 0);
+    completeSeance(db, seance.id);
+
+    const { resolveLevelUpAction } = await import("./actions");
+    await resolveLevelUpAction("redo", "beginner", 0);
+
+    const position = getCurrentPosition(getDb(dbPath));
+    expect(position).toMatchObject({ parcours: "beginner", level: 0, dayIndex: 0, cycle: 1 });
+  });
+});
+
+describe("setCurrentPositionAction", () => {
+  it("opens a new cycle when jumping to a day already validated in the latest cycle (resuming an already-finished level)", async () => {
+    const db = getDb(dbPath);
+    const seance = startSeance(db, "beginner", 1, 3, 0);
+    completeSeance(db, seance.id);
+
+    const { setCurrentPositionAction } = await import("./actions");
+    await setCurrentPositionAction("beginner", 1, 3);
+
+    const position = getCurrentPosition(getDb(dbPath));
+    expect(position).toMatchObject({ parcours: "beginner", level: 1, dayIndex: 3, cycle: 1 });
   });
 });

@@ -20,8 +20,9 @@ export function loadPlayerState(
   level: number,
   dayIndex: number,
   day: TrainDay,
+  cycle = 0,
 ): PlayerState {
-  const seance = getOrStartSeance(db, parcours, level, dayIndex);
+  const seance = getOrStartSeance(db, parcours, level, dayIndex, cycle);
 
   if (seance.completedAt) {
     return { phase: "completed", seanceId: seance.id };

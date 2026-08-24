@@ -42,7 +42,9 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
   if (position.dayIndex === LAST_DAY_INDEX) {
     const lastDay = levelDays[LAST_DAY_INDEX];
     const lastDayDone =
-      !lastDay || lastDay.kind === "rest" || isDayValidated(db, position.parcours, position.level, LAST_DAY_INDEX);
+      !lastDay ||
+      lastDay.kind === "rest" ||
+      isDayValidated(db, position.parcours, position.level, LAST_DAY_INDEX, position.cycle);
     if (lastDayDone) {
       return {
         phase: "level-up",
@@ -58,12 +60,12 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
 
   const pastilles: PastilleState[] = levelDays.map((d, i) => {
     if (d.kind === "rest") return "restOrWalk";
-    if (isDayValidated(db, position.parcours, position.level, i)) return "done";
+    if (isDayValidated(db, position.parcours, position.level, i, position.cycle)) return "done";
     if (i === position.dayIndex) return "today";
     return "upcoming";
   });
 
-  const done = isDayValidated(db, position.parcours, position.level, position.dayIndex);
+  const done = isDayValidated(db, position.parcours, position.level, position.dayIndex, position.cycle);
 
   let doneReps: number | null = null;
   let resume: { exerciseName: string } | null = null;
@@ -71,12 +73,12 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
   // done is structurally unreachable here in practice — syncPosition always walks past a
   // validated day before this runs. Kept for forward-compatibility if that contract ever changes.
   if (done) {
-    const seanceId = getLatestCompletedSeanceId(db, position.parcours, position.level, position.dayIndex);
+    const seanceId = getLatestCompletedSeanceId(db, position.parcours, position.level, position.dayIndex, position.cycle);
     if (seanceId) {
       doneReps = getSetsForSeance(db, seanceId).reduce((sum, s) => sum + s.repsActual, 0);
     }
   } else {
-    const activeSeance = getActiveSeance(db, position.parcours, position.level, position.dayIndex);
+    const activeSeance = getActiveSeance(db, position.parcours, position.level, position.dayIndex, position.cycle);
     if (activeSeance) {
       const sets = getSetsForSeance(db, activeSeance.id);
       const skipped = getSkippedExercises(db, activeSeance.id);

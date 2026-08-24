@@ -64,6 +64,23 @@ describe("loadProgrammeState", () => {
     expect(level0!.percentDone).toBe(100);
   });
 
+  it("only counts the latest cycle — redoing a level clears the grid back to upcoming", () => {
+    const db = setup();
+    for (const dayIndex of [0, 2, 4]) {
+      const seance = startSeance(db, "beginner", 0, dayIndex, 0);
+      completeSeance(db, seance.id);
+    }
+    // Redo: day 0 validated again in cycle 1, days 2 and 4 not yet.
+    const redoSeance = startSeance(db, "beginner", 0, 0, 1);
+    completeSeance(db, redoSeance.id);
+
+    const [level0] = loadProgrammeState(db, PARCOURS_META);
+    expect(level0!.pastilles[0]).toBe("done");
+    expect(level0!.pastilles[2]).toBe("upcoming");
+    expect(level0!.pastilles[4]).toBe("upcoming");
+    expect(level0!.percentDone).toBe(33);
+  });
+
   it("lists all 7 days with title, exercise count, and duration estimate", () => {
     const db = setup();
     const [level0] = loadProgrammeState(db, PARCOURS_META);

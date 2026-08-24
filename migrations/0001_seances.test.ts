@@ -29,6 +29,7 @@ describe("0001_seances migration", () => {
       "day_index",
       "started_at",
       "completed_at",
+      "cycle",
     ]);
 
     const setsCols = (db.prepare("PRAGMA table_info(sets_logged)").all() as { name: string }[]).map(

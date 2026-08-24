@@ -5,6 +5,7 @@ export type Seance = {
   parcours: string;
   level: number;
   dayIndex: number;
+  cycle: number;
   startedAt: string;
   completedAt: string | null;
 };
@@ -25,15 +26,16 @@ export function getActiveSeance(
   parcours: string,
   level: number,
   dayIndex: number,
+  cycle = 0,
 ): Seance | null {
   const row = db
     .prepare(
-      `SELECT id, parcours, level, day_index AS dayIndex, started_at AS startedAt, completed_at AS completedAt
+      `SELECT id, parcours, level, day_index AS dayIndex, cycle, started_at AS startedAt, completed_at AS completedAt
        FROM seances
-       WHERE parcours = ? AND level = ? AND day_index = ? AND completed_at IS NULL
+       WHERE parcours = ? AND level = ? AND day_index = ? AND cycle = ? AND completed_at IS NULL
        ORDER BY started_at DESC LIMIT 1`,
     )
-    .get(parcours, level, dayIndex) as Seance | undefined;
+    .get(parcours, level, dayIndex, cycle) as Seance | undefined;
   return row ?? null;
 }
 
@@ -42,16 +44,18 @@ export function startSeance(
   parcours: string,
   level: number,
   dayIndex: number,
+  cycle = 0,
 ): Seance {
   const startedAt = new Date().toISOString();
   const result = db
-    .prepare(`INSERT INTO seances (parcours, level, day_index, started_at) VALUES (?, ?, ?, ?)`)
-    .run(parcours, level, dayIndex, startedAt);
+    .prepare(`INSERT INTO seances (parcours, level, day_index, cycle, started_at) VALUES (?, ?, ?, ?, ?)`)
+    .run(parcours, level, dayIndex, cycle, startedAt);
   return {
     id: Number(result.lastInsertRowid),
     parcours,
     level,
     dayIndex,
+    cycle,
     startedAt,
     completedAt: null,
   };
@@ -62,8 +66,9 @@ export function getOrStartSeance(
   parcours: string,
   level: number,
   dayIndex: number,
+  cycle = 0,
 ): Seance {
-  return getActiveSeance(db, parcours, level, dayIndex) ?? startSeance(db, parcours, level, dayIndex);
+  return getActiveSeance(db, parcours, level, dayIndex, cycle) ?? startSeance(db, parcours, level, dayIndex, cycle);
 }
 
 export function getSetsForSeance(db: Database.Database, seanceId: number): SetLoggedRecord[] {

@@ -2,7 +2,7 @@
 
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
-import { setCurrentPosition } from "./db";
+import { setCurrentPosition, resolveCycleForJump } from "./db";
 import { getParcours } from "./parcours";
 
 async function db() {
@@ -14,7 +14,8 @@ export async function setCurrentPositionAction(
   level: number,
   dayIndex: number,
 ): Promise<void> {
-  setCurrentPosition(await db(), parcours, level, dayIndex);
+  const database = await db();
+  setCurrentPosition(database, parcours, level, dayIndex, resolveCycleForJump(database, parcours, level, dayIndex));
 }
 
 export async function resolveLevelUpAction(
@@ -22,7 +23,8 @@ export async function resolveLevelUpAction(
   parcours: string,
   level: number,
 ): Promise<void> {
+  const database = await db();
   const levelCount = getParcours(parcours)?.levelCount ?? level + 1;
   const nextLevel = choice === "advance" ? Math.min(level + 1, levelCount - 1) : level;
-  setCurrentPosition(await db(), parcours, nextLevel, 0);
+  setCurrentPosition(database, parcours, nextLevel, 0, resolveCycleForJump(database, parcours, nextLevel, 0));
 }

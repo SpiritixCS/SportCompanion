@@ -22,6 +22,6 @@ describe("0002_progression migration", () => {
     const cols = (db.prepare("PRAGMA table_info(current_position)").all() as { name: string }[]).map(
       (c) => c.name,
     );
-    expect(cols).toEqual(["id", "parcours", "level", "day_index", "updated_at"]);
+    expect(cols).toEqual(["id", "parcours", "level", "day_index", "updated_at", "cycle"]);
   });
 });

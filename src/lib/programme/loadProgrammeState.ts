@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import { isDayValidated } from "./db";
+import { isDayValidated, getLatestCycleForLevel } from "./db";
 import { estimateDurationMinutes } from "./estimateDuration";
 import type { PastilleState } from "@/components/Pastille";
 import type { ParcoursMeta } from "./parcours";
@@ -21,9 +21,10 @@ export type ProgrammeLevelRow = {
 
 export function loadProgrammeState(db: Database.Database, parcoursMeta: ParcoursMeta): ProgrammeLevelRow[] {
   return parcoursMeta.program.map((levelDays, level) => {
+    const cycle = getLatestCycleForLevel(db, parcoursMeta.id, level);
     const pastilles: PastilleState[] = levelDays.map((day, dayIndex) => {
       if (day.kind === "rest") return "restOrWalk";
-      return isDayValidated(db, parcoursMeta.id, level, dayIndex) ? "done" : "upcoming";
+      return isDayValidated(db, parcoursMeta.id, level, dayIndex, cycle) ? "done" : "upcoming";
     });
 
     const trainingDayIndices = levelDays

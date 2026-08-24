@@ -184,4 +184,23 @@ describe("loadTodayState", () => {
       level: 0,
     });
   });
+
+  it("serves day 1 again after 'Refaire ce niveau' opens a new cycle, instead of bouncing back to level-up", () => {
+    const db = setup();
+    // Full first pass through the level (cycle 0), landing on level-up — mirrors
+    // what resolveLevelUpAction("redo", ...) does: same level, day 0, cycle + 1.
+    for (const dayIndex of [0, 2, 4]) {
+      const seance = startSeance(db, "beginner", 0, dayIndex, 0);
+      completeSeance(db, seance.id);
+    }
+    setCurrentPosition(db, "beginner", 0, 0, 1);
+
+    const state = loadTodayState(db, ALL_PARCOURS);
+    if (state.phase !== "normal") throw new Error("unreachable");
+    expect(state.dayIndex).toBe(0);
+    expect(state.done).toBe(false);
+    expect(state.pastilles).toEqual([
+      "today", "restOrWalk", "upcoming", "restOrWalk", "upcoming", "restOrWalk", "restOrWalk",
+    ]);
+  });
 });

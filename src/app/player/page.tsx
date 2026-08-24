@@ -3,6 +3,7 @@ import { currentUser } from "@/lib/auth/currentUser";
 import { getSettings } from "@/lib/settings/db";
 import { loadPlayerState } from "@/lib/player/loadPlayerState";
 import { getSetsForSeance } from "@/lib/player/db";
+import { resolveCycleForJump } from "@/lib/programme/db";
 import { logSetAction, skipExerciseAction, completeSeanceAction } from "@/lib/player/actions";
 import { beginner, intermediate, advanced } from "@/lib/workout/data";
 import type { Program } from "@/lib/workout/types";
@@ -38,7 +39,8 @@ export default async function PlayerPage({
 
   const db = getDbForUser(await currentUser());
   const settings = getSettings(db);
-  const state = loadPlayerState(db, parcours, level, dayIndex, day);
+  const cycle = resolveCycleForJump(db, parcours, level, dayIndex);
+  const state = loadPlayerState(db, parcours, level, dayIndex, day, cycle);
   const setsLogged = getSetsForSeance(db, state.seanceId);
 
   const cardTotals = new Map(computeTrophies(db).map((c) => [c.id, c.total]));
