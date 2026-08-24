@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { type Accent } from "@/components/Pastille";
+import { ACCENT_BG, type Accent } from "@/components/Pastille";
 
 const ACCENT_STROKE: Record<Accent, string> = {
   cobalt: "#1F3BE0",
   sage: "#2E7D63",
   brass: "#A9782C",
+};
+
+const ACCENT_OPACITY_CURRENT: Record<Accent, string> = {
+  cobalt: "bg-cobalt opacity-[.55]",
+  sage: "bg-sage opacity-[.55]",
+  brass: "bg-brass opacity-[.55]",
 };
 
 const CIRCLE_RADIUS = 112;
@@ -16,12 +22,20 @@ export function RestView({
   durationSeconds,
   nextLabel,
   variant,
+  exerciseIndex,
+  totalExercises,
+  setNumber,
+  totalSets,
   accent = "cobalt",
   onComplete,
 }: {
   durationSeconds: number;
   nextLabel: string;
   variant: "betweenSets" | "betweenExercises";
+  exerciseIndex: number;
+  totalExercises: number;
+  setNumber: number;
+  totalSets: number;
   accent?: Accent;
   onComplete: () => void;
 }) {
@@ -60,8 +74,28 @@ export function RestView({
 
   return (
     <div className="fixed inset-0 z-40 bg-paper flex flex-col items-center justify-center p-5">
+      <div className="absolute top-4 left-5 right-5 flex gap-1">
+        {Array.from({ length: totalExercises }, (_, i) => (
+          <div
+            key={i}
+            className={`flex-1 h-[3px] rounded-pill ${
+              i < exerciseIndex
+                ? ACCENT_BG[accent]
+                : i === exerciseIndex
+                  ? ACCENT_OPACITY_CURRENT[accent]
+                  : "bg-hairline"
+            }`}
+          />
+        ))}
+      </div>
+
       <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">
         {variant === "betweenExercises" ? "Exercice suivant" : "Repos entre séries"}
+      </span>
+      <span className="text-13 text-graphite tabular-nums mt-1">
+        {variant === "betweenExercises"
+          ? `Exercice ${exerciseIndex + 1} / ${totalExercises} terminé`
+          : `Exercice ${exerciseIndex + 1} / ${totalExercises} · Série ${setNumber} / ${totalSets}`}
       </span>
 
       <div className="relative w-60 h-60 mt-8 flex items-center justify-center">

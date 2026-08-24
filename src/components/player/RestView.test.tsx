@@ -3,6 +3,8 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RestView } from "./RestView";
 
+const PROGRESS = { exerciseIndex: 1, totalExercises: 5, setNumber: 2, totalSets: 4 };
+
 beforeEach(() => {
   vi.useFakeTimers();
 });
@@ -14,7 +16,7 @@ afterEach(() => {
 describe("RestView", () => {
   it("counts down from the given duration and shows the next label", () => {
     render(
-      <RestView durationSeconds={90} nextLabel="Push ups" variant="betweenSets" onComplete={() => {}} />,
+      <RestView durationSeconds={90} nextLabel="Push ups" variant="betweenSets" {...PROGRESS} onComplete={() => {}} />,
     );
     expect(screen.getByText("90")).toBeInTheDocument();
     expect(screen.getByText(/Push ups/)).toBeInTheDocument();
@@ -23,7 +25,7 @@ describe("RestView", () => {
   it("calls onComplete once the countdown reaches 0", () => {
     const onComplete = vi.fn();
     render(
-      <RestView durationSeconds={2} nextLabel="Push ups" variant="betweenSets" onComplete={onComplete} />,
+      <RestView durationSeconds={2} nextLabel="Push ups" variant="betweenSets" {...PROGRESS} onComplete={onComplete} />,
     );
     act(() => {
       vi.advanceTimersByTime(2100);
@@ -34,7 +36,7 @@ describe("RestView", () => {
   it("+15 s extends the countdown without completing", () => {
     const onComplete = vi.fn();
     render(
-      <RestView durationSeconds={5} nextLabel="Push ups" variant="betweenSets" onComplete={onComplete} />,
+      <RestView durationSeconds={5} nextLabel="Push ups" variant="betweenSets" {...PROGRESS} onComplete={onComplete} />,
     );
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -53,7 +55,7 @@ describe("RestView", () => {
     vi.useRealTimers();
     const onComplete = vi.fn();
     render(
-      <RestView durationSeconds={90} nextLabel="Push ups" variant="betweenSets" onComplete={onComplete} />,
+      <RestView durationSeconds={90} nextLabel="Push ups" variant="betweenSets" {...PROGRESS} onComplete={onComplete} />,
     );
     await userEvent.click(screen.getByRole("button", { name: "Passer le repos" }));
     expect(onComplete).toHaveBeenCalledOnce();
@@ -61,14 +63,28 @@ describe("RestView", () => {
 
   it("shows 'Exercice suivant' only for the betweenExercises variant", () => {
     const { rerender } = render(
-      <RestView durationSeconds={90} nextLabel="Squats" variant="betweenSets" onComplete={() => {}} />,
+      <RestView durationSeconds={90} nextLabel="Squats" variant="betweenSets" {...PROGRESS} onComplete={() => {}} />,
     );
     expect(screen.queryByText("Exercice suivant")).not.toBeInTheDocument();
     expect(screen.getByText("Repos entre séries")).toBeInTheDocument();
 
     rerender(
-      <RestView durationSeconds={120} nextLabel="Squats" variant="betweenExercises" onComplete={() => {}} />,
+      <RestView durationSeconds={120} nextLabel="Squats" variant="betweenExercises" {...PROGRESS} onComplete={() => {}} />,
     );
     expect(screen.getByText("Exercice suivant")).toBeInTheDocument();
+  });
+
+  it("shows exercise/set progress for the betweenSets variant", () => {
+    render(
+      <RestView durationSeconds={90} nextLabel="Squats" variant="betweenSets" {...PROGRESS} onComplete={() => {}} />,
+    );
+    expect(screen.getByText("Exercice 2 / 5 · Série 2 / 4")).toBeInTheDocument();
+  });
+
+  it("shows the exercise as done for the betweenExercises variant", () => {
+    render(
+      <RestView durationSeconds={90} nextLabel="Squats" variant="betweenExercises" {...PROGRESS} onComplete={() => {}} />,
+    );
+    expect(screen.getByText("Exercice 2 / 5 terminé")).toBeInTheDocument();
   });
 });

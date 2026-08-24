@@ -152,6 +152,10 @@ export function PlayerScreen({
         durationSeconds={localPhase.durationSeconds}
         nextLabel={localPhase.nextLabel}
         variant={localPhase.variant}
+        exerciseIndex={exerciseOrder}
+        totalExercises={day.exercises.length}
+        setNumber={setNumber}
+        totalSets={exercise.sets}
         accent={accent}
         onComplete={() => {
           setLocalPhase({ kind: "exercise" });
