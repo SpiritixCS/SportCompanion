@@ -26,4 +26,24 @@ describe("formatTarget", () => {
   it("appends a per-side suffix", () => {
     expect(formatTarget(3, target({ value: 10, eachSide: true }))).toBe("3 × 10 / côté");
   });
+
+  it("appends 's' for a seconds target", () => {
+    expect(formatTarget(3, target({ value: 30, unit: "seconds" }))).toBe("3 × 30 s");
+  });
+
+  it("appends 'min' for a minutes target", () => {
+    expect(formatTarget(1, target({ value: 10, unit: "minutes" }))).toBe("1 × 10 min");
+  });
+
+  it("says nothing extra for a reps target", () => {
+    expect(formatTarget(3, target({ value: 12, unit: "reps" }))).toBe("3 × 12");
+  });
+
+  it("combines a unit suffix with the per-side suffix", () => {
+    expect(formatTarget(3, target({ value: 30, unit: "seconds", eachSide: true }))).toBe("3 × 30 s / côté");
+  });
+
+  it("does not append a unit suffix for max effort", () => {
+    expect(formatTarget(2, target({ value: null, maxEffort: true, unit: "seconds" }))).toBe("2 × max");
+  });
 });

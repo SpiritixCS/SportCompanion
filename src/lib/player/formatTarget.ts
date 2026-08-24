@@ -1,5 +1,10 @@
 import type { ExerciseTarget } from "@/lib/workout/types";
 
+const UNIT_SUFFIX: Record<string, string> = {
+  seconds: " s",
+  minutes: " min",
+};
+
 export function formatTarget(sets: number, target: ExerciseTarget): string {
   let valueLabel: string;
   if (target.maxEffort || target.value === null) {
@@ -9,6 +14,7 @@ export function formatTarget(sets: number, target: ExerciseTarget): string {
   } else {
     valueLabel = String(target.value);
   }
-  const suffix = target.eachSide ? " / côté" : "";
-  return `${sets} × ${valueLabel}${suffix}`;
+  const unitSuffix = target.maxEffort || target.value === null ? "" : (UNIT_SUFFIX[target.unit] ?? "");
+  const sideSuffix = target.eachSide ? " / côté" : "";
+  return `${sets} × ${valueLabel}${unitSuffix}${sideSuffix}`;
 }

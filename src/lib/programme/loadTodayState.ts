@@ -37,16 +37,22 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
   const parcoursMeta = allParcours.find((p) => p.id === position.parcours);
   if (!parcoursMeta) return { phase: "empty" };
 
+  const levelDays = parcoursMeta.program[position.level] ?? [];
+
   if (position.dayIndex === LAST_DAY_INDEX) {
-    return {
-      phase: "level-up",
-      parcours: position.parcours,
-      parcoursLabel: parcoursMeta.label,
-      level: position.level,
-    };
+    const lastDay = levelDays[LAST_DAY_INDEX];
+    const lastDayDone =
+      !lastDay || lastDay.kind === "rest" || isDayValidated(db, position.parcours, position.level, LAST_DAY_INDEX);
+    if (lastDayDone) {
+      return {
+        phase: "level-up",
+        parcours: position.parcours,
+        parcoursLabel: parcoursMeta.label,
+        level: position.level,
+      };
+    }
   }
 
-  const levelDays = parcoursMeta.program[position.level] ?? [];
   const day = levelDays[position.dayIndex];
   if (!day || day.kind !== "train") return { phase: "empty" };
 
