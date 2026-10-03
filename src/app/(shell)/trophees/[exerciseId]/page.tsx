@@ -76,21 +76,6 @@ export default async function TrophyDetailPage({
           )}
         </Card>
 
-        {detail.byCran && detail.byCran.length > 0 && (
-          <Card className="mt-4 overflow-hidden">
-            {detail.byCran.map((row, i) => (
-              <div
-                key={row.cran}
-                className={`flex justify-between items-center gap-4 px-4 py-3 ${
-                  i > 0 ? "border-t border-hairline" : ""
-                }`}
-              >
-                <span className="text-15">{row.nom}</span>
-                <span className="font-archivo text-15 font-semibold tabular-nums flex-none">{row.total}</span>
-              </div>
-            ))}
-          </Card>
-        )}
       </div>
     </div>
   );

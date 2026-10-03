@@ -8,7 +8,7 @@ import { logSetAction, skipExerciseAction, completeSeanceAction, resumeSeanceAct
 import { beginner, intermediate, advanced } from "@/lib/workout/data";
 import type { Program } from "@/lib/workout/types";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
-import { computeTrophies, resolveTrophyCardId, isReplogEligible } from "@/lib/trophies/computeTrophies";
+import { computeTrophies } from "@/lib/trophies/computeTrophies";
 
 const PROGRAMS: Record<string, Program> = { beginner, intermediate, advanced };
 
@@ -45,7 +45,7 @@ export default async function PlayerPage({
 
   const cardTotals = new Map(computeTrophies(db).map((c) => [c.id, c.total]));
   const allTimeTotals = day.exercises.map((exercise) =>
-    isReplogEligible(exercise.id, exercise.countsInStats) ? cardTotals.get(resolveTrophyCardId(exercise.id)) : undefined,
+    exercise.countsInStats ? cardTotals.get(exercise.id) : undefined,
   );
 
   return (

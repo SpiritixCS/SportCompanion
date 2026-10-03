@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
 import { getProgramDays } from "@/lib/tracking/program";
@@ -9,7 +8,6 @@ export const dynamic = "force-dynamic";
 
 export default async function TrackingProgrammePage() {
   const user = await currentUser();
-  if (user.slug !== "clement") redirect("/");
   const db = getDbForUser(user);
   return <ProgrammeScreen days={getProgramDays(db)} exerciseSuggestions={listExercises(db)} />;
 }

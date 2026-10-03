@@ -68,7 +68,7 @@ export default function DesignSystemPage() {
           items={[
             { label: "Aujourd'hui", icon: <IconCheck size={20} />, active: true, href: "/today" },
             { label: "Programme", icon: <IconChevronRight size={20} />, active: false, href: "/program" },
-            { label: "Dos", icon: <IconSettings size={20} />, active: false, href: "/back" },
+            { label: "Tracking", icon: <IconSettings size={20} />, active: false, href: "/tracking" },
             { label: "Trophées", icon: <IconCheck size={20} />, active: false, href: "/trophies" },
           ]}
         />

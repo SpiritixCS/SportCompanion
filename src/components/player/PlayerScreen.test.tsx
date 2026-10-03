@@ -55,6 +55,7 @@ describe("PlayerScreen", () => {
       phase: "in-progress",
       seanceId: 1,
       startedAt: STARTED_AT,
+      resumedAt: null,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -68,6 +69,7 @@ describe("PlayerScreen", () => {
       phase: "in-progress",
       seanceId: 1,
       startedAt: STARTED_AT,
+      resumedAt: null,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -88,6 +90,7 @@ describe("PlayerScreen", () => {
       phase: "in-progress",
       seanceId: 1,
       startedAt: STARTED_AT,
+      resumedAt: null,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -114,6 +117,7 @@ describe("PlayerScreen", () => {
       phase: "in-progress",
       seanceId: 1,
       startedAt: STARTED_AT,
+      resumedAt: null,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -130,6 +134,7 @@ describe("PlayerScreen", () => {
       phase: "in-progress",
       seanceId: 1,
       startedAt: STARTED_AT,
+      resumedAt: null,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -147,6 +152,7 @@ describe("PlayerScreen", () => {
       phase: "in-progress",
       seanceId: 1,
       startedAt: STARTED_AT,
+      resumedAt: null,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
@@ -160,7 +166,7 @@ describe("PlayerScreen", () => {
   });
 
   it("renders SummaryView for pending-validation and calls onSeanceFinish on Terminer", async () => {
-    const state: PlayerState = { phase: "pending-validation", seanceId: 1, startedAt: STARTED_AT };
+    const state: PlayerState = { phase: "pending-validation", seanceId: 1, startedAt: STARTED_AT, resumedAt: null };
     render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
@@ -188,6 +194,7 @@ describe("PlayerScreen", () => {
       phase: "in-progress",
       seanceId: 1,
       startedAt: STARTED_AT,
+      resumedAt: null,
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };

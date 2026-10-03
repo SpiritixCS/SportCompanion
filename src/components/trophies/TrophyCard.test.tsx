@@ -28,16 +28,15 @@ const PROGRAMME_CARD: TrophyCardData = {
   movementFamily: "squat",
 };
 
-const DOS_CARD: TrophyCardData = {
-  id: "A",
-  module: "dos",
-  name: "Charnière & ischios",
+const TRACKING_CARD: TrophyCardData = {
+  id: "tracking-1",
+  module: "tracking",
+  name: "Fentes",
   unit: "reps",
   total: 80,
   firstAt: "2026-01-01T10:00:00.000Z",
   lastAt: "2026-08-01T10:00:00.000Z",
-  byCran: [{ cran: 1, nom: "Hip hinge au bâton", total: 80 }],
-  movementFamily: "squat",
+  movementFamily: "other",
 };
 
 describe("TrophyCard", () => {
@@ -58,13 +57,13 @@ describe("TrophyCard", () => {
     expect(screen.queryByText(/Palier/)).not.toBeInTheDocument();
   });
 
-  it("renders no image for a Dos card", () => {
-    render(<TrophyCard card={DOS_CARD} index={0} />);
+  it("renders no image for a Tracking card", () => {
+    render(<TrophyCard card={TRACKING_CARD} index={0} />);
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 
-  it("shows a family icon in place of a photo for a Dos card", () => {
-    render(<TrophyCard card={DOS_CARD} index={0} />);
+  it("shows a family icon in place of a photo for a Tracking card", () => {
+    render(<TrophyCard card={TRACKING_CARD} index={0} />);
     expect(screen.getByTestId("exercise-family-icon")).toBeInTheDocument();
   });
 

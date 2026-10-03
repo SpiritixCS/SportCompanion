@@ -2,7 +2,6 @@
 
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
-import { getStartDate } from "@/lib/backpain/db";
 import { getSettings, updateSettings, type AppSettings } from "./db";
 import packageJson from "../../../package.json";
 
@@ -11,15 +10,12 @@ async function db() {
 }
 
 export type ReglagesState = AppSettings & {
-  dosStartDate: string | null;
   version: string;
 };
 
 export async function getReglagesStateAction(): Promise<ReglagesState> {
-  const database = await db();
   return {
-    ...getSettings(database),
-    dosStartDate: getStartDate(database),
+    ...getSettings(await db()),
     version: packageJson.version,
   };
 }

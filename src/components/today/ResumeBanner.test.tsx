@@ -11,7 +11,7 @@ describe("ResumeBanner", () => {
   });
 
   it("uses the sage accent border when accent='sage'", () => {
-    render(<ResumeBanner exerciseName="Hip hinge" href="/player/dos" accent="sage" />);
+    render(<ResumeBanner exerciseName="Fentes" href="/player/tracking?day=0" accent="sage" />);
     expect(screen.getByRole("link")).toHaveClass("border-sage");
   });
 });

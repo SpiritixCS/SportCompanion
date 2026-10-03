@@ -16,7 +16,6 @@ export default async function TrackingPlayerPage({
   searchParams: Promise<{ day?: string }>;
 }) {
   const user = await currentUser();
-  if (user.slug !== "clement") redirect("/");
 
   const { day: dayParam } = await searchParams;
   const dayOfWeek = Number(dayParam);

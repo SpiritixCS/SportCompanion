@@ -6,22 +6,14 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
 import { AppNav } from "./AppNav";
 
 describe("AppNav", () => {
-  it("shows Dos, not Tracking, for Mathis", () => {
-    render(<AppNav userSlug="mathis" />);
-    expect(screen.getByRole("link", { name: "Dos" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Tracking" })).not.toBeInTheDocument();
-  });
-
-  it("shows Tracking, not Dos, for Clément", () => {
-    render(<AppNav userSlug="clement" />);
-    expect(screen.getByRole("link", { name: "Tracking" })).toBeInTheDocument();
+  it("shows the same 4 entries for everyone, Tracking in place of Dos", () => {
+    render(<AppNav />);
+    expect(screen.getAllByRole("link").map((l) => l.textContent)).toEqual([
+      "Aujourd'hui",
+      "Programme",
+      "Tracking",
+      "Trophées",
+    ]);
     expect(screen.queryByRole("link", { name: "Dos" })).not.toBeInTheDocument();
-  });
-
-  it("both variants keep Aujourd'hui, Programme, Trophées", () => {
-    render(<AppNav userSlug="clement" />);
-    expect(screen.getByRole("link", { name: "Aujourd'hui" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Programme" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Trophées" })).toBeInTheDocument();
   });
 });

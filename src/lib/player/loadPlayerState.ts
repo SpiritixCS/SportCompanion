@@ -8,12 +8,11 @@ export type PlayerState =
       phase: "in-progress";
       seanceId: number;
       startedAt: string;
-      // ponytail: optionnel tant que loadDosPlayerState produit aussi ce type ; rendre obligatoire au chantier 3 (retrait du Dos)
-      resumedAt?: string | null;
+      resumedAt: string | null;
       next: NextSet;
       skippedExerciseOrders: number[];
     }
-  | { phase: "pending-validation"; seanceId: number; startedAt: string; resumedAt?: string | null }
+  | { phase: "pending-validation"; seanceId: number; startedAt: string; resumedAt: string | null }
   | { phase: "completed"; seanceId: number };
 
 export function loadPlayerState(

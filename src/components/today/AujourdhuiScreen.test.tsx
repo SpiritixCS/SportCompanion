@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AujourdhuiScreen } from "./AujourdhuiScreen";
 import type { TodayState } from "@/lib/programme/loadTodayState";
-import type { DosTodayState } from "@/lib/dos/loadDosTodayState";
+import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
@@ -19,7 +19,6 @@ vi.mock("@/lib/settings/actions", () => ({
     soundCountdownEnabled: false,
     startCountdownEnabled: false,
     keepScreenAwakeEnabled: true,
-    dosStartDate: null,
     version: "0.1.0",
   }),
   updateSettingsAction: vi.fn(),
@@ -29,15 +28,10 @@ vi.mock("@/lib/tracking/actions", () => ({ advanceProgramDayAction: vi.fn() }));
 const MATHIS = { slug: "mathis" as const, label: "Mathis" };
 const CLEMENT = { slug: "clement" as const, label: "Clément" };
 
-const DOS_NO_START_DATE: DosTodayState = { phase: "no-start-date" };
-const DOS_NORMAL: DosTodayState = {
-  phase: "normal",
-  jourLabel: "Lundi",
-  intitule: "Charnière & chaîne postérieure",
-  exercises: [{ name: "Hip hinge au bâton", dose: "2 × 10" }],
-  done: false,
-  doneReps: null,
-  resume: null,
+const TRACKING_REST: TrackingScreenState = {
+  programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
+  activeSeance: null,
+  seances: [],
 };
 
 const NORMAL_PROGRAMME_STATE: TodayState = {
@@ -49,7 +43,7 @@ const NORMAL_PROGRAMME_STATE: TodayState = {
 describe("AujourdhuiScreen", () => {
   it("empty state shows the point de départ invite and opens SetupFlow on click", async () => {
     render(
-      <AujourdhuiScreen state={{ phase: "empty" }} dosState={DOS_NO_START_DATE} trackingState={null} user={MATHIS} />,
+      <AujourdhuiScreen state={{ phase: "empty" }} trackingState={TRACKING_REST} user={MATHIS} />,
     );
     expect(screen.getByText("Premier jour")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Définir mon point de départ" }));
@@ -60,8 +54,7 @@ describe("AujourdhuiScreen", () => {
     render(
       <AujourdhuiScreen
         state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
-        dosState={DOS_NO_START_DATE}
-        trackingState={null}
+        trackingState={TRACKING_REST}
         user={MATHIS}
       />,
     );
@@ -72,8 +65,7 @@ describe("AujourdhuiScreen", () => {
     render(
       <AujourdhuiScreen
         state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
-        dosState={DOS_NO_START_DATE}
-        trackingState={null}
+        trackingState={TRACKING_REST}
         user={MATHIS}
       />,
     );
@@ -82,51 +74,30 @@ describe("AujourdhuiScreen", () => {
     expect(screen.getByText("Niveau 1")).toBeInTheDocument();
   });
 
-  it("normal state renders the Programme card and the real BackPainCard", () => {
+  it("normal state renders the Programme card and the Tracking card, never a Dos card", () => {
     render(
       <AujourdhuiScreen
         state={NORMAL_PROGRAMME_STATE}
-        dosState={DOS_NORMAL}
-        trackingState={null}
+        trackingState={TRACKING_REST}
         user={MATHIS}
       />,
     );
     expect(screen.getByText("Débutant · Niveau 1 · Jour 1")).toBeInTheDocument();
-    expect(screen.getByText("Lundi · Charnière & chaîne postérieure")).toBeInTheDocument();
+    expect(screen.getByText("Lundi · Repos")).toBeInTheDocument();
+    expect(screen.queryByText("Dos")).not.toBeInTheDocument();
   });
 
   it("normal state with a Programme resume shows the cobalt ResumeBanner", () => {
     const state: TodayState = { ...NORMAL_PROGRAMME_STATE, resume: { exerciseName: "Push ups" } };
-    render(<AujourdhuiScreen state={state} dosState={DOS_NO_START_DATE} trackingState={null} user={MATHIS} />);
+    render(<AujourdhuiScreen state={state} trackingState={TRACKING_REST} user={MATHIS} />);
     expect(screen.getByText("Reprendre à Push ups")).toBeInTheDocument();
-  });
-
-  it("shows the no-start-date Dos card when Dos setup hasn't happened yet", () => {
-    render(
-      <AujourdhuiScreen
-        state={NORMAL_PROGRAMME_STATE}
-        dosState={DOS_NO_START_DATE}
-        trackingState={null}
-        user={MATHIS}
-      />,
-    );
-    expect(screen.getByText("Définis ta date de départ pour commencer.")).toBeInTheDocument();
-  });
-
-  it("shows a sage ResumeBanner when the Dos seance is interrupted", () => {
-    const dosResume: DosTodayState = { ...DOS_NORMAL, resume: { exerciseName: "Hip hinge au bâton" } };
-    render(
-      <AujourdhuiScreen state={NORMAL_PROGRAMME_STATE} dosState={dosResume} trackingState={null} user={MATHIS} />,
-    );
-    expect(screen.getByText("Reprendre à Hip hinge au bâton")).toBeInTheDocument();
   });
 
   it("opens Réglages from the header icon and closes it", async () => {
     render(
       <AujourdhuiScreen
         state={NORMAL_PROGRAMME_STATE}
-        dosState={DOS_NORMAL}
-        trackingState={null}
+        trackingState={TRACKING_REST}
         user={MATHIS}
       />,
     );
@@ -140,8 +111,7 @@ describe("AujourdhuiScreen", () => {
     render(
       <AujourdhuiScreen
         state={NORMAL_PROGRAMME_STATE}
-        dosState={DOS_NORMAL}
-        trackingState={null}
+        trackingState={TRACKING_REST}
         user={MATHIS}
       />,
     );
@@ -151,21 +121,19 @@ describe("AujourdhuiScreen", () => {
     expect(screen.getByText("Choisis ton parcours")).toBeInTheDocument();
   });
 
-  it("greets Clément by name and never renders a Dos card when dosState is null", () => {
+  it("greets the user by name", () => {
     render(
-      <AujourdhuiScreen state={NORMAL_PROGRAMME_STATE} dosState={null} trackingState={null} user={CLEMENT} />,
+      <AujourdhuiScreen state={NORMAL_PROGRAMME_STATE} trackingState={TRACKING_REST} user={CLEMENT} />,
     );
     expect(screen.getByText("Salut Clément.")).toBeInTheDocument();
-    expect(screen.queryByText("Dos")).not.toBeInTheDocument();
   });
 
-  it("shows the Tracking card for Clément when trackingState is provided", () => {
+  it("shows the Tracking card for Mathis too", () => {
     render(
       <AujourdhuiScreen
         state={NORMAL_PROGRAMME_STATE}
-        dosState={null}
-        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: null, seances: [] }}
-        user={CLEMENT}
+        trackingState={TRACKING_REST}
+        user={MATHIS}
       />,
     );
     expect(screen.getByText("Lundi · Repos")).toBeInTheDocument();
@@ -175,7 +143,6 @@ describe("AujourdhuiScreen", () => {
     render(
       <AujourdhuiScreen
         state={{ phase: "empty" }}
-        dosState={null}
         trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: null, seances: [] }}
         user={CLEMENT}
       />,
@@ -188,7 +155,6 @@ describe("AujourdhuiScreen", () => {
     render(
       <AujourdhuiScreen
         state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
-        dosState={null}
         trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: { id: 3, dayOfWeek: null, dayLabel: null, plannedExercises: null, loggedExercises: [] }, seances: [] }}
         user={CLEMENT}
       />,

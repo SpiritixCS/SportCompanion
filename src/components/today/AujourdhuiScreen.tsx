@@ -6,64 +6,25 @@ import { Card } from "@/components/Card";
 import { ResumeBanner } from "./ResumeBanner";
 import { ProgrammeCard } from "./ProgrammeCard";
 import { LevelUpPrompt } from "./LevelUpPrompt";
-import { BackPainCard } from "./BackPainCard";
 import { SetupFlow } from "@/components/setup/SetupFlow";
 import { AujourdhuiHeader } from "./AujourdhuiHeader";
 import { ReglagesScreen } from "@/components/settings/ReglagesScreen";
 import { TrackingCard } from "./TrackingCard";
 import type { TodayState } from "@/lib/programme/loadTodayState";
-import type { DosTodayState } from "@/lib/dos/loadDosTodayState";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
-import type { UserSlug } from "@/lib/auth/users";
 
 function playerHref(parcours: string, level: number, dayIndex: number): string {
   return `/player?parcours=${parcours}&level=${level}&day=${dayIndex}`;
 }
 
-function DosCard({ dosState }: { dosState: DosTodayState }) {
-  if (dosState.phase === "no-start-date") {
-    return (
-      <Card className="p-5">
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Dos</span>
-        <div className="font-archivo text-18 font-semibold mt-3">Définis ta date de départ pour commencer.</div>
-        <a href="/dos" className="mt-4 h-14 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15 font-semibold">
-          Aller sur Dos
-        </a>
-      </Card>
-    );
-  }
-
-  if (dosState.phase === "rest") {
-    return (
-      <Card className="p-5">
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Dos</span>
-        <div className="font-archivo text-18 font-semibold mt-3">Repos</div>
-      </Card>
-    );
-  }
-
-  return (
-    <BackPainCard
-      jourLabel={dosState.jourLabel}
-      intitule={dosState.intitule}
-      exercises={dosState.exercises}
-      done={dosState.done}
-      doneReps={dosState.doneReps}
-      href="/player/dos"
-    />
-  );
-}
-
 export function AujourdhuiScreen({
   state,
-  dosState,
   trackingState,
   user,
 }: {
   state: TodayState;
-  dosState: DosTodayState | null;
-  trackingState: TrackingScreenState | null;
-  user: { slug: UserSlug; label: string };
+  trackingState: TrackingScreenState;
+  user: { label: string };
 }) {
   const router = useRouter();
   const [setupOpen, setSetupOpen] = useState(false);
@@ -76,7 +37,6 @@ export function AujourdhuiScreen({
   if (reglagesOpen) {
     return (
       <ReglagesScreen
-        userSlug={user.slug}
         onClose={() => setReglagesOpen(false)}
         onChangePointDepart={() => {
           setReglagesOpen(false);
@@ -115,7 +75,7 @@ export function AujourdhuiScreen({
             Définir mon point de départ
           </button>
         </Card>
-        {trackingState && <TrackingCard state={trackingState} />}
+        <TrackingCard state={trackingState} />
       </div>
     );
   }
@@ -130,7 +90,7 @@ export function AujourdhuiScreen({
           level={state.level}
           onResolved={() => router.refresh()}
         />
-        {trackingState && <TrackingCard state={trackingState} />}
+        <TrackingCard state={trackingState} />
       </div>
     );
   }
@@ -143,9 +103,6 @@ export function AujourdhuiScreen({
           exerciseName={state.resume.exerciseName}
           href={playerHref(state.parcours, state.level, state.dayIndex)}
         />
-      )}
-      {dosState?.phase === "normal" && dosState.resume && (
-        <ResumeBanner exerciseName={dosState.resume.exerciseName} href="/player/dos" accent="sage" />
       )}
 
       <ProgrammeCard
@@ -160,7 +117,7 @@ export function AujourdhuiScreen({
         href={playerHref(state.parcours, state.level, state.dayIndex)}
       />
 
-      {dosState ? <DosCard dosState={dosState} /> : trackingState ? <TrackingCard state={trackingState} /> : null}
+      <TrackingCard state={trackingState} />
     </div>
   );
 }

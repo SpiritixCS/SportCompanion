@@ -5,7 +5,6 @@ import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
 import { startSeance, logSet, completeSeance } from "@/lib/player/db";
-import { startDosSeance, logDosSet, completeDosSeance } from "@/lib/dos/db";
 import { startSeance as startTrackingSeance, logSetForExercise, completeSeance as completeTrackingSeance } from "@/lib/tracking/db";
 import { loadTropheesScreenState } from "./loadTropheesScreenState";
 
@@ -36,9 +35,12 @@ describe("loadTropheesScreenState", () => {
     logSet(db, { seanceId: seanceA.id, exerciseOrder: 6, setNumber: 1, repsTarget: "15", repsActual: 15, restSeconds: 90 });
     completeSeance(db, seanceA.id);
 
-    const dosSeance = startDosSeance(db, "2026-01-05", "lundi", 1);
-    logDosSet(db, { seanceId: dosSeance.id, exerciseOrder: 0, exerciseId: "A-1", setNumber: 1, valeurTarget: "8-10", valeurActual: 8, restSeconds: 60 });
-    completeDosSeance(db, dosSeance.id, 1);
+    // Programme validé un autre jour que la séance Tracking : 2 jours d'activité
+    db.prepare(`UPDATE seances SET completed_at = '2026-01-05T10:00:00.000Z' WHERE id = ?`).run(seanceA.id);
+
+    const trackingSeance = startTrackingSeance(db);
+    logSetForExercise(db, trackingSeance.id, "Fentes", "reps", 8);
+    completeTrackingSeance(db, trackingSeance.id);
 
     const state = loadTropheesScreenState(db);
     expect(state.totalReps).toBe(23);

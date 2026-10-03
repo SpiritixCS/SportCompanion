@@ -23,18 +23,16 @@ const BASE_STATE = {
   soundCountdownEnabled: false,
   startCountdownEnabled: false,
   keepScreenAwakeEnabled: true,
-  dosStartDate: null,
   version: "0.1.0",
 };
 
 describe("ReglagesScreen", () => {
-  it("loads settings on mount and renders all five groups", async () => {
+  it("loads settings on mount and renders all four groups", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("90 s")).toBeInTheDocument());
     expect(screen.getByText("Programme")).toBeInTheDocument();
     expect(screen.getByText("Séance")).toBeInTheDocument();
-    expect(screen.getByText("BackPain")).toBeInTheDocument();
     expect(screen.getByText("Données")).toBeInTheDocument();
     expect(screen.getByText("À propos")).toBeInTheDocument();
     expect(screen.getByText("0.1.0")).toBeInTheDocument();
@@ -44,7 +42,7 @@ describe("ReglagesScreen", () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     render(
       <ReglagesScreen
-        userSlug="mathis"
+       
         onClose={() => {}}
         onChangePointDepart={() => {}}
         programmePosition={{ parcoursLabel: "Débutant", level: 2, dayIndex: 4 }}
@@ -58,7 +56,7 @@ describe("ReglagesScreen", () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     render(
       <ReglagesScreen
-        userSlug="mathis"
+       
         onClose={() => {}}
         onChangePointDepart={() => {}}
         programmePosition={{ parcoursLabel: "Débutant", level: 2, dayIndex: null }}
@@ -71,7 +69,7 @@ describe("ReglagesScreen", () => {
   it("calls onChangePointDepart when the row is tapped", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     const onChangePointDepart = vi.fn();
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={onChangePointDepart} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={onChangePointDepart} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("Changer mon point de départ")).toBeInTheDocument());
     await userEvent.click(screen.getByRole("button", { name: "Changer mon point de départ" }));
     expect(onChangePointDepart).toHaveBeenCalledOnce();
@@ -80,7 +78,7 @@ describe("ReglagesScreen", () => {
   it("edits a rest duration through the DurationRow sheet", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     updateSettingsAction.mockResolvedValue({ ...BASE_STATE, restBetweenSetsSeconds: 105 });
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("90 s")).toBeInTheDocument());
     await userEvent.click(screen.getByRole("button", { name: "Repos entre séries" }));
     await userEvent.click(screen.getByRole("button", { name: "+" }));
@@ -92,7 +90,7 @@ describe("ReglagesScreen", () => {
   it("toggles garder l'écran allumé", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     updateSettingsAction.mockResolvedValue({ ...BASE_STATE, keepScreenAwakeEnabled: false });
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("Garder l'écran allumé")).toBeInTheDocument());
     await userEvent.click(screen.getByRole("switch", { name: "Garder l'écran allumé" }));
     expect(updateSettingsAction).toHaveBeenCalledWith({ keepScreenAwakeEnabled: false });
@@ -100,13 +98,13 @@ describe("ReglagesScreen", () => {
 
   it("renders the Données rows disabled with a Bientôt disponible sub-label", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getAllByText("Bientôt disponible")).toHaveLength(2));
   });
 
   it("shows an error state with a retry button when loading fails", async () => {
     getReglagesStateAction.mockRejectedValueOnce(new Error("boom")).mockResolvedValueOnce(BASE_STATE);
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("Impossible de charger les réglages.")).toBeInTheDocument());
     await userEvent.click(screen.getByRole("button", { name: "Réessayer" }));
     await waitFor(() => expect(screen.getByText("90 s")).toBeInTheDocument());
@@ -115,7 +113,7 @@ describe("ReglagesScreen", () => {
   it("calls onClose when the close button is tapped", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     const onClose = vi.fn();
-    render(<ReglagesScreen userSlug="mathis" onClose={onClose} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={onClose} onChangePointDepart={() => {}} programmePosition={null} />);
     await userEvent.click(screen.getByRole("button", { name: "Fermer" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -123,17 +121,15 @@ describe("ReglagesScreen", () => {
   it("shows the error state when a settings update fails", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
     updateSettingsAction.mockRejectedValue(new Error("boom"));
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("Garder l'écran allumé")).toBeInTheDocument());
     await userEvent.click(screen.getByRole("switch", { name: "Garder l'écran allumé" }));
     await waitFor(() => expect(screen.getByText("Impossible de charger les réglages.")).toBeInTheDocument());
   });
 
-  it("hides the BackPain section for Clément", async () => {
+  it("has no BackPain section", async () => {
     getReglagesStateAction.mockResolvedValue(BASE_STATE);
-    render(
-      <ReglagesScreen userSlug="clement" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />,
-    );
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("Programme")).toBeInTheDocument());
     expect(screen.queryByText("BackPain")).not.toBeInTheDocument();
   });
@@ -150,7 +146,7 @@ describe("ReglagesScreen", () => {
     updateSettingsAction.mockResolvedValue({ ...BASE_STATE, restBetweenSetsSeconds: 105 });
 
     const { unmount } = render(
-      <ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />,
+      <ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />,
     );
     await waitFor(() => expect(screen.getByText("90 s")).toBeInTheDocument());
     await userEvent.click(screen.getByRole("button", { name: "Repos entre séries" }));
@@ -159,7 +155,7 @@ describe("ReglagesScreen", () => {
     await waitFor(() => expect(screen.getByText("105 s")).toBeInTheDocument());
     unmount();
 
-    render(<ReglagesScreen userSlug="mathis" onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("105 s")).toBeInTheDocument());
     expect(getReglagesStateAction).toHaveBeenCalledTimes(2);
   });

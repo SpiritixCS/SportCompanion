@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
 import { getSeanceById, getSetsForSeance, listExercises } from "@/lib/tracking/db";
@@ -12,7 +12,6 @@ export default async function TrackingSeancePage({
   params: Promise<{ seanceId: string }>;
 }) {
   const user = await currentUser();
-  if (user.slug !== "clement") redirect("/");
 
   const { seanceId: seanceIdParam } = await params;
   const seanceId = Number(seanceIdParam);

@@ -5,7 +5,7 @@ import { BottomNav } from "./BottomNav";
 const items = [
   { label: "Aujourd'hui", icon: <span data-testid="icon-today" />, active: true, href: "/" },
   { label: "Programme", icon: <span data-testid="icon-programme" />, active: false, href: "/programme" },
-  { label: "Dos", icon: <span data-testid="icon-dos" />, active: false, href: "/dos" },
+  { label: "Tracking", icon: <span data-testid="icon-tracking" />, active: false, href: "/tracking" },
   { label: "Trophées", icon: <span data-testid="icon-trophees" />, active: false, href: "/trophees" },
 ];
 

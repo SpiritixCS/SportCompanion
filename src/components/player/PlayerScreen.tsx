@@ -84,9 +84,8 @@ export function PlayerScreen({
   onLogSet: (params: LogSetParams) => Promise<void>;
   onSkipExercise: (seanceId: number, exerciseOrder: number) => Promise<void>;
   onSeanceFinish: (seanceId: number) => Promise<void>;
-  // ponytail: optionnels tant que le player Dos existe ; obligatoires au chantier 3
-  onResume?: (seanceId: number) => Promise<void>;
-  onDiscard?: (seanceId: number) => Promise<void>;
+  onResume: (seanceId: number) => Promise<void>;
+  onDiscard: (seanceId: number) => Promise<void>;
 }) {
   const router = useRouter();
   useWakeLock(keepScreenAwakeEnabled);
@@ -124,14 +123,14 @@ export function PlayerScreen({
 
   async function handleResume() {
     if (state.phase === "completed") return;
-    await onResume?.(state.seanceId);
+    await onResume(state.seanceId);
     setLocalResumeAt(new Date().toISOString());
     setPauseOpen(false);
   }
 
   async function handleDiscard() {
     if (state.phase === "completed") return;
-    await onDiscard?.(state.seanceId);
+    await onDiscard(state.seanceId);
     router.push("/");
   }
 

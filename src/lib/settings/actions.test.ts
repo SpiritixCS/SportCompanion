@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
-import { setStartDate } from "@/lib/backpain/db";
 import { getSettings } from "./db";
 
 let tmpDir: string;
@@ -23,19 +22,11 @@ afterAll(() => {
 });
 
 describe("getReglagesStateAction", () => {
-  it("bundles settings defaults, a null dos start date, and the app version", async () => {
+  it("bundles settings defaults and the app version", async () => {
     const { getReglagesStateAction } = await import("./actions");
     const state = await getReglagesStateAction();
     expect(state.restBetweenSetsSeconds).toBe(90);
-    expect(state.dosStartDate).toBeNull();
     expect(state.version).toMatch(/^\d+\.\d+\.\d+$/);
-  });
-
-  it("reflects a dos start date once one is set", async () => {
-    setStartDate(getDb(dbPath), "2026-08-10");
-    const { getReglagesStateAction } = await import("./actions");
-    const state = await getReglagesStateAction();
-    expect(state.dosStartDate).toBe("2026-08-10");
   });
 });
 
