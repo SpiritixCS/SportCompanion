@@ -48,4 +48,9 @@ describe("BottomNav", () => {
     render(<BottomNav items={items} />);
     expect(screen.getByRole("navigation")).toHaveClass("z-30");
   });
+
+  it("hides the capsule when no tab matches the current page", () => {
+    render(<BottomNav items={items.map((it) => ({ ...it, active: false }))} />);
+    expect(screen.getByTestId("nav-capsule")).toHaveClass("opacity-0");
+  });
 });

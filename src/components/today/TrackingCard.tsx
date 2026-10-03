@@ -33,7 +33,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
       activeSeance.dayOfWeek !== null ? `/player/tracking?day=${activeSeance.dayOfWeek}` : `/tracking/${activeSeance.id}`;
     return (
       <Card className="rounded-[28px] border-0 p-5">
-        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage">Tracking</span>
+        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
         <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{activeSeance.dayLabel ?? "Séance en cours"}</div>
 
         {activeSeance.plannedExercises !== null ? (
@@ -67,7 +67,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
         <Link
           href={href}
-          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-body text-15 font-semibold"
+          className="mt-5 h-14 rounded-pill bg-sage-strong text-paper flex items-center justify-center font-body text-15 font-semibold"
         >
           Reprendre
         </Link>
@@ -80,11 +80,11 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
   if (state.programEmpty) {
     return (
       <Card className="rounded-[28px] border-0 p-5">
-        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage">Tracking</span>
+        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
         <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">Ton programme sur 7 jours est vide.</div>
         <Link
           href="/tracking/programme"
-          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-body text-15 font-semibold"
+          className="mt-5 h-14 rounded-pill bg-sage-strong text-paper flex items-center justify-center font-body text-15 font-semibold"
         >
           Composer mon programme
         </Link>
@@ -95,13 +95,13 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
   if (programDay.isRest) {
     return (
       <Card className="rounded-[28px] border-0 p-5">
-        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage">Tracking</span>
+        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
         <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{programDay.label} · Repos</div>
         <button
           type="button"
           onClick={handleAdvance}
           disabled={advancing}
-          className="mt-5 w-full h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-body text-15 font-semibold disabled:opacity-40"
+          className="mt-5 w-full h-14 rounded-pill bg-sage-strong text-paper flex items-center justify-center font-body text-15 font-semibold disabled:opacity-40"
         >
           Jour suivant
         </button>
@@ -111,7 +111,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
   return (
     <Card className="rounded-[28px] border-0 p-5">
-      <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage">Tracking</span>
+      <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
       <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{programDay.label}</div>
 
       {programDay.exercises.length > 0 && (
@@ -132,7 +132,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
           <p className="mt-5 text-15 text-graphite">Aucun exercice configuré pour ce jour.</p>
           <Link
             href="/tracking/programme"
-            className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-body text-15 font-semibold"
+            className="mt-5 h-14 rounded-pill bg-sage-strong text-paper flex items-center justify-center font-body text-15 font-semibold"
           >
             Configurer le programme
           </Link>
@@ -140,7 +140,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
       ) : (
         <Link
           href={`/player/tracking?day=${programDay.dayOfWeek}`}
-          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-body text-15 font-semibold"
+          className="mt-5 h-14 rounded-pill bg-sage-strong text-paper flex items-center justify-center font-body text-15 font-semibold"
         >
           Commencer
         </Link>

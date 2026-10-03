@@ -19,7 +19,8 @@ export function AppNav() {
   return (
     <BottomNav
       items={ITEMS.map((item) => {
-        const active = pathname === item.href;
+        // Un onglet reste actif sur ses sous-pages (/trophees/push-ups…) ; « / » seulement en exact.
+        const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
         return { label: item.label, href: item.href, active, icon: <item.Icon active={active} /> };
       })}
     />

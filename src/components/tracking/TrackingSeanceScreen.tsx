@@ -135,7 +135,7 @@ export function TrackingSeanceScreen({
 
   return (
     <div className="p-5 flex flex-col gap-6">
-      <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage">Tracking</span>
+      <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
 
       {error && (
         <div className="bg-paper border border-hairline rounded-card p-6">

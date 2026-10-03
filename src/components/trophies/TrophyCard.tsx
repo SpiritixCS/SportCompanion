@@ -43,7 +43,7 @@ export function TrophyCard({ card, index }: { card: TrophyCardData; index: numbe
           </div>
           {palier !== null && (
             <div className="mt-2 pt-2 border-t border-brass/30">
-              <span className="font-display text-11 font-medium text-brass">
+              <span className="font-mono text-11 uppercase tracking-[0.1em] text-brass-ink">
                 Palier {palier.toLocaleString("fr-FR")}
               </span>
             </div>

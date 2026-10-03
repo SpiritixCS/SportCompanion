@@ -42,7 +42,7 @@ export function TropheesScreen({ state }: { state: TropheesScreenState }) {
   return (
     <div className="pb-10">
       <div className="p-5">
-        <span className="font-mono text-11 uppercase tracking-[0.14em] text-brass">
+        <span className="font-mono text-11 uppercase tracking-[0.14em] text-brass-ink">
           Trophées
         </span>
         <div className="font-display text-44 font-semibold tabular-nums mt-3">{total}</div>

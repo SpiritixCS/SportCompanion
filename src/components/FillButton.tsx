@@ -8,7 +8,7 @@ import type { Accent } from "./Pastille";
 const SWEEP_MS = 420;
 
 const FILL: Record<Accent, string> = { cobalt: "bg-cobalt", sage: "bg-sage", brass: "bg-brass" };
-const BASE: Record<Accent, string> = { cobalt: "bg-cobalt", sage: "bg-sage", brass: "bg-brass" };
+const BASE: Record<Accent, string> = { cobalt: "bg-cobalt", sage: "bg-sage-strong", brass: "bg-brass" };
 
 function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;

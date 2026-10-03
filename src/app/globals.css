@@ -17,6 +17,9 @@
   --color-rest-surface: #1A1E28;
   --color-rest-line: #232733;
   --color-mist: #9AA2AE;
+  /* Variantes lisibles (≥ 4,5:1 sur blanc) pour le petit texte et le texte blanc sur bouton. */
+  --color-brass-ink: #8A6410;
+  --color-sage-strong: #08805F;
 
   --radius-card: 24px;
   --radius-field: 14px;

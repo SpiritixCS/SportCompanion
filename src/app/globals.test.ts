@@ -22,6 +22,8 @@ describe("design tokens", () => {
     ["--color-rest-surface", "#1A1E28"],
     ["--color-rest-line", "#232733"],
     ["--color-mist", "#9AA2AE"],
+    ["--color-brass-ink", "#8A6410"],
+    ["--color-sage-strong", "#08805F"],
   ])("declares %s as %s", (name, value) => {
     expect(css).toMatch(new RegExp(`${name}:\\s*${value};`));
   });

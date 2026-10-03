@@ -55,7 +55,7 @@ export function SummaryView({
         <h1 className="font-display text-44 font-semibold">Séance terminée</h1>
 
         {palierFranchi.map(({ exercise, palier }) => (
-          <p key={exercise.id} className="text-13 text-brass mt-3">
+          <p key={exercise.id} className="text-13 text-brass-ink mt-3">
             Palier franchi · {palier.toLocaleString("fr-FR")} répétitions · {exercise.name}
           </p>
         ))}
