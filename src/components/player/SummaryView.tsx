@@ -13,6 +13,7 @@ export function SummaryView({
   allTimeTotals,
   accent = "cobalt",
   onFinish,
+  onBack,
 }: {
   exercises: Exercise[];
   setsLogged: SetLoggedRecord[];
@@ -20,6 +21,8 @@ export function SummaryView({
   allTimeTotals: (number | undefined)[];
   accent?: Accent;
   onFinish: () => void;
+  // Récap anticipé (« Terminer avec ce qui est fait ») : retour à la séance.
+  onBack?: () => void;
 }) {
   const repsByExercise = new Map<number, number>();
   for (const set of setsLogged) {
@@ -97,6 +100,11 @@ export function SummaryView({
         <Button variant="primary" accent={accent} onClick={onFinish}>
           Terminer
         </Button>
+        {onBack && (
+          <button type="button" onClick={onBack} className="w-full h-11 mt-2 text-15 text-graphite">
+            Continuer la séance
+          </button>
+        )}
       </div>
     </div>
   );

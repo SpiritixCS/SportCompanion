@@ -104,6 +104,12 @@ export function PlayerScreen({
   const [pauseOpen, setPauseOpen] = useState(false);
   const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
   const setsDoneCount = setsLogged.length + localSetEvents.length;
+  // Vidées seulement quand les props serveur portent les nouvelles séries :
+  // router.refresh() est asynchrone, vider plus tôt ferait croire à une
+  // inactivité (feuille de pause intempestive) le temps du rechargement.
+  useEffect(() => {
+    setLocalSetEvents([]);
+  }, [setsLogged.length]);
 
   useEffect(() => {
     if (state.phase !== "in-progress") return;
@@ -147,6 +153,7 @@ export function PlayerScreen({
           await onSeanceFinish(state.seanceId);
           router.push("/");
         }}
+        onBack={() => setLocalPhase({ kind: "exercise" })}
       />
     );
   }
@@ -220,7 +227,6 @@ export function PlayerScreen({
         onComplete={() => {
           setLocalPhase({ kind: "exercise" });
           router.refresh();
-          setLocalSetEvents([]);
         }}
       />
     );

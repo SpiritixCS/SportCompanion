@@ -135,9 +135,15 @@ export function resumeSeance(db: Database.Database, seanceId: number): void {
 }
 
 // « Effacer » / « Abandonner » : la séance et ses séries disparaissent, leurs
-// reps sortent des Trophées, le jour reste à faire.
+// reps sortent des Trophées, le jour reste à faire. Jamais une séance déjà
+// validée : un onglet resté ouvert sur un autre appareil peut proposer
+// « Effacer » sur une séance validée entre-temps.
 export function deleteSeance(db: Database.Database, seanceId: number): void {
   db.transaction(() => {
+    const row = db.prepare(`SELECT completed_at FROM seances WHERE id = ?`).get(seanceId) as
+      | { completed_at: string | null }
+      | undefined;
+    if (!row || row.completed_at !== null) return;
     db.prepare(`DELETE FROM sets_logged WHERE seance_id = ?`).run(seanceId);
     db.prepare(`DELETE FROM skipped_exercises WHERE seance_id = ?`).run(seanceId);
     db.prepare(`DELETE FROM seances WHERE id = ?`).run(seanceId);

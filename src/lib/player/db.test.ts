@@ -124,6 +124,18 @@ describe("skipped_exercises", () => {
 });
 
 describe("resume and delete", () => {
+  it("never deletes a validated seance (stale tab on another device)", () => {
+    const db = setup();
+    const seance = startSeance(db, "beginner", 0, 0);
+    logSet(db, { seanceId: seance.id, exerciseOrder: 2, setNumber: 1, repsTarget: "10", repsActual: 10, restSeconds: 90 });
+    completeSeance(db, seance.id);
+
+    deleteSeance(db, seance.id);
+
+    expect(getSetsForSeance(db, seance.id)).toHaveLength(1);
+    expect(db.prepare(`SELECT completed_at FROM seances WHERE id = ?`).get(seance.id)).toBeTruthy();
+  });
+
   it("records resumedAt and reads it back on the active seance", () => {
     const db = setup();
     const seance = startSeance(db, "beginner", 0, 0);

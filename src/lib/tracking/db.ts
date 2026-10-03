@@ -186,3 +186,17 @@ export function getSkippedExercises(db: Database.Database, seanceId: number): nu
 export function resumeSeance(db: Database.Database, seanceId: number): void {
   db.prepare(`UPDATE tracking_seances SET resumed_at = ? WHERE id = ?`).run(new Date().toISOString(), seanceId);
 }
+
+// « Effacer » / « Abandonner » depuis le player : comme deleteSeance, mais
+// jamais sur une séance déjà validée (onglet périmé sur un autre appareil).
+// deleteSeance reste sans garde : l'historique Tracking s'en sert pour
+// supprimer volontairement une séance validée.
+export function deleteActiveSeance(db: Database.Database, seanceId: number): void {
+  db.transaction(() => {
+    const row = db.prepare(`SELECT completed_at FROM tracking_seances WHERE id = ?`).get(seanceId) as
+      | { completed_at: string | null }
+      | undefined;
+    if (!row || row.completed_at !== null) return;
+    deleteSeance(db, seanceId);
+  })();
+}

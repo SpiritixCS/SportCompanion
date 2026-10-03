@@ -23,6 +23,7 @@ import {
   skipExercise,
   getSkippedExercises,
   resumeSeance,
+  deleteActiveSeance,
 } from "./db";
 
 let tmpDir: string;
@@ -358,5 +359,26 @@ describe("resumeSeance", () => {
     expect(getActiveSeance(db)!.resumedAt).toBeNull();
     resumeSeance(db, seance.id);
     expect(typeof getActiveSeance(db)!.resumedAt).toBe("string");
+  });
+});
+
+describe("deleteActiveSeance", () => {
+  it("deletes an active seance and its sets", () => {
+    const db = setup();
+    const seance = startSeance(db, 0);
+    logSetForExercise(db, seance.id, "Tractions", "reps", 8);
+    deleteActiveSeance(db, seance.id);
+    expect(getSeanceById(db, seance.id)).toBeNull();
+    expect(getSetsForSeance(db, seance.id)).toEqual([]);
+  });
+
+  it("never deletes a validated seance (stale tab on another device)", () => {
+    const db = setup();
+    const seance = startSeance(db, 0);
+    logSetForExercise(db, seance.id, "Tractions", "reps", 8);
+    completeSeance(db, seance.id);
+    deleteActiveSeance(db, seance.id);
+    expect(getSeanceById(db, seance.id)).not.toBeNull();
+    expect(getSetsForSeance(db, seance.id)).toHaveLength(1);
   });
 });

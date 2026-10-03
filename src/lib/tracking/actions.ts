@@ -12,6 +12,7 @@ import {
   completeSeance as completeSeanceDb,
   skipExercise as skipExerciseDb,
   resumeSeance as resumeSeanceDb,
+  deleteActiveSeance,
   type TrackingSetWithExercise,
   type TrackingUnit,
 } from "./db";
@@ -111,5 +112,5 @@ export async function resumeDaySeanceAction(seanceId: number): Promise<void> {
 
 // N'avance pas le pointeur : le jour reste à faire.
 export async function discardDaySeanceAction(seanceId: number): Promise<void> {
-  deleteSeanceDb(await db(), seanceId);
+  deleteActiveSeance(await db(), seanceId);
 }

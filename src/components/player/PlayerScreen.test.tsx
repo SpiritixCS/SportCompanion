@@ -262,6 +262,30 @@ describe("PlayerScreen — séance interrompue", () => {
     spy.mockRestore();
   });
 
+  it("does not open the pause sheet after a normal set when the tab stayed visible for over an hour", async () => {
+    const realNow = Date.now();
+    const state = inProgress({
+      startedAt: iso(60_000),
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
+    });
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
+
+    // 2 h passent sans changement de visibilité (wake lock, Mac), puis une série.
+    // Horloge entière simulée : Date.now ET new Date() (horodatage de la série).
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(realNow + 2 * HOUR);
+    try {
+      await userEvent.click(screen.getByRole("button", { name: "Série terminée" }));
+      await userEvent.click(screen.getByRole("button", { name: "Valider" }));
+      await userEvent.click(screen.getByRole("button", { name: "Passer le repos" }));
+
+      // router.refresh() est mocké : les props serveur n'ont pas encore la série
+      expect(screen.queryByText("Séance en pause depuis longtemps")).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("Effacer asks for confirmation, then discards and goes home", async () => {
     render(<PlayerScreen day={DAY} state={inProgress({ startedAt: iso(25 * HOUR) })} setsLogged={[loggedSet(iso(25 * HOUR))]} {...actionProps()} />);
     await userEvent.click(screen.getByRole("button", { name: "Effacer la séance" }));
@@ -280,6 +304,16 @@ describe("PlayerScreen — séance interrompue", () => {
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
     expect(onSeanceFinish).toHaveBeenCalledWith(1);
     expect(push).toHaveBeenCalledWith("/");
+  });
+
+  it("early summary offers Continuer la séance to go back without validating", async () => {
+    render(<PlayerScreen day={DAY} state={inProgress()} setsLogged={[loggedSet(iso(30_000))]} {...actionProps()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
+    await userEvent.click(screen.getByRole("button", { name: "Terminer avec ce qui est fait" }));
+    await userEvent.click(screen.getByRole("button", { name: "Continuer la séance" }));
+    expect(screen.queryByText("Séance terminée")).not.toBeInTheDocument();
+    expect(screen.getByText("Squats")).toBeInTheDocument();
+    expect(onSeanceFinish).not.toHaveBeenCalled();
   });
 
   it("quit sheet with no set logged offers Abandonner instead, which discards", async () => {
