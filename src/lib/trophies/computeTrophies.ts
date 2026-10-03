@@ -98,6 +98,16 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
     touch(entry, row.valeurActual, row.completedAt);
   }
 
+  // Reps hors séance : ajoutées seulement à une carte déjà alimentée par des
+  // séances (une carte n'existe jamais par ses seuls ajouts).
+  const extraRows = db
+    .prepare(`SELECT card_id AS cardId, amount, logged_at AS loggedAt FROM extra_reps`)
+    .all() as { cardId: string; amount: number; loggedAt: string }[];
+  for (const row of extraRows) {
+    const entry = acc.get(row.cardId);
+    if (entry) touch(entry, row.amount, row.loggedAt);
+  }
+
   return [...acc.entries()].map(([id, entry]) => ({
     id,
     module: entry.module,

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
 import { loadTrophyDetail } from "@/lib/trophies/loadTrophyDetail";
+import { listExtraReps } from "@/lib/extraReps/db";
+import { ExtraRepsSection } from "@/components/trophies/ExtraRepsSection";
 import { Card } from "@/components/Card";
 import { IconClose } from "@/components/icons/IconClose";
 
@@ -76,6 +78,7 @@ export default async function TrophyDetailPage({
           )}
         </Card>
 
+        <ExtraRepsSection cardId={detail.id} unit={detail.unit} entries={listExtraReps(db, detail.id)} />
       </div>
     </div>
   );
