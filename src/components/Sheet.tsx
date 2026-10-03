@@ -7,11 +7,13 @@ export function Sheet({
   open,
   onClose,
   title,
+  eyebrow,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
+  eyebrow?: string;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -26,7 +28,7 @@ export function Sheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-50 flex items-end" role="dialog" aria-modal="true" aria-label={eyebrow ? `${eyebrow} · ${title}` : title}>
       <div
         data-testid="sheet-backdrop"
         className="sheet-fade absolute inset-0 bg-ink/40"
@@ -35,7 +37,12 @@ export function Sheet({
       <div className="sheet-rise relative w-full max-h-[90dvh] overflow-y-auto bg-paper rounded-t-[28px] px-[18px] pt-2.5 pb-[calc(24px+env(safe-area-inset-bottom))]">
         <div aria-hidden="true" className="w-10 h-1 rounded-pill bg-hairline mx-auto mb-3.5" />
         <div className="flex items-start justify-between gap-4 mb-4">
-          <span className="font-display font-extrabold text-32 uppercase leading-[0.9]">{title}</span>
+          <span>
+            {eyebrow && (
+              <span className="block font-mono text-11 uppercase tracking-[0.14em] text-cobalt mb-1.5">{eyebrow}</span>
+            )}
+            <span className="block font-display font-extrabold text-32 uppercase leading-[0.9]">{title}</span>
+          </span>
           <button
             type="button"
             onClick={onClose}

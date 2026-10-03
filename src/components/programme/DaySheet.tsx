@@ -38,17 +38,12 @@ export function DaySheet({
   }
 
   return (
-    <Sheet open onClose={onClose} title={`Jour ${dayIndex + 1}`}>
-      <div className="-mt-3 mb-3">
-        <span className="block font-mono text-11 uppercase tracking-[0.14em] text-cobalt">
-          {meta.label} · Niveau {level + 1}
-        </span>
-        {!isRestDay && (
-          <span className="block font-mono text-[12px] text-graphite mt-1">
-            {exercises.length} exercices · {estimateDurationMinutes(exercises.length)} min
-          </span>
-        )}
-      </div>
+    <Sheet open onClose={onClose} title={`Jour ${dayIndex + 1}`} eyebrow={`${meta.label} · Niveau ${level + 1}`}>
+      {!isRestDay && (
+        <p className="-mt-2 mb-3 font-mono text-[12px] text-graphite">
+          {exercises.length} exercices · {estimateDurationMinutes(exercises.length)} min
+        </p>
+      )}
       {isRestDay ? (
         <p className="text-15 text-graphite">Repos</p>
       ) : (

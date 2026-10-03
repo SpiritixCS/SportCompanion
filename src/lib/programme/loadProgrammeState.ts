@@ -19,9 +19,16 @@ export type ProgrammeLevelRow = {
   days: ProgrammeDayRow[];
 };
 
-export function loadProgrammeState(db: Database.Database, parcoursMeta: ParcoursMeta): ProgrammeLevelRow[] {
+// currentCycle : le niveau en cours se lit sur le cycle de la position (après
+// « Refaire ce niveau », le nouveau cycle n'a encore aucune séance).
+export function loadProgrammeState(
+  db: Database.Database,
+  parcoursMeta: ParcoursMeta,
+  currentCycle?: { level: number; cycle: number },
+): ProgrammeLevelRow[] {
   return parcoursMeta.program.map((levelDays, level) => {
-    const cycle = getLatestCycleForLevel(db, parcoursMeta.id, level);
+    const cycle =
+      currentCycle && currentCycle.level === level ? currentCycle.cycle : getLatestCycleForLevel(db, parcoursMeta.id, level);
     const pastilles: PastilleState[] = levelDays.map((day, dayIndex) => {
       if (day.kind === "rest") return "restOrWalk";
       return isDayValidated(db, parcoursMeta.id, level, dayIndex, cycle) ? "done" : "upcoming";

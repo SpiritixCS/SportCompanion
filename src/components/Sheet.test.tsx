@@ -43,4 +43,16 @@ describe("Sheet", () => {
     fireEvent.click(screen.getByTestId("sheet-backdrop"));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it("renders an optional eyebrow above the title and includes it in the dialog name", () => {
+    render(
+      <Sheet open onClose={() => {}} title="Jour 5" eyebrow="Débutant · Niveau 3">
+        <p>contenu</p>
+      </Sheet>,
+    );
+    const eyebrow = screen.getByText("Débutant · Niveau 3");
+    const title = screen.getByText("Jour 5");
+    expect(eyebrow.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "Débutant · Niveau 3 · Jour 5" })).toBeInTheDocument();
+  });
 });

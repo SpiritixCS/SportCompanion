@@ -7,7 +7,8 @@ import { DaySheet } from "./DaySheet";
 import type { PastilleState } from "@/components/Pastille";
 import type { ProgrammeLevelRow } from "@/lib/programme/loadProgrammeState";
 
-type Current = { parcours: string; level: number; dayIndex: number } | null;
+// dayIndex null : plus aucun jour d'entraînement à faire dans le niveau (fin de niveau).
+type Current = { parcours: string; level: number; dayIndex: number | null } | null;
 
 // Le jour courant reste « fait » s'il est validé ; sinon il passe en « aujourd'hui ».
 function withToday(states: PastilleState[], todayIndex: number | null): PastilleState[] {
@@ -120,7 +121,7 @@ export function ProgrammeScreen({
                 <div className="overflow-hidden">
                   {isOpen &&
                     row.days.map((d) => {
-                      const isToday = isCurrent && currentHere!.dayIndex === d.dayIndex;
+                      const isToday = isCurrent && currentHere!.dayIndex !== null && currentHere!.dayIndex === d.dayIndex;
                       const isRest = d.exerciseCount === 0;
                       const mark = states[d.dayIndex] ?? d.pastilleState;
                       return (

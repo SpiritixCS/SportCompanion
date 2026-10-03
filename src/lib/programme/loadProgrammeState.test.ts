@@ -91,4 +91,16 @@ describe("loadProgrammeState", () => {
       dayIndex: 1, title: "Jour 2", exerciseCount: 0, durationEstimateMinutes: 18, pastilleState: "restOrWalk",
     });
   });
+
+  it("reads the current level on the position's cycle (after « Refaire ce niveau » nothing is done yet)", () => {
+    const db = setup();
+    const seance = startSeance(db, "beginner", 0, 0, 0);
+    completeSeance(db, seance.id);
+    const [old] = loadProgrammeState(db, PARCOURS_META);
+    expect(old!.pastilles[0]).toBe("done");
+
+    const [redo] = loadProgrammeState(db, PARCOURS_META, { level: 0, cycle: 1 });
+    expect(redo!.pastilles[0]).toBe("upcoming");
+    expect(redo!.percentDone).toBe(0);
+  });
 });

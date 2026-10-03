@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
-import { syncPosition, type DayKindLookup } from "./syncPosition";
-import { setCurrentPosition } from "./db";
+import { syncPosition, resolvePosition, type DayKindLookup } from "./syncPosition";
+import { setCurrentPosition, getCurrentPosition } from "./db";
 import { startSeance, completeSeance } from "@/lib/player/db";
 
 let tmpDir: string;
@@ -96,5 +96,22 @@ describe("syncPosition", () => {
     setCurrentPosition(db, "beginner", 0, 0, 1); // now on a fresh cycle 1
     const result = syncPosition(db, getDayKind);
     expect(result).toMatchObject({ dayIndex: 0, cycle: 1 });
+  });
+});
+
+describe("resolvePosition", () => {
+  it("computes where syncPosition would move, without writing it", () => {
+    const db = setup();
+    setCurrentPosition(db, "beginner", 0, 0);
+    const s = startSeance(db, "beginner", 0, 0);
+    completeSeance(db, s.id);
+
+    const resolved = resolvePosition(db, getDayKind);
+    expect(resolved).toMatchObject({ level: 0, dayIndex: 2 });
+    expect(getCurrentPosition(db)).toMatchObject({ dayIndex: 0 });
+  });
+
+  it("returns null without a position", () => {
+    expect(resolvePosition(setup(), getDayKind)).toBeNull();
   });
 });

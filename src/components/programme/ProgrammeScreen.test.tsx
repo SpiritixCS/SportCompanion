@@ -89,4 +89,24 @@ describe("ProgrammeScreen", () => {
     expect(screen.queryByText("En cours")).not.toBeInTheDocument();
     expect(screen.queryByText("Démarrer ce jour")).not.toBeInTheDocument();
   });
+
+  it("tags the level En cours but no day Aujourd'hui when the level has no training day left", () => {
+    render(
+      <ProgrammeScreen
+        initialParcours="beginner"
+        levelsByParcours={LEVELS_BY_PARCOURS}
+        current={{ parcours: "intermediate", level: 2, dayIndex: null }}
+      />,
+    );
+    expect(screen.getByText("En cours")).toBeInTheDocument();
+    expect(screen.queryByText("Aujourd'hui")).not.toBeInTheDocument();
+  });
+
+  it("shows no En cours on a parcours other than the current one", async () => {
+    render(
+      <ProgrammeScreen initialParcours="beginner" levelsByParcours={LEVELS_BY_PARCOURS} current={{ parcours: "intermediate", level: 0, dayIndex: 0 }} />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Débutant" }));
+    expect(screen.queryByText("En cours")).not.toBeInTheDocument();
+  });
 });

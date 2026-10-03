@@ -9,17 +9,26 @@ export type DayKindLookup = (
   dayIndex: number,
 ) => "train" | "rest" | undefined;
 
-export function syncPosition(db: Database.Database, getDayKind: DayKindLookup): CurrentPosition | null {
-  let position = getCurrentPosition(db);
+// Où la position avancerait (jours de repos et jours validés sautés), sans
+// rien écrire : la page Programme, en consultation libre, en a besoin.
+export function resolvePosition(db: Database.Database, getDayKind: DayKindLookup): CurrentPosition | null {
+  const position = getCurrentPosition(db);
   if (!position) return null;
 
-  while (position.dayIndex < LAST_DAY_INDEX) {
-    const kind = getDayKind(position.parcours, position.level, position.dayIndex);
-    const skippable =
-      kind === "rest" || isDayValidated(db, position.parcours, position.level, position.dayIndex, position.cycle);
+  let dayIndex = position.dayIndex;
+  while (dayIndex < LAST_DAY_INDEX) {
+    const kind = getDayKind(position.parcours, position.level, dayIndex);
+    const skippable = kind === "rest" || isDayValidated(db, position.parcours, position.level, dayIndex, position.cycle);
     if (!skippable) break;
-    position = setCurrentPosition(db, position.parcours, position.level, position.dayIndex + 1, position.cycle);
+    dayIndex++;
   }
+  return { ...position, dayIndex };
+}
 
-  return position;
+export function syncPosition(db: Database.Database, getDayKind: DayKindLookup): CurrentPosition | null {
+  const current = getCurrentPosition(db);
+  const resolved = resolvePosition(db, getDayKind);
+  if (!current || !resolved) return null;
+  if (resolved.dayIndex === current.dayIndex) return current;
+  return setCurrentPosition(db, resolved.parcours, resolved.level, resolved.dayIndex, resolved.cycle);
 }
