@@ -60,11 +60,13 @@ export function ProgrammeCard({
         </div>
       </div>
 
-      <div className="flex justify-center gap-5 mt-3 font-mono text-12 text-graphite">
+      <div className="flex justify-center gap-5 mt-3 font-mono text-[12px] text-graphite">
         <span>
           <b className="font-display font-bold text-[22px] text-ink mr-1 tracking-[0.02em]">{exercises.length}</b>exercices
         </span>
-        <span className="tabular-nums">{durationEstimateMinutes} min</span>
+        <span aria-label={`${durationEstimateMinutes} min`}>
+          <b className="font-display font-bold text-[22px] text-ink mr-1 tracking-[0.02em] tabular-nums">{durationEstimateMinutes}</b>min
+        </span>
       </div>
 
       {exercises.length > 0 && (

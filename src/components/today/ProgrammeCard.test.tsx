@@ -35,7 +35,7 @@ describe("ProgrammeCard", () => {
     expect(screen.getByText("Push ups")).toBeInTheDocument();
     expect(screen.getByText("3 × 12")).toBeInTheDocument();
     expect(screen.queryByText("Pull ups")).not.toBeInTheDocument();
-    expect(screen.getByText("26 min")).toBeInTheDocument();
+    expect(screen.getByLabelText("26 min")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "+2 autres exercices" })).toBeInTheDocument();
   });
 
