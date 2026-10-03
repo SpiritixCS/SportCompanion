@@ -135,4 +135,6 @@ Une branche `feat/refonte-graphique`, une phase par page, chacune validée par M
 0. Fondations : tokens, polices, `SeptTraits`, `FloatingNav`, `ExerciseGlyph`, `FillButton`, `CycleButton`, `Sheet`, pictos (après validation de la planche).
 1. Aujourd'hui · 2. Programme · 3. Séance · 4. Trophées · 5. Tracking + repos par exercice · 6. Écrans secondaires + `CLAUDE.md`.
 
+**Mise en prod : une seule fois, à la fin des 6 phases** (choix de Mathis) — pas d'app à moitié refondue en prod. La migration 0017 part avec ce déploiement.
+
 Tests : les tests existants restent verts (libellés et rôles accessibles conservés) ; tests ajoutés pour `SeptTraits` (états), `CycleButton` (ordre du cycle), `ExerciseGlyph` (override par id, repli famille), migration 0017 et repos par exercice dans le player (valeur de l'exercice, repli global).
