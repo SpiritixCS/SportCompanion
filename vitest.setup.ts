@@ -10,3 +10,20 @@ vi.mock("next/font/google", () => ({
   Instrument_Sans: () => ({ variable: "__variable_instrument_sans_hash" }),
   IBM_Plex_Mono: () => ({ variable: "__variable_ibm_plex_mono_hash" }),
 }));
+
+// Par défaut, les tests tournent en « mouvement réduit » : animations et
+// balayages des boutons s'exécutent immédiatement. Un test qui vérifie une
+// animation remplace window.matchMedia lui-même.
+import { beforeEach } from "vitest";
+beforeEach(() => {
+  window.matchMedia = ((query: string) => ({
+    matches: query.includes("prefers-reduced-motion: reduce"),
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+});
