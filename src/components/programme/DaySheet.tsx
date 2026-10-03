@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Sheet } from "@/components/Sheet";
+import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
+import { FillLink } from "@/components/FillButton";
+import { estimateDurationMinutes } from "@/lib/programme/estimateDuration";
+import type { MovementFamily } from "@/lib/trophies/movementFamily";
 import { formatTarget } from "@/lib/player/formatTarget";
 import { setCurrentPositionAction } from "@/lib/programme/actions";
 import { PARCOURS } from "@/lib/programme/parcours";
@@ -35,37 +38,50 @@ export function DaySheet({
   }
 
   return (
-    <Sheet open onClose={onClose} title={`${meta.label} · Niveau ${level + 1} · Jour ${dayIndex + 1}`}>
+    <Sheet open onClose={onClose} title={`Jour ${dayIndex + 1}`}>
+      <div className="-mt-3 mb-3">
+        <span className="block font-mono text-11 uppercase tracking-[0.14em] text-cobalt">
+          {meta.label} · Niveau {level + 1}
+        </span>
+        {!isRestDay && (
+          <span className="block font-mono text-[12px] text-graphite mt-1">
+            {exercises.length} exercices · {estimateDurationMinutes(exercises.length)} min
+          </span>
+        )}
+      </div>
       {isRestDay ? (
         <p className="text-15 text-graphite">Repos</p>
       ) : (
         <>
-          <div className="flex flex-col gap-3 max-h-[50vh] overflow-y-auto">
+          <div className="max-h-[50vh] overflow-y-auto">
             {exercises.map((e, i) => (
               <div
                 key={e.id}
-                className={`flex items-baseline justify-between gap-4 ${i > 0 ? "pt-3 border-t border-hairline" : ""}`}
+                className={`grid grid-cols-[36px_1fr_auto] items-center gap-3 py-3 ${i > 0 ? "border-t border-hairline" : ""}`}
               >
-                <span className="text-15">{e.name}</span>
-                <span className="font-display text-18 font-semibold tabular-nums whitespace-nowrap">
-                  {formatTarget(e.sets, e.target)}
+                <ExerciseGlyph exerciseId={e.id} family={e.movementFamily as MovementFamily} />
+                <span className="text-15 leading-tight">{e.name}</span>
+                <span className="flex flex-col items-end gap-1.5">
+                  <span className="font-display font-bold text-[20px] tracking-[0.02em] tabular-nums whitespace-nowrap">
+                    {formatTarget(e.sets, e.target)}
+                  </span>
+                  <span aria-hidden="true" className="flex gap-[3px]">
+                    {Array.from({ length: e.sets }, (_, k) => (
+                      <i key={k} data-testid="set-bar" className="block w-2.5 h-1 rounded-pill bg-cobalt" />
+                    ))}
+                  </span>
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="flex flex-col gap-2.5 mt-6">
-            <Link
-              href={playerHref}
-              className="h-14 rounded-pill bg-cobalt text-paper flex items-center justify-center font-body text-15 font-semibold"
-            >
-              Démarrer ce jour
-            </Link>
+          <div className="flex flex-col gap-2.5 mt-5">
+            <FillLink href={playerHref}>Démarrer ce jour</FillLink>
             {!confirmingMove ? (
               <button
                 type="button"
                 onClick={() => setConfirmingMove(true)}
-                className="h-11 font-display text-15 font-medium text-graphite"
+                className="h-11 font-body text-15 font-medium text-graphite"
               >
                 Reprendre ici
               </button>

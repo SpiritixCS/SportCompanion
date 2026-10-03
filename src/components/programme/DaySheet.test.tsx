@@ -23,8 +23,15 @@ beforeEach(() => {
 describe("DaySheet", () => {
   it("lists the day's exercises with their dose", () => {
     render(<DaySheet parcours="beginner" level={0} dayIndex={0} onClose={() => {}} />);
-    expect(screen.getByText("Débutant · Niveau 1 · Jour 1")).toBeInTheDocument();
+    expect(screen.getByText("Débutant · Niveau 1")).toBeInTheDocument();
+    expect(screen.getByText("Jour 1")).toBeInTheDocument();
     expect(screen.getByText("Push ups on knees negatives")).toBeInTheDocument();
+  });
+
+  it("shows a glyph and one bar per set for each exercise, plus the day's meta", () => {
+    render(<DaySheet parcours="beginner" level={0} dayIndex={0} onClose={() => {}} />);
+    expect(screen.getAllByTestId("set-bar")).toHaveLength(24);
+    expect(screen.getByText("7 exercices · 46 min")).toBeInTheDocument();
   });
 
   it("Démarrer ce jour links straight to the player without touching position", () => {
