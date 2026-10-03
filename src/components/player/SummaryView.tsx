@@ -1,5 +1,7 @@
-import { Card } from "@/components/Card";
-import { Button } from "@/components/Button";
+import { FillButton } from "@/components/FillButton";
+import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
+import { useCountUp } from "@/components/trophies/useCountUp";
+import type { MovementFamily } from "@/lib/trophies/movementFamily";
 import { formatClock } from "@/lib/player/formatClock";
 import { palierAtteint } from "@/lib/trophies/paliers";
 import type { Accent } from "@/components/Pastille";
@@ -31,10 +33,14 @@ export function SummaryView({
   const exercisesWorked = repsByExercise.size;
   const totalReps = [...repsByExercise.values()].reduce((sum, reps) => sum + reps, 0);
 
+  // La durée est déjà vivante (elle avance chaque seconde) : affichée telle
+  // quelle ; exercices et reps comptent de 0 (spec § Mouvement 3).
+  const exercisesShown = useCountUp(exercisesWorked, 0);
+  const repsShown = useCountUp(totalReps, 40);
   const stats = [
     { key: "Durée", value: formatClock(durationSeconds) },
-    { key: "Exercices", value: String(exercisesWorked) },
-    { key: "Répétitions", value: String(totalReps) },
+    { key: "Exercices", value: String(exercisesShown) },
+    { key: "Répétitions", value: String(repsShown) },
   ];
 
   const palierFranchi = exercises
@@ -51,27 +57,25 @@ export function SummaryView({
 
   return (
     <div className="min-h-dvh flex flex-col bg-canvas">
-      <div className="flex-1 overflow-y-auto px-5 pt-10 pb-6">
-        <h1 className="font-display text-44 font-semibold">Séance terminée</h1>
+      <div className="flex-1 overflow-y-auto px-[18px] pt-[30px] pb-6">
+        <h1 className="font-display font-extrabold text-[64px] uppercase leading-[0.86] max-w-[7ch]">Séance terminée</h1>
 
         {palierFranchi.map(({ exercise, palier }) => (
-          <p key={exercise.id} className="text-13 text-brass-ink mt-3">
+          <p key={exercise.id} className="font-mono text-11 uppercase tracking-[0.1em] text-brass-ink mt-3">
             Palier franchi · {palier.toLocaleString("fr-FR")} répétitions · {exercise.name}
           </p>
         ))}
 
-        <div className="flex gap-3 mt-8">
+        <div className="grid grid-cols-3 gap-2 mt-[22px]">
           {stats.map((stat) => (
-            <Card key={stat.key} className="flex-1 p-4">
-              <div className="font-display text-32 font-semibold tabular-nums">{stat.value}</div>
-              <div className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mt-2.5">
-                {stat.key}
-              </div>
-            </Card>
+            <div key={stat.key} className="bg-paper rounded-[20px] px-3 py-3.5">
+              <div className="font-display font-extrabold text-[40px] leading-[0.9] tabular-nums">{stat.value}</div>
+              <div className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mt-2">{stat.key}</div>
+            </div>
           ))}
         </div>
 
-        <Card className="mt-8 overflow-hidden">
+        <div className="bg-paper rounded-[24px] mt-3 px-4 py-1">
           {exercises
             .map((exercise, exerciseOrder) => ({
               exercise,
@@ -85,23 +89,28 @@ export function SummaryView({
             .map((row, i) => (
               <div
                 key={row.exercise.id}
-                className={`flex justify-between items-center gap-4 px-5 py-3.5 border-hairline ${i > 0 ? "border-t" : ""}`}
+                className={`grid grid-cols-[36px_1fr_auto] items-center gap-3 py-3 ${i > 0 ? "border-t border-hairline" : ""}`}
               >
-                <span className="text-15">{row.exercise.name}</span>
-                <span className="font-display text-18 font-semibold tabular-nums flex-none">
+                <ExerciseGlyph
+                  exerciseId={row.exercise.id}
+                  family={row.exercise.movementFamily as MovementFamily}
+                  accent={accent === "sage" ? "sage" : "cobalt"}
+                />
+                <span className="text-15 leading-tight">{row.exercise.name}</span>
+                <span className="font-display font-bold text-[20px] tracking-[0.02em] tabular-nums text-right">
                   +{row.reps} reps{row.allTime !== undefined ? ` · ${row.allTime} au total` : ""}
                 </span>
               </div>
             ))}
-        </Card>
+        </div>
       </div>
 
-      <div className="flex-none px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-paper border-t border-hairline shadow-[0_-12px_24px_rgba(17,19,16,0.04)]">
-        <Button variant="primary" accent={accent} onClick={onFinish}>
+      <div className="flex-none px-[18px] pt-3.5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-paper border-t border-hairline">
+        <FillButton accent={accent} onClick={onFinish}>
           Terminer
-        </Button>
+        </FillButton>
         {onBack && (
-          <button type="button" onClick={onBack} className="w-full h-11 mt-2 text-15 text-graphite">
+          <button type="button" onClick={onBack} className="w-full h-11 mt-1.5 font-body text-15 font-medium text-graphite">
             Continuer la séance
           </button>
         )}

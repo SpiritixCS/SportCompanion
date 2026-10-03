@@ -66,7 +66,7 @@ describe("SummaryView", () => {
     render(
       <SummaryView exercises={EXERCISES} setsLogged={[]} durationSeconds={0} allTimeTotals={[]} accent="sage" onFinish={() => {}} />,
     );
-    expect(screen.getByRole("button", { name: "Terminer" })).toHaveClass("bg-sage");
+    expect(screen.getByRole("button", { name: "Terminer" }).querySelector('[aria-hidden="true"]')).toHaveClass("bg-sage");
   });
 
   it("shows the new all-time total next to the reps done this séance", () => {
