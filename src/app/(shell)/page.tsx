@@ -4,6 +4,7 @@ import { loadTodayState } from "@/lib/programme/loadTodayState";
 import { loadTrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 import { PARCOURS } from "@/lib/programme/parcours";
 import { AujourdhuiScreen } from "@/components/today/AujourdhuiScreen";
+import { getPrenom } from "@/lib/profile/db";
 
 export const dynamic = "force-dynamic";
 
@@ -12,5 +13,5 @@ export default async function TodayPage() {
   const db = getDbForUser(user);
   const state = loadTodayState(db, PARCOURS);
   const trackingState = loadTrackingScreenState(db);
-  return <AujourdhuiScreen state={state} trackingState={trackingState} user={{ label: user.email }} />;
+  return <AujourdhuiScreen state={state} trackingState={trackingState} user={{ label: getPrenom(db) ?? "" }} />;
 }

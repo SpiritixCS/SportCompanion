@@ -3,6 +3,7 @@
 import { getDbForUser } from "@/lib/db/client";
 import { currentUser } from "@/lib/auth/currentUser";
 import { getSettings, updateSettings, type AppSettings } from "./db";
+import { getPrenom } from "@/lib/profile/db";
 import packageJson from "../../../package.json";
 
 async function db() {
@@ -10,12 +11,15 @@ async function db() {
 }
 
 export type ReglagesState = AppSettings & {
+  prenom: string | null;
   version: string;
 };
 
 export async function getReglagesStateAction(): Promise<ReglagesState> {
+  const database = await db();
   return {
-    ...getSettings(await db()),
+    ...getSettings(database),
+    prenom: getPrenom(database),
     version: packageJson.version,
   };
 }

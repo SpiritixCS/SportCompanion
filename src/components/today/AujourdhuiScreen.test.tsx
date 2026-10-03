@@ -19,10 +19,12 @@ vi.mock("@/lib/settings/actions", () => ({
     soundCountdownEnabled: false,
     startCountdownEnabled: false,
     keepScreenAwakeEnabled: true,
+    prenom: "Mathis",
     version: "0.1.0",
   }),
   updateSettingsAction: vi.fn(),
 }));
+vi.mock("@/lib/profile/actions", () => ({ setPrenomAction: vi.fn() }));
 vi.mock("@/lib/tracking/actions", () => ({ advanceProgramDayAction: vi.fn() }));
 
 const MATHIS = { slug: "mathis" as const, label: "Mathis" };

@@ -29,6 +29,7 @@ describe("getReglagesStateAction", () => {
     const { getReglagesStateAction } = await import("./actions");
     const state = await getReglagesStateAction();
     expect(state.restBetweenSetsSeconds).toBe(90);
+    expect(state.prenom).toBeNull();
     expect(state.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 });

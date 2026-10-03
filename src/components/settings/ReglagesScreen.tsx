@@ -5,6 +5,8 @@ import { IconClose } from "@/components/icons/IconClose";
 import { IconChevronRight } from "@/components/icons/IconChevronRight";
 import { Toggle } from "./Toggle";
 import { DurationRow } from "./DurationRow";
+import { PrenomRow } from "./PrenomRow";
+import { setPrenomAction } from "@/lib/profile/actions";
 import { getReglagesStateAction, updateSettingsAction, type ReglagesState } from "@/lib/settings/actions";
 
 export function ReglagesScreen({
@@ -31,10 +33,19 @@ export function ReglagesScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function patch(update: Partial<Omit<ReglagesState, "version">>) {
+  async function patch(update: Partial<Omit<ReglagesState, "version" | "prenom">>) {
     try {
       const next = await updateSettingsAction(update);
       setState((prev) => (prev ? { ...prev, ...next } : prev));
+    } catch {
+      setError(true);
+    }
+  }
+
+  async function savePrenom(prenom: string) {
+    try {
+      await setPrenomAction(prenom);
+      load();
     } catch {
       setError(true);
     }
@@ -77,6 +88,15 @@ export function ReglagesScreen({
 
         {state && (
           <>
+            <section>
+              <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+                Profil
+              </h2>
+              <div className="bg-paper border border-hairline rounded-card overflow-hidden">
+                <PrenomRow prenom={state.prenom ?? ""} onConfirm={savePrenom} />
+              </div>
+            </section>
+
             <section>
               <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
                 Programme

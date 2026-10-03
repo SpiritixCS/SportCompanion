@@ -5,6 +5,8 @@ import { ReglagesScreen } from "./ReglagesScreen";
 
 const getReglagesStateAction = vi.fn();
 const updateSettingsAction = vi.fn();
+const setPrenomAction = vi.fn();
+vi.mock("@/lib/profile/actions", () => ({ setPrenomAction: (p: string) => setPrenomAction(p) }));
 vi.mock("@/lib/settings/actions", () => ({
   getReglagesStateAction: (...args: unknown[]) => getReglagesStateAction(...args),
   updateSettingsAction: (...args: unknown[]) => updateSettingsAction(...args),
@@ -23,6 +25,7 @@ const BASE_STATE = {
   soundCountdownEnabled: false,
   startCountdownEnabled: false,
   keepScreenAwakeEnabled: true,
+  prenom: "Mathis",
   version: "0.1.0",
 };
 
@@ -158,5 +161,20 @@ describe("ReglagesScreen", () => {
     render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
     await waitFor(() => expect(screen.getByText("105 s")).toBeInTheDocument());
     expect(getReglagesStateAction).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows the prénom in a Profil group and saves an edit, then re-reads the settings", async () => {
+    getReglagesStateAction.mockResolvedValueOnce(BASE_STATE).mockResolvedValueOnce({ ...BASE_STATE, prenom: "Math" });
+    setPrenomAction.mockResolvedValue(undefined);
+    render(<ReglagesScreen onClose={() => {}} onChangePointDepart={() => {}} programmePosition={null} />);
+    await waitFor(() => expect(screen.getByText("Profil")).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("button", { name: "Prénom" }));
+    const input = screen.getByLabelText("Ton prénom");
+    expect(input).toHaveValue("Mathis");
+    await userEvent.clear(input);
+    await userEvent.type(input, "Math");
+    await userEvent.click(screen.getByRole("button", { name: "Valider" }));
+    expect(setPrenomAction).toHaveBeenCalledWith("Math");
+    await waitFor(() => expect(getReglagesStateAction).toHaveBeenCalledTimes(2));
   });
 });
