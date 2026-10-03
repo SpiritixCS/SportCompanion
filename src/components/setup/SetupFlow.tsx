@@ -43,7 +43,7 @@ export function SetupFlow({ onClose }: { onClose: () => void }) {
           <button type="button" onClick={back} className="h-11 font-display text-15 font-medium text-graphite">
             {state.step === "parcours" ? "Annuler" : "Retour"}
           </button>
-          <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite">
+          <span className="font-mono text-11 uppercase tracking-[0.14em] text-graphite">
             Étape {stepNumber} / 4
           </span>
         </div>
@@ -76,7 +76,7 @@ export function SetupFlow({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={confirm}
-            className="w-full h-14 rounded-pill bg-cobalt text-paper font-display text-15 font-semibold"
+            className="w-full h-14 rounded-pill bg-cobalt text-paper font-body text-15 font-semibold"
           >
             C&apos;est parti
           </button>
@@ -154,7 +154,7 @@ function DayStep({
             disabled={day.kind === "rest"}
             className="w-full text-left flex items-center gap-4 bg-paper border border-hairline rounded-card p-4 disabled:opacity-40"
           >
-            <span className="font-display text-15 font-semibold w-8 flex-none">{dayIndex + 1}</span>
+            <span className="font-body text-15 font-semibold w-8 flex-none">{dayIndex + 1}</span>
             <span className="text-15">{day.kind === "rest" ? "Repos" : `Jour ${dayIndex + 1}`}</span>
           </button>
         ))}
@@ -167,7 +167,7 @@ function ConfirmStep({ parcours, level, dayIndex }: { parcours: string; level: n
   const meta = PARCOURS.find((p) => p.id === parcours)!;
   return (
     <div className="bg-paper border border-cobalt rounded-card p-6">
-      <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-cobalt">Point de départ</span>
+      <span className="font-mono text-11 uppercase tracking-[0.14em] text-cobalt">Point de départ</span>
       <div className="font-display text-32 font-semibold mt-3">
         {meta.label} · Niveau {level + 1} · Jour {dayIndex + 1}
       </div>

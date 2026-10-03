@@ -12,6 +12,6 @@ describe("ResumeBanner", () => {
 
   it("uses the sage accent border when accent='sage'", () => {
     render(<ResumeBanner exerciseName="Fentes" href="/player/tracking?day=0" accent="sage" />);
-    expect(screen.getByRole("link")).toHaveClass("border-sage");
+    expect(screen.getByTestId("resume-dot")).toHaveClass("bg-sage");
   });
 });

@@ -16,7 +16,7 @@ export function Button({
   ariaLabel?: string;
 }) {
   const base =
-    "h-14 w-full rounded-pill font-display text-15 font-semibold disabled:opacity-40";
+    "h-14 w-full rounded-pill font-body text-15 font-semibold disabled:opacity-40";
   const variantClasses =
     variant === "primary" && accent
       ? `${ACCENT_BG[accent]} text-paper`

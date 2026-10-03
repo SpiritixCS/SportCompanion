@@ -32,16 +32,16 @@ export function AujourdhuiHeader({
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
-        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite">
-          {dateLabel}
-        </span>
-        <div className="font-display text-32 font-semibold leading-[1.05] mt-2">Salut {userLabel}.</div>
+        <span className="block font-mono text-11 uppercase tracking-[0.14em] text-graphite min-h-[1em]">{dateLabel}</span>
+        <h1 className="font-display font-extrabold text-44 uppercase leading-[0.95] tracking-[0.01em] mt-2 max-w-[8ch]">
+          Salut {userLabel}.
+        </h1>
       </div>
       <button
         type="button"
         onClick={onOpenReglages}
         aria-label="Réglages"
-        className="w-11 h-11 rounded-pill border border-hairline bg-paper flex items-center justify-center flex-none"
+        className="w-11 h-11 rounded-pill border border-hairline bg-paper flex items-center justify-center flex-none transition-transform duration-500 hover:rotate-90 motion-reduce:transition-none"
       >
         <IconSettings />
       </button>

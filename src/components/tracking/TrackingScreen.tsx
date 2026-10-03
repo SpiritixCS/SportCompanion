@@ -30,7 +30,7 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
   return (
     <div className="p-5 flex flex-col gap-8">
       <div>
-        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage">Tracking</span>
         <div className="font-display text-32 font-semibold leading-[1.05] mt-2">Tes séances</div>
       </div>
 
@@ -54,7 +54,7 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
 
       <Link
         href="/tracking/programme"
-        className="h-14 rounded-pill border border-hairline flex items-center justify-center font-display text-15 font-semibold"
+        className="h-14 rounded-pill border border-hairline flex items-center justify-center font-body text-15 font-semibold"
       >
         Mon programme
       </Link>

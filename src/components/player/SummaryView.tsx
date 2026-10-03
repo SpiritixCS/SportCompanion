@@ -64,7 +64,7 @@ export function SummaryView({
           {stats.map((stat) => (
             <Card key={stat.key} className="flex-1 p-4">
               <div className="font-display text-32 font-semibold tabular-nums">{stat.value}</div>
-              <div className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mt-2.5">
+              <div className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mt-2.5">
                 {stat.key}
               </div>
             </Card>

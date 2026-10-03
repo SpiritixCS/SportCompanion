@@ -33,7 +33,7 @@ export function ProgrammeScreen({
               setParcours(p.id);
               setOpenLevel(null);
             }}
-            className={`flex-1 h-10 rounded-pill font-display text-13 font-semibold ${
+            className={`flex-1 h-10 rounded-pill font-body text-13 font-semibold ${
               p.id === parcours ? "bg-ink text-paper" : "text-graphite"
             }`}
           >

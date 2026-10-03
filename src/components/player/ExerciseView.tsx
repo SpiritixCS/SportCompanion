@@ -57,7 +57,7 @@ export function ExerciseView({
           >
             <IconClose size={18} />
           </button>
-          <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite tabular-nums">
+          <span className="font-mono text-11 uppercase tracking-[0.14em] text-graphite tabular-nums">
             Exercice {exerciseIndex + 1} / {totalExercises}
           </span>
           <span className="font-display text-15 font-medium text-graphite tabular-nums w-11 text-right">

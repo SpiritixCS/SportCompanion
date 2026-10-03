@@ -43,7 +43,7 @@ export function PrenomRow({ prenom, onConfirm }: { prenom: string; onConfirm: (n
             onConfirm(draft);
             setOpen(false);
           }}
-          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-display text-15 font-semibold disabled:opacity-40"
+          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-body text-15 font-semibold disabled:opacity-40"
         >
           Valider
         </button>

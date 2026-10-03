@@ -57,7 +57,7 @@ export function DaySheet({
           <div className="flex flex-col gap-2.5 mt-6">
             <Link
               href={playerHref}
-              className="h-14 rounded-pill bg-cobalt text-paper flex items-center justify-center font-display text-15 font-semibold"
+              className="h-14 rounded-pill bg-cobalt text-paper flex items-center justify-center font-body text-15 font-semibold"
             >
               Démarrer ce jour
             </Link>
@@ -75,7 +75,7 @@ export function DaySheet({
                 <button
                   type="button"
                   onClick={confirmMove}
-                  className="h-11 rounded-pill bg-ink text-paper font-display text-15 font-semibold"
+                  className="h-11 rounded-pill bg-ink text-paper font-body text-15 font-semibold"
                 >
                   Confirmer
                 </button>

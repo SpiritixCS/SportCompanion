@@ -89,7 +89,7 @@ export function RestView({
         ))}
       </div>
 
-      <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite">
+      <span className="font-mono text-11 uppercase tracking-[0.14em] text-graphite">
         {variant === "betweenExercises" ? "Exercice suivant" : "Repos entre séries"}
       </span>
       <span className="text-13 text-graphite tabular-nums mt-1">
@@ -122,14 +122,14 @@ export function RestView({
         <button
           type="button"
           onClick={handleExtend}
-          className="h-13 px-6 rounded-pill border border-hairline font-display text-15 font-semibold tabular-nums"
+          className="h-13 px-6 rounded-pill border border-hairline font-body text-15 font-semibold tabular-nums"
         >
           +15 s
         </button>
         <button
           type="button"
           onClick={handleSkip}
-          className="h-13 px-6 rounded-pill bg-ink text-paper font-display text-15 font-semibold"
+          className="h-13 px-6 rounded-pill bg-ink text-paper font-body text-15 font-semibold"
         >
           Passer le repos
         </button>

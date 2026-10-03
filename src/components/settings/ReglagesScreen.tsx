@@ -72,7 +72,7 @@ export function ReglagesScreen({
             <button
               type="button"
               onClick={load}
-              className="mt-4 h-11 px-5 rounded-pill bg-ink text-paper font-display text-15 font-semibold"
+              className="mt-4 h-11 px-5 rounded-pill bg-ink text-paper font-body text-15 font-semibold"
             >
               Réessayer
             </button>
@@ -89,7 +89,7 @@ export function ReglagesScreen({
         {state && (
           <>
             <section>
-              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Profil
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
@@ -98,7 +98,7 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Programme
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
@@ -130,7 +130,7 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Séance
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
@@ -173,7 +173,7 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Données
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
@@ -193,7 +193,7 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 À propos
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">

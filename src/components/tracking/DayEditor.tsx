@@ -60,7 +60,7 @@ export function DayEditor({
 
   return (
     <div className="p-5 flex flex-col gap-6">
-      <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Jour</span>
+      <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage">Jour</span>
 
       {error && (
         <div className="bg-paper border border-hairline rounded-card p-6">
@@ -198,7 +198,7 @@ export function DayEditor({
         <button
           type="button"
           onClick={onCancel}
-          className="h-14 rounded-pill border border-hairline flex items-center justify-center font-display text-15 font-semibold"
+          className="h-14 rounded-pill border border-hairline flex items-center justify-center font-body text-15 font-semibold"
         >
           Annuler
         </button>

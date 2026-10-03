@@ -57,7 +57,7 @@ export function DurationRow({
             onConfirm(draft);
             setOpen(false);
           }}
-          className="h-14 w-full rounded-pill bg-ink text-paper font-display text-15 font-semibold"
+          className="h-14 w-full rounded-pill bg-ink text-paper font-body text-15 font-semibold"
         >
           Valider
         </button>
