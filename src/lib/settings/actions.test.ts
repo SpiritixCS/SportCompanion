@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
+import { userDbPath } from "@/lib/auth/email";
 import { runMigrations } from "@/lib/db/migrate";
 import { getSettings } from "./db";
 
@@ -11,13 +12,15 @@ let dbPath: string;
 
 beforeAll(() => {
   tmpDir = mkdtempSync(path.join(tmpdir(), "sportcompanion-settings-actions-"));
-  dbPath = path.join(tmpDir, "test.db");
+  process.env.DATA_DIR = tmpDir;
+  process.env.DEV_FORCE_USER_EMAIL = "test@example.com";
+  dbPath = userDbPath("test@example.com");
   runMigrations(getDb(dbPath), path.join(process.cwd(), "migrations"));
-  process.env.DB_PATH = dbPath;
 });
 
 afterAll(() => {
-  delete process.env.DB_PATH;
+  delete process.env.DATA_DIR;
+  delete process.env.DEV_FORCE_USER_EMAIL;
   rmSync(tmpDir, { recursive: true, force: true });
 });
 

@@ -45,3 +45,15 @@ describe("getDbForUser", () => {
     expect(a).not.toBe(b);
   });
 });
+
+describe("getDbForUser — first access", () => {
+  it("creates and migrates the file of a never-seen user, then reuses the same instance", () => {
+    tmpDir = mkdtempSync(path.join(tmpdir(), "sportcompanion-db-"));
+    const dbPath = path.join(tmpDir, "users", "nouveau@exemple.fr.db");
+    const db = getDbForUser({ dbPath });
+    expect(existsSync(dbPath)).toBe(true);
+    expect(db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'seances'`).get()).toBeTruthy();
+    expect(getDbForUser({ dbPath })).toBe(db);
+    db.close();
+  });
+});

@@ -1,18 +1,15 @@
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { getDb } from "../src/lib/db/client";
+import { getDb, migrationsDir } from "../src/lib/db/client";
 import { runMigrations } from "../src/lib/db/migrate";
-import { knownUsers } from "../src/lib/auth/users";
+import { dataDir } from "../src/lib/auth/email";
 
-const migrationsDir = path.join(process.cwd(), "migrations");
+const usersDir = path.join(dataDir(), "users");
+const files = existsSync(usersDir) ? readdirSync(usersDir).filter((f) => f.endsWith(".db")) : [];
 
-for (const user of knownUsers()) {
-  const db = getDb(user.dbPath);
-  const { applied } = runMigrations(db, migrationsDir);
+for (const file of files) {
+  const db = getDb(path.join(usersDir, file));
+  const { applied } = runMigrations(db, migrationsDir());
   db.close();
-
-  if (applied.length === 0) {
-    console.log(`[${user.slug}] No pending migrations.`);
-  } else {
-    console.log(`[${user.slug}] Applied ${applied.length} migration(s): ${applied.join(", ")}`);
-  }
+  console.log(applied.length === 0 ? `[${file}] No pending migrations.` : `[${file}] Applied ${applied.length} migration(s): ${applied.join(", ")}`);
 }

@@ -12,5 +12,5 @@ export default async function TodayPage() {
   const db = getDbForUser(user);
   const state = loadTodayState(db, PARCOURS);
   const trackingState = loadTrackingScreenState(db);
-  return <AujourdhuiScreen state={state} trackingState={trackingState} user={{ label: user.label }} />;
+  return <AujourdhuiScreen state={state} trackingState={trackingState} user={{ label: user.email }} />;
 }

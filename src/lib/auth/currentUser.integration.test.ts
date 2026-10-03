@@ -1,11 +1,7 @@
-// Composition test: nothing in the per-task test suites proves that
-// currentUser() and getDbForUser() actually route Mathis and Clément to two
-// DIFFERENT SQLite files. Each task tested its own slice in isolation
-// (knownUsers() derives paths, getDbForUser caches by path, currentUser()
-// resolves a slug from a header) — this is the one test that chains all
-// three the way a real request does, proving user data isolation is real.
+// Composition : currentUser() + getDbForUser() routent deux emails vers deux
+// fichiers distincts — l'isolation des données entre utilisateurs est réelle.
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDbForUser } from "@/lib/db/client";
@@ -24,47 +20,27 @@ afterEach(() => {
 });
 
 describe("currentUser() + getDbForUser() composition", () => {
-  it("routes Mathis and Clément to two distinct database files", async () => {
+  it("routes two emails to two distinct database files, data never shared", async () => {
     tmpDir = mkdtempSync(path.join(tmpdir(), "sportcompanion-user-isolation-"));
-    const dbPath = path.join(tmpDir, "sportcompanion.db");
-    process.env.DB_PATH = dbPath;
-    process.env.MATHIS_EMAIL = "mathis@example.com";
-    process.env.CLEMENT_EMAIL = "clement@example.com";
-    delete process.env.DEV_FORCE_USER_SLUG;
+    process.env.DATA_DIR = tmpDir;
+    delete process.env.DEV_FORCE_USER_EMAIL;
+    delete process.env.CF_ACCESS_TEAM_DOMAIN;
+    delete process.env.CF_ACCESS_AUD;
 
-    headersMock.mockResolvedValue(new Headers({ "cf-access-authenticated-user-email": "mathis@example.com" }));
-    const mathis = await currentUser();
-    const mathisDb = getDbForUser(mathis);
+    headersMock.mockResolvedValue(new Headers({ "cf-access-authenticated-user-email": "a@exemple.fr" }));
+    const a = await currentUser();
+    headersMock.mockResolvedValue(new Headers({ "cf-access-authenticated-user-email": "b@exemple.fr" }));
+    const b = await currentUser();
 
-    headersMock.mockResolvedValue(new Headers({ "cf-access-authenticated-user-email": "clement@example.com" }));
-    const clement = await currentUser();
-    const clementDb = getDbForUser(clement);
+    const dbA = getDbForUser(a);
+    const dbB = getDbForUser(b);
+    expect(dbA.name).not.toBe(dbB.name);
+    expect(dbA.name).toBe(path.join(tmpDir, "users", "a@exemple.fr.db"));
 
-    expect(mathis.slug).toBe("mathis");
-    expect(clement.slug).toBe("clement");
-    expect(mathisDb.name).not.toBe(clementDb.name);
-    expect(mathisDb.name).toBe(mathis.dbPath);
-    expect(clementDb.name).toBe(clement.dbPath);
-    expect(existsSync(mathisDb.name)).toBe(true);
-    expect(existsSync(clementDb.name)).toBe(true);
-    mathisDb.close();
-    clementDb.close();
-  });
-
-  it("routes the no-header (fallback) request to the same file as an explicit Mathis header", async () => {
-    tmpDir = mkdtempSync(path.join(tmpdir(), "sportcompanion-user-isolation-"));
-    const dbPath = path.join(tmpDir, "sportcompanion.db");
-    process.env.DB_PATH = dbPath;
-    process.env.MATHIS_EMAIL = "mathis@example.com";
-    process.env.CLEMENT_EMAIL = "clement@example.com";
-    delete process.env.DEV_FORCE_USER_SLUG;
-
-    headersMock.mockResolvedValue(new Headers());
-    const fallback = await currentUser();
-    const fallbackDb = getDbForUser(fallback);
-
-    expect(fallback.slug).toBe("mathis");
-    expect(fallbackDb.name).toBe(dbPath);
-    fallbackDb.close();
+    const before = (dbB.prepare(`SELECT COUNT(*) n FROM seances`).get() as { n: number }).n;
+    dbA.prepare(`INSERT INTO seances (parcours, level, day_index, started_at) VALUES ('beginner', 0, 0, '2026-10-03T00:00:00.000Z')`).run();
+    expect((dbB.prepare(`SELECT COUNT(*) n FROM seances`).get() as { n: number }).n).toBe(before);
+    dbA.close();
+    dbB.close();
   });
 });
