@@ -27,4 +27,11 @@ describe("BottomNav", () => {
     const inactive = screen.getByRole("link", { name: "Programme" });
     expect(inactive).toHaveClass("text-graphite");
   });
+
+  // Régression : sans z-index, les éléments positionnés de <main> (pastilles
+  // repos/marche en `relative`) passaient par-dessus la barre fixe au scroll.
+  it("stacks above positioned page content, below full-screen overlays (z-40+)", () => {
+    render(<BottomNav items={items} />);
+    expect(screen.getByRole("navigation")).toHaveClass("z-30");
+  });
 });
