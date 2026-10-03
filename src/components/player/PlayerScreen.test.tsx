@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PlayerScreen } from "./PlayerScreen";
 import type { TrainDay } from "@/lib/workout/types";
@@ -14,6 +14,8 @@ vi.mock("next/navigation", () => ({
 const onLogSet = vi.fn().mockResolvedValue(undefined);
 const onSkipExercise = vi.fn().mockResolvedValue(undefined);
 const onSeanceFinish = vi.fn().mockResolvedValue(undefined);
+const onResume = vi.fn().mockResolvedValue(undefined);
+const onDiscard = vi.fn().mockResolvedValue(undefined);
 
 const DAY: TrainDay = {
   kind: "train",
@@ -26,8 +28,15 @@ const DAY: TrainDay = {
 
 const STARTED_AT = new Date(Date.now() - 65_000).toISOString();
 
+const HOUR = 3600_000;
+const iso = (msAgo: number) => new Date(Date.now() - msAgo).toISOString();
+
+function loggedSet(completedAt: string) {
+  return { id: 1, seanceId: 1, exerciseOrder: 0, setNumber: 1, repsTarget: "10", repsActual: 10, restSeconds: 90, completedAt };
+}
+
 function actionProps() {
-  return { onLogSet, onSkipExercise, onSeanceFinish };
+  return { onLogSet, onSkipExercise, onSeanceFinish, onResume, onDiscard };
 }
 
 beforeEach(() => {
@@ -36,6 +45,8 @@ beforeEach(() => {
   onLogSet.mockClear();
   onSkipExercise.mockClear();
   onSeanceFinish.mockClear();
+  onResume.mockClear();
+  onDiscard.mockClear();
 });
 
 describe("PlayerScreen", () => {
@@ -122,7 +133,7 @@ describe("PlayerScreen", () => {
       next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false },
       skippedExerciseOrders: [],
     };
-    render(<PlayerScreen day={DAY} state={state} setsLogged={[]} {...actionProps()} />);
+    render(<PlayerScreen day={DAY} state={state} setsLogged={[loggedSet(iso(30_000))]} {...actionProps()} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
     expect(screen.getByText("Quitter la séance ?")).toBeInTheDocument();
@@ -189,5 +200,99 @@ describe("PlayerScreen", () => {
 
     // @ts-expect-error test-only cleanup of a property this test adds
     delete navigator.wakeLock;
+  });
+});
+
+function inProgress(overrides: Partial<Extract<PlayerState, { phase: "in-progress" }>> = {}): PlayerState {
+  return {
+    phase: "in-progress",
+    seanceId: 1,
+    startedAt: STARTED_AT,
+    resumedAt: null,
+    next: { exerciseOrder: 1, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: true },
+    skippedExerciseOrders: [],
+    ...overrides,
+  };
+}
+
+describe("PlayerScreen — séance interrompue", () => {
+  it("excludes a gap longer than one hour from the chronometer", () => {
+    // début il y a 25 h, une série 2 min après, rien depuis → 2:00
+    render(
+      <PlayerScreen day={DAY} state={inProgress({ startedAt: iso(25 * HOUR) })} setsLogged={[loggedSet(iso(25 * HOUR - 120_000))]} {...actionProps()} />,
+    );
+    expect(screen.getByText("2:00")).toBeInTheDocument();
+  });
+
+  it("shows the pause sheet on open when the last event is more than an hour old", () => {
+    render(<PlayerScreen day={DAY} state={inProgress({ startedAt: iso(25 * HOUR) })} setsLogged={[loggedSet(iso(25 * HOUR))]} {...actionProps()} />);
+    expect(screen.getByText("Séance en pause depuis longtemps")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reprendre" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Terminer avec ce qui est fait" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Effacer la séance" })).toBeInTheDocument();
+  });
+
+  it("does not show the pause sheet when a recent resume is stored (reload after Reprendre)", () => {
+    render(
+      <PlayerScreen day={DAY} state={inProgress({ startedAt: iso(25 * HOUR), resumedAt: iso(60_000) })} setsLogged={[loggedSet(iso(25 * HOUR))]} {...actionProps()} />,
+    );
+    expect(screen.queryByText("Séance en pause depuis longtemps")).not.toBeInTheDocument();
+  });
+
+  it("Reprendre calls onResume and closes the sheet", async () => {
+    render(<PlayerScreen day={DAY} state={inProgress({ startedAt: iso(25 * HOUR) })} setsLogged={[loggedSet(iso(25 * HOUR))]} {...actionProps()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Reprendre" }));
+    expect(onResume).toHaveBeenCalledWith(1);
+    expect(screen.queryByText("Séance en pause depuis longtemps")).not.toBeInTheDocument();
+  });
+
+  it("shows the pause sheet when the tab becomes visible again after an hour", () => {
+    const realNow = Date.now();
+    render(<PlayerScreen day={DAY} state={inProgress({ startedAt: iso(60_000) })} setsLogged={[]} {...actionProps()} />);
+    expect(screen.queryByText("Séance en pause depuis longtemps")).not.toBeInTheDocument();
+
+    const spy = vi.spyOn(Date, "now").mockReturnValue(realNow + 2 * HOUR);
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(screen.getByText("Séance en pause depuis longtemps")).toBeInTheDocument();
+    spy.mockRestore();
+  });
+
+  it("Effacer asks for confirmation, then discards and goes home", async () => {
+    render(<PlayerScreen day={DAY} state={inProgress({ startedAt: iso(25 * HOUR) })} setsLogged={[loggedSet(iso(25 * HOUR))]} {...actionProps()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Effacer la séance" }));
+    expect(screen.getByText("Effacer 1 série ? Elle sort des Trophées.")).toBeInTheDocument();
+    expect(onDiscard).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Effacer" }));
+    expect(onDiscard).toHaveBeenCalledWith(1);
+    expect(push).toHaveBeenCalledWith("/");
+  });
+
+  it("quit sheet offers Terminer avec ce qui est fait when at least one set is logged, leading to the summary", async () => {
+    render(<PlayerScreen day={DAY} state={inProgress()} setsLogged={[loggedSet(iso(30_000))]} {...actionProps()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
+    await userEvent.click(screen.getByRole("button", { name: "Terminer avec ce qui est fait" }));
+    expect(screen.getByText("Séance terminée")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
+    expect(onSeanceFinish).toHaveBeenCalledWith(1);
+  });
+
+  it("quit sheet with no set logged offers Abandonner instead, which discards", async () => {
+    render(<PlayerScreen day={DAY} state={inProgress({ next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: true, isLastExerciseOfDay: false } })} setsLogged={[]} {...actionProps()} />);
+    await userEvent.click(screen.getByRole("button", { name: "Quitter la séance" }));
+    expect(screen.queryByRole("button", { name: "Terminer avec ce qui est fait" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Quitter et reprendre plus tard" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Abandonner" }));
+    expect(onDiscard).toHaveBeenCalledWith(1);
+    expect(push).toHaveBeenCalledWith("/");
+  });
+
+  it("pending-validation opened the next day shows the summary without the pause sheet", () => {
+    render(
+      <PlayerScreen day={DAY} state={{ phase: "pending-validation", seanceId: 1, startedAt: iso(25 * HOUR), resumedAt: null }} setsLogged={[loggedSet(iso(25 * HOUR - 120_000))]} {...actionProps()} />,
+    );
+    expect(screen.getByText("Séance terminée")).toBeInTheDocument();
+    expect(screen.queryByText("Séance en pause depuis longtemps")).not.toBeInTheDocument();
   });
 });

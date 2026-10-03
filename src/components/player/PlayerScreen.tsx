@@ -8,6 +8,7 @@ import { SummaryView } from "./SummaryView";
 import { Sheet } from "@/components/Sheet";
 import { REST_BETWEEN_SETS_SECONDS, REST_BETWEEN_EXERCISES_SECONDS } from "@/lib/player/constants";
 import { useWakeLock } from "@/lib/player/useWakeLock";
+import { activeDurationSeconds, isInactive } from "@/lib/player/activeDuration";
 import type { Accent } from "@/components/Pastille";
 import type { TrainDay } from "@/lib/workout/types";
 import type { PlayerState } from "@/lib/player/loadPlayerState";
@@ -25,6 +26,7 @@ type LogSetParams = {
 
 type LocalPhase =
   | { kind: "exercise" }
+  | { kind: "summary" }
   | {
       kind: "rest";
       variant: "betweenSets" | "betweenExercises";
@@ -40,25 +42,20 @@ function findNextLabel(day: TrainDay, fromExerciseOrder: number, skippedExercise
   return "Fin de séance";
 }
 
-function elapsedSecondsSince(startedAt: string): number {
-  return Math.max(0, Math.floor((Date.now() - Date.parse(startedAt)) / 1000));
-}
-
-// Anchored on the seance's DB `startedAt`, never a client-only counter —
-// a full reload still shows the real elapsed time (CLAUDE.md §2 lesson).
-// Seeded at 0 (not computed from Date.now()) so SSR and hydration agree;
-// the real value lands a tick later, client-side only, via the effect below.
-function useElapsedSeconds(startedAt: string | null): number {
-  const [elapsed, setElapsed] = useState(0);
-
+// Ancré sur les horodatages DB (début, reprise, séries) — jamais un compteur
+// client seul (CLAUDE.md §2). Démarre à 0 pour que SSR et hydratation
+// concordent ; la vraie valeur arrive au premier tick côté client.
+function useActiveSeconds(events: (string | null | undefined)[]): number {
+  const [seconds, setSeconds] = useState(0);
+  const key = events.join("|");
   useEffect(() => {
-    if (!startedAt) return;
-    setElapsed(elapsedSecondsSince(startedAt));
-    const id = setInterval(() => setElapsed(elapsedSecondsSince(startedAt)), 1000);
+    if (events.length === 0) return;
+    setSeconds(activeDurationSeconds(events, Date.now()));
+    const id = setInterval(() => setSeconds(activeDurationSeconds(events, Date.now())), 1000);
     return () => clearInterval(id);
-  }, [startedAt]);
-
-  return elapsed;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return seconds;
 }
 
 export function PlayerScreen({
@@ -73,6 +70,8 @@ export function PlayerScreen({
   onLogSet,
   onSkipExercise,
   onSeanceFinish,
+  onResume,
+  onDiscard,
 }: {
   day: TrainDay;
   state: PlayerState;
@@ -85,12 +84,72 @@ export function PlayerScreen({
   onLogSet: (params: LogSetParams) => Promise<void>;
   onSkipExercise: (seanceId: number, exerciseOrder: number) => Promise<void>;
   onSeanceFinish: (seanceId: number) => Promise<void>;
+  // ponytail: optionnels tant que le player Dos existe ; obligatoires au chantier 3
+  onResume?: (seanceId: number) => Promise<void>;
+  onDiscard?: (seanceId: number) => Promise<void>;
 }) {
   const router = useRouter();
   useWakeLock(keepScreenAwakeEnabled);
   const [localPhase, setLocalPhase] = useState<LocalPhase>({ kind: "exercise" });
   const [quitOpen, setQuitOpen] = useState(false);
-  const elapsedSeconds = useElapsedSeconds(state.phase !== "completed" ? state.startedAt : null);
+  // Séries loggées depuis le dernier refresh serveur + reprise locale : le
+  // chrono et la détection d'inactivité les voient sans attendre la DB.
+  const [localSetEvents, setLocalSetEvents] = useState<string[]>([]);
+  const [localResumeAt, setLocalResumeAt] = useState<string | null>(null);
+  const events =
+    state.phase === "completed"
+      ? []
+      : [state.startedAt, state.resumedAt, localResumeAt, ...setsLogged.map((s) => s.completedAt), ...localSetEvents];
+  const elapsedSeconds = useActiveSeconds(events);
+  const [pauseOpen, setPauseOpen] = useState(false);
+  const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
+  const setsDoneCount = setsLogged.length + localSetEvents.length;
+
+  useEffect(() => {
+    if (state.phase !== "in-progress") return;
+    function check() {
+      if (document.visibilityState === "visible" && isInactive(events, Date.now())) setPauseOpen(true);
+    }
+    check();
+    document.addEventListener("visibilitychange", check);
+    return () => document.removeEventListener("visibilitychange", check);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.phase, events.join("|")]);
+
+  async function handleResume() {
+    if (state.phase === "completed") return;
+    await onResume?.(state.seanceId);
+    setLocalResumeAt(new Date().toISOString());
+    setPauseOpen(false);
+  }
+
+  async function handleDiscard() {
+    if (state.phase === "completed") return;
+    await onDiscard?.(state.seanceId);
+    router.push("/");
+  }
+
+  function handleFinishEarly() {
+    setPauseOpen(false);
+    setQuitOpen(false);
+    setLocalPhase({ kind: "summary" });
+  }
+
+  if (localPhase.kind === "summary" && state.phase === "in-progress") {
+    return (
+      <SummaryView
+        exercises={day.exercises}
+        setsLogged={setsLogged}
+        durationSeconds={elapsedSeconds}
+        allTimeTotals={allTimeTotals}
+        accent={accent}
+        onFinish={async () => {
+          await onSeanceFinish(state.seanceId);
+          router.refresh();
+        }}
+      />
+    );
+  }
 
   if (state.phase === "pending-validation") {
     return (
@@ -131,6 +190,7 @@ export function PlayerScreen({
       repsActual,
       restSeconds,
     });
+    setLocalSetEvents((prev) => [...prev, new Date().toISOString()]);
     setLocalPhase({
       kind: "rest",
       variant: isLastSetOfExercise ? "betweenExercises" : "betweenSets",
@@ -160,6 +220,7 @@ export function PlayerScreen({
         onComplete={() => {
           setLocalPhase({ kind: "exercise" });
           router.refresh();
+          setLocalSetEvents([]);
         }}
       />
     );
@@ -180,22 +241,60 @@ export function PlayerScreen({
       />
       <Sheet open={quitOpen} onClose={() => setQuitOpen(false)} title="Quitter la séance ?">
         <p className="text-15 text-graphite leading-relaxed">
-          Elle est enregistrée où tu t&apos;es arrêté. Tu pourras la reprendre depuis Aujourd&apos;hui.
+          {setsDoneCount > 0
+            ? "Tu peux la valider avec ce qui est fait, ou la reprendre plus tard depuis Aujourd'hui."
+            : "Aucune série n'est enregistrée."}
         </p>
         <div className="flex flex-col gap-2.5 mt-6">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold"
-          >
-            Quitter et reprendre plus tard
-          </button>
-          <button
-            type="button"
-            onClick={() => setQuitOpen(false)}
-            className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
-          >
+          {setsDoneCount > 0 ? (
+            <>
+              <button type="button" onClick={handleFinishEarly} className="h-14 rounded-pill border border-hairline text-ink font-archivo text-15 font-semibold">
+                Terminer avec ce qui est fait
+              </button>
+              <button type="button" onClick={() => router.push("/")} className="h-14 rounded-pill border border-hairline text-ink font-archivo text-15 font-semibold">
+                Quitter et reprendre plus tard
+              </button>
+            </>
+          ) : (
+            <button type="button" onClick={handleDiscard} className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold">
+              Abandonner
+            </button>
+          )}
+          <button type="button" onClick={() => setQuitOpen(false)} className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold">
             Continuer la séance
+          </button>
+        </div>
+      </Sheet>
+      <Sheet open={pauseOpen && !discardConfirmOpen} onClose={handleResume} title="Séance en pause depuis longtemps">
+        <p className="text-15 text-graphite leading-relaxed">
+          Le temps de pause ne compte pas dans la durée.
+        </p>
+        <div className="flex flex-col gap-2.5 mt-6">
+          <button type="button" onClick={handleResume} className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold">
+            Reprendre
+          </button>
+          {setsDoneCount > 0 && (
+            <button type="button" onClick={handleFinishEarly} className="h-14 rounded-pill border border-hairline text-ink font-archivo text-15 font-semibold">
+              Terminer avec ce qui est fait
+            </button>
+          )}
+          <button type="button" onClick={() => setDiscardConfirmOpen(true)} className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold">
+            Effacer la séance
+          </button>
+        </div>
+      </Sheet>
+      <Sheet open={discardConfirmOpen} onClose={() => setDiscardConfirmOpen(false)} title="Effacer la séance ?">
+        <p className="text-15 text-graphite leading-relaxed">
+          {setsDoneCount === 1
+            ? "Effacer 1 série ? Elle sort des Trophées."
+            : `Effacer ${setsDoneCount} séries ? Elles sortent des Trophées.`}
+        </p>
+        <div className="flex flex-col gap-2.5 mt-6">
+          <button type="button" onClick={handleDiscard} className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold">
+            Effacer
+          </button>
+          <button type="button" onClick={() => setDiscardConfirmOpen(false)} className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold">
+            Annuler
           </button>
         </div>
       </Sheet>

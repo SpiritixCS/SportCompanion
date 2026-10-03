@@ -7,7 +7,7 @@ import { getProgramDay } from "@/lib/tracking/program";
 import { dayAsTrainDay } from "@/lib/tracking/dayAsTrainDay";
 import { loadDayPlayerState } from "@/lib/tracking/loadDayPlayerState";
 import { getActiveSeance, getSetsForSeance } from "@/lib/tracking/db";
-import { logDaySetAction, skipDayExerciseAction, completeDaySeanceAction } from "@/lib/tracking/actions";
+import { logDaySetAction, skipDayExerciseAction, completeDaySeanceAction, resumeDaySeanceAction, discardDaySeanceAction } from "@/lib/tracking/actions";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
 
 export default async function TrackingPlayerPage({
@@ -91,6 +91,8 @@ export default async function TrackingPlayerPage({
       onLogSet={logDaySetAction.bind(null, dayOfWeek)}
       onSkipExercise={skipDayExerciseAction}
       onSeanceFinish={completeDaySeanceAction}
+      onResume={resumeDaySeanceAction}
+      onDiscard={discardDaySeanceAction}
     />
   );
 }

@@ -11,6 +11,7 @@ import {
   deleteSeance as deleteSeanceDb,
   completeSeance as completeSeanceDb,
   skipExercise as skipExerciseDb,
+  resumeSeance as resumeSeanceDb,
   type TrackingSetWithExercise,
   type TrackingUnit,
 } from "./db";
@@ -102,4 +103,13 @@ export async function completeDaySeanceAction(seanceId: number): Promise<void> {
   const database = await db();
   completeSeanceDb(database, seanceId);
   advancePointer(database);
+}
+
+export async function resumeDaySeanceAction(seanceId: number): Promise<void> {
+  resumeSeanceDb(await db(), seanceId);
+}
+
+// N'avance pas le pointeur : le jour reste à faire.
+export async function discardDaySeanceAction(seanceId: number): Promise<void> {
+  deleteSeanceDb(await db(), seanceId);
 }

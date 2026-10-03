@@ -6,6 +6,8 @@ import {
   logSet as logSetDb,
   skipExercise as skipExerciseDb,
   completeSeance as completeSeanceDb,
+  resumeSeance as resumeSeanceDb,
+  deleteSeance as deleteSeanceDb,
 } from "./db";
 
 async function db() {
@@ -34,4 +36,12 @@ export async function skipExerciseAction(seanceId: number, exerciseOrder: number
 
 export async function completeSeanceAction(seanceId: number): Promise<void> {
   completeSeanceDb(await db(), seanceId);
+}
+
+export async function resumeSeanceAction(seanceId: number): Promise<void> {
+  resumeSeanceDb(await db(), seanceId);
+}
+
+export async function discardSeanceAction(seanceId: number): Promise<void> {
+  deleteSeanceDb(await db(), seanceId);
 }

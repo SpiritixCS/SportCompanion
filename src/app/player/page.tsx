@@ -4,7 +4,7 @@ import { getSettings } from "@/lib/settings/db";
 import { loadPlayerState } from "@/lib/player/loadPlayerState";
 import { getSetsForSeance } from "@/lib/player/db";
 import { resolveCycleForJump } from "@/lib/programme/db";
-import { logSetAction, skipExerciseAction, completeSeanceAction } from "@/lib/player/actions";
+import { logSetAction, skipExerciseAction, completeSeanceAction, resumeSeanceAction, discardSeanceAction } from "@/lib/player/actions";
 import { beginner, intermediate, advanced } from "@/lib/workout/data";
 import type { Program } from "@/lib/workout/types";
 import { PlayerScreen } from "@/components/player/PlayerScreen";
@@ -60,6 +60,8 @@ export default async function PlayerPage({
       onLogSet={logSetAction}
       onSkipExercise={skipExerciseAction}
       onSeanceFinish={completeSeanceAction}
+      onResume={resumeSeanceAction}
+      onDiscard={discardSeanceAction}
     />
   );
 }
