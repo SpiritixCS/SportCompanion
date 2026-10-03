@@ -77,6 +77,21 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
   const { programDay } = state;
 
+  if (state.programEmpty) {
+    return (
+      <Card className="p-5">
+        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+        <div className="font-archivo text-18 font-semibold mt-3">Ton programme sur 7 jours est vide.</div>
+        <Link
+          href="/tracking/programme"
+          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+        >
+          Composer mon programme
+        </Link>
+      </Card>
+    );
+  }
+
   if (programDay.isRest) {
     return (
       <Card className="p-5">

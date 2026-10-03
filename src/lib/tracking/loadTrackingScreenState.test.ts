@@ -27,6 +27,7 @@ describe("loadTrackingScreenState", () => {
     const db = setup();
     expect(loadTrackingScreenState(db)).toEqual({
       programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
+      programEmpty: true,
       activeSeance: null,
       seances: [],
     });
@@ -103,5 +104,18 @@ describe("loadTrackingScreenState", () => {
       plannedExercises: null,
       loggedExercises: [{ name: "Squats", unit: "reps", setsCount: 3, totalValue: 30 }],
     });
+  });
+});
+
+describe("loadTrackingScreenState — programEmpty", () => {
+  it("is true for a program never composed (7 rest days, no exercise)", () => {
+    const db = setup();
+    expect(loadTrackingScreenState(db).programEmpty).toBe(true);
+  });
+
+  it("is false once one day has an exercise", () => {
+    const db = setup();
+    setDayExercises(db, 2, [{ name: "Tractions", unit: "reps", setsCount: 3, targetValue: 8 }]);
+    expect(loadTrackingScreenState(db).programEmpty).toBe(false);
   });
 });

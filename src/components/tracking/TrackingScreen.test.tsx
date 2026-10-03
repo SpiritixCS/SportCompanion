@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 const REST_DAY = { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] };
-const EMPTY_STATE = { programDay: REST_DAY, activeSeance: null, seances: [] };
+const EMPTY_STATE = { programDay: REST_DAY, programEmpty: false, activeSeance: null, seances: [] };
 
 describe("TrackingScreen", () => {
   it("shows the empty state with no history", () => {

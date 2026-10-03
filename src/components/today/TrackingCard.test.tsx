@@ -15,6 +15,7 @@ vi.mock("@/lib/tracking/actions", () => ({
 
 const REST_STATE: TrackingScreenState = {
   programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
+  programEmpty: false,
   activeSeance: null,
   seances: [],
 };
@@ -40,6 +41,7 @@ describe("TrackingCard", () => {
             isRest: false,
             exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
           },
+  programEmpty: false,
         }}
       />,
     );
@@ -55,6 +57,7 @@ describe("TrackingCard", () => {
         state={{
           ...REST_STATE,
           programDay: { dayOfWeek: 0, label: "Lundi", isRest: false, exercises: [] },
+  programEmpty: false,
         }}
       />,
     );
@@ -137,5 +140,13 @@ describe("TrackingCard", () => {
     expect(screen.getByText("Dips")).toBeInTheDocument();
     expect(screen.getByText("24")).toBeInTheDocument();
     expect(screen.getByText("45 s")).toBeInTheDocument();
+  });
+});
+
+describe("TrackingCard — programme vide", () => {
+  it("invites to compose the programme instead of showing a rest day", () => {
+    render(<TrackingCard state={{ ...REST_STATE, programEmpty: true }} />);
+    expect(screen.getByRole("link", { name: "Composer mon programme" })).toHaveAttribute("href", "/tracking/programme");
+    expect(screen.queryByRole("button", { name: "Jour suivant" })).not.toBeInTheDocument();
   });
 });

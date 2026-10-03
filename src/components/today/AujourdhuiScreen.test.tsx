@@ -30,6 +30,7 @@ const CLEMENT = { slug: "clement" as const, label: "Clément" };
 
 const TRACKING_REST: TrackingScreenState = {
   programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
+  programEmpty: false,
   activeSeance: null,
   seances: [],
 };
@@ -143,7 +144,8 @@ describe("AujourdhuiScreen", () => {
     render(
       <AujourdhuiScreen
         state={{ phase: "empty" }}
-        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: null, seances: [] }}
+        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
+  programEmpty: false, activeSeance: null, seances: [] }}
         user={CLEMENT}
       />,
     );
@@ -155,7 +157,8 @@ describe("AujourdhuiScreen", () => {
     render(
       <AujourdhuiScreen
         state={{ phase: "level-up", parcours: "beginner", parcoursLabel: "Débutant", level: 0 }}
-        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] }, activeSeance: { id: 3, dayOfWeek: null, dayLabel: null, plannedExercises: null, loggedExercises: [] }, seances: [] }}
+        trackingState={{ programDay: { dayOfWeek: 0, label: "Lundi", isRest: true, exercises: [] },
+  programEmpty: false, activeSeance: { id: 3, dayOfWeek: null, dayLabel: null, plannedExercises: null, loggedExercises: [] }, seances: [] }}
         user={CLEMENT}
       />,
     );
