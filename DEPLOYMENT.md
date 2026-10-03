@@ -59,25 +59,24 @@ Toute modification future du nom d'hôte ou de la policy Access se fait dans le 
 
 ---
 
-## Multi-utilisateur (Mathis + Clément)
+## Multi-utilisateur
 
-L'app distingue les deux comptes via le header `Cf-Access-Authenticated-User-Email` que Cloudflare Access injecte (voir `src/lib/auth/currentUser.ts`). `sportcompanion.service` déclare `EnvironmentFile=-/home/ubuntu/sportcompanion/.env` (le `-` le rend optionnel pour ne pas casser un démarrage si le fichier manque), mais **`MATHIS_EMAIL` n'est PAS défini ailleurs** (le service ne fixe que `DB_PATH`) : sans ce fichier, `currentUser()` ne reconnaît plus l'email de Mathis lui-même et toute requête — y compris les siennes — échoue avec « Accès non reconnu ».
+**Ajouter quelqu'un = l'autoriser dans Cloudflare Access**, rien d'autre : Zero Trust → Access → Applications → `workout.spiritix.fr` → policy Allow → ajouter son email. À son premier passage, l'app crée et migre son fichier `data/users/<email>.db` et lui demande son prénom.
 
-**⚠️ Étape obligatoire, à faire AVANT le premier déploiement de ce qui introduit le multi-utilisateur — pas un réglage optionnel « à faire un jour » :**
+Identité (`src/lib/auth/`) : email lu dans le jeton signé `Cf-Access-Jwt-Assertion`, vérifié (signature, audience, émetteur, expiration). Tant que les deux variables ci-dessous ne sont pas dans `.env`, repli sur le header `Cf-Access-Authenticated-User-Email` (avertissement dans les logs). Sans identité valide → page `/acces-refuse`.
 
-1. **Créer `/home/ubuntu/sportcompanion/.env`** sur la VM (n'existe pas encore, jamais touché par `deploy.sh` qui exclut `.env*` du `rsync`) avec **les deux** variables :
+`/home/ubuntu/sportcompanion/.env` (jamais touché par `deploy.sh`, `sudo systemctl restart sportcompanion` après toute modification) :
 
-   ```
-   MATHIS_EMAIL=<gmail perso de Mathis>
-   CLEMENT_EMAIL=<email de Clément>
-   ```
+```
+CF_ACCESS_TEAM_DOMAIN=<team>.cloudflareaccess.com
+CF_ACCESS_AUD=<Application Audience (AUD) Tag de workout.spiritix.fr>
+MATHIS_EMAIL=<gmail perso de Mathis>
+CLEMENT_EMAIL=<email de Clément>
+```
 
-2. **Policy Access** : dans le dashboard Cloudflare (Zero Trust → Access → Applications → `workout.spiritix.fr`), ajouter l'email de Clément à la policy Allow existante (à côté du Gmail personnel de Mathis).
-3. **Redémarrer le service** — `sudo systemctl restart sportcompanion` — obligatoire après avoir créé ou modifié `.env` : systemd ne relit `EnvironmentFile` qu'au démarrage du service, éditer le fichier seul ne change rien tant que le service n'est pas redémarré.
+`MATHIS_EMAIL` / `CLEMENT_EMAIL` ne servent plus qu'à `npm run db:adopt-legacy` (lancé par `deploy.sh`) : reprise unique des bases v0.1 `data/sportcompanion.db` et `data/sportcompanion.clement.db` vers `data/users/<email>.db`. **Les deux fichiers v0.1 restent en place, jamais modifiés** — sauvegarde ; une copie déjà reprise n'est jamais écrasée.
 
-Faire l'étape 1 puis 3 avant de déployer la première fois ce changement (ou juste après un `deploy/deploy.sh`, qui redémarre déjà le service — mais toute modification manuelle ultérieure de `.env` doit être suivie du même redémarrage manuel).
-
-Clément a son propre fichier SQLite, `data/sportcompanion.clement.db`. Il est créé au prochain `npm run db:migrate` **à condition que `.env` existe déjà** : `deploy.sh` source ce fichier (`set -a; . ./.env; set +a`) juste avant de lancer la migration, donc `CLEMENT_EMAIL` doit déjà être posé sur la VM pour que `knownUsers()` voie Clément et que sa base soit migrée (le script boucle sur tous les utilisateurs connus, voir `scripts/db-migrate.ts`). Le fichier de Mathis (`data/sportcompanion.db`) est inchangé.
+Le service lit `DATA_DIR` (dossier `data/`) et `MIGRATIONS_DIR` (`.next/standalone/migrations`, copié par `deploy.sh`) : un nouvel utilisateur est migré à son premier accès sans redéploiement.
 
 ---
 

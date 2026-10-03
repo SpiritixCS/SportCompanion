@@ -13,7 +13,7 @@ Contexte permanent du projet. À lire au début de chaque session.
 
 ## 1. Ce qu'est ce projet
 
-Une web app personnelle de suivi d'entraînement, à l'origine pensée pour **utilisateur unique** (Mathis). Elle sert maintenant **deux personnes réelles et connues à l'avance**, Mathis et Clément — identifiées par le header Cloudflare Access (`Cf-Access-Authenticated-User-Email`) et cloisonnées dans leur propre fichier SQLite (voir `src/lib/auth/`). Ce n'est toujours pas un produit multi-tenant générique : pas d'inscription, pas de compte à créer, pas d'abstraction « au cas où quelqu'un d'autre l'utiliserait » — deux utilisateurs nommés, un seul point d'entrée par email connu.
+Une web app personnelle de suivi d'entraînement, à l'origine pensée pour **utilisateur unique** (Mathis). Elle sert maintenant **quelques proches** : toute personne dont l'email est autorisé dans Cloudflare Access obtient son espace personnel au premier accès — un fichier SQLite par email (`data/users/<email>.db`), identité lue dans le JWT Cloudflare vérifié (voir `src/lib/auth/` et `DEPLOYMENT.md`). Pas d'inscription, pas de compte à créer côté app, pas d'admin : la liste blanche, c'est Cloudflare Access. Chacun ne voit que ses données.
 
 Deux modules, ouverts à chaque utilisateur :
 
@@ -41,10 +41,10 @@ Le liant entre les deux : une page **Trophées** qui cumule les répétitions al
 |---|---|---|
 | Type d'app | Web app (pas de natif) | Pas de compte Apple Developer payant → une app iOS native homemade expire tous les 7 jours sans rebuild. Une web app n'a aucune de ces contraintes. |
 | Framework | Next.js (App Router), TypeScript, React | Full-stack en un seul projet, un seul process à déployer. Repris du pattern v1, déjà éprouvé sur cette même VM. |
-| Base de données | SQLite (`better-sqlite3`), fichier unique | Volume minuscule (un utilisateur, quelques milliers de lignes). Postgres serait de la sur-ingénierie. Pattern repris de la v1. |
+| Base de données | SQLite (`better-sqlite3`), un fichier par utilisateur | Volume minuscule, cloisonnement physique des données. Postgres serait de la sur-ingénierie. Pattern repris de la v1. |
 | Build de prod | `output: "standalone"` dans `next.config.ts` | Le service systemd pointe sur `.next/standalone/server.js` (voir `DEPLOYMENT.md`). |
 | Hébergement | VM Oracle Cloud perso, systemd + tunnel Cloudflare existant | Détails complets, accès SSH, script de déploiement : `DEPLOYMENT.md`. Ne pas dupliquer cette info ici. |
-| Auth | Aucune côté app — déléguée à Cloudflare Access en amont (Gmail perso) | App mono-utilisateur, pas de session à gérer côté Next.js. |
+| Auth | Déléguée à Cloudflare Access en amont ; l'app vérifie le JWT Access et en tire l'email | Pas de session ni de mot de passe à gérer côté Next.js. |
 | Appareils cibles | iPhone 17 et MacBook Pro 16, **Chrome** sur les deux | Voir contrainte Chrome iOS ci-dessous. |
 | Langue | Français partout — UI et code commenté en français si commentaire nécessaire | Cohérent avec `Objective.md`. |
 
