@@ -94,10 +94,10 @@ describe("loadTodayState", () => {
     expect(state.dayTitle).toBe("Jour 1");
     expect(state.totalExercises).toBe(4);
     expect(state.exercises).toEqual([
-      { name: "Push ups", dose: "3 × 12" },
-      { name: "Squats", dose: "3 × 15" },
-      { name: "Dips", dose: "3 × 10" },
-      { name: "Lunges", dose: "3 × 10" },
+      { id: "push-ups", family: "push", sets: 3, name: "Push ups", dose: "3 × 12" },
+      { id: "squats", family: "legs", sets: 3, name: "Squats", dose: "3 × 15" },
+      { id: "dips", family: "dip", sets: 3, name: "Dips", dose: "3 × 10" },
+      { id: "lunges", family: "legs", sets: 3, name: "Lunges", dose: "3 × 10" },
     ]);
     expect(state.durationEstimateMinutes).toBe(18 + 4 * 4);
     expect(state.done).toBe(false);
@@ -167,7 +167,7 @@ describe("loadTodayState", () => {
     const state = loadTodayState(db, ALL_PARCOURS);
     if (state.phase !== "normal") throw new Error("unreachable");
     expect(state.dayTitle).toBe("Jour 7");
-    expect(state.exercises).toEqual([{ name: "Burpees", dose: "3 × 10" }]);
+    expect(state.exercises).toEqual([expect.objectContaining({ id: "burpees", name: "Burpees", dose: "3 × 10" })]);
     expect(state.done).toBe(false);
   });
 

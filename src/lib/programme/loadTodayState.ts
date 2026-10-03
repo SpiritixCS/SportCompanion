@@ -18,7 +18,8 @@ export type TodayState =
       level: number;
       dayIndex: number;
       dayTitle: string;
-      exercises: { name: string; dose: string }[];
+      // family = movementFamily brut du programme (le picto retombe sur « other » si inconnu)
+      exercises: { id: string; family: string; sets: number; name: string; dose: string }[];
       totalExercises: number;
       durationEstimateMinutes: number;
       pastilles: PastilleState[];
@@ -96,7 +97,13 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
     level: position.level,
     dayIndex: position.dayIndex,
     dayTitle: `Jour ${position.dayIndex + 1}`,
-    exercises: day.exercises.map((e) => ({ name: e.name, dose: formatTarget(e.sets, e.target) })),
+    exercises: day.exercises.map((e) => ({
+      id: e.id,
+      family: e.movementFamily,
+      sets: e.sets,
+      name: e.name,
+      dose: formatTarget(e.sets, e.target),
+    })),
     totalExercises: day.exercises.length,
     durationEstimateMinutes: estimateDurationMinutes(day.exercises.length),
     pastilles,
