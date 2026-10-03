@@ -4,8 +4,8 @@ import { deriveState, type NextSet } from "@/lib/player/deriveState";
 import { getOrStartSeance, getSetsForSeance, getSkippedExercises } from "./db";
 
 export type DayPlayerState =
-  | { phase: "in-progress"; seanceId: number; startedAt: string; next: NextSet; skippedExerciseOrders: number[] }
-  | { phase: "pending-validation"; seanceId: number; startedAt: string }
+  | { phase: "in-progress"; seanceId: number; startedAt: string; resumedAt: string | null; next: NextSet; skippedExerciseOrders: number[] }
+  | { phase: "pending-validation"; seanceId: number; startedAt: string; resumedAt: string | null }
   | { phase: "completed"; seanceId: number }
   | { phase: "wrong-seance"; seanceId: number };
 
@@ -30,13 +30,14 @@ export function loadDayPlayerState(db: Database.Database, dayOfWeek: number, day
   const progress = deriveState(day, sets, new Set(skippedExerciseOrders));
 
   if (progress.allSetsDone) {
-    return { phase: "pending-validation", seanceId: seance.id, startedAt: seance.startedAt };
+    return { phase: "pending-validation", seanceId: seance.id, startedAt: seance.startedAt, resumedAt: seance.resumedAt };
   }
 
   return {
     phase: "in-progress",
     seanceId: seance.id,
     startedAt: seance.startedAt,
+    resumedAt: seance.resumedAt,
     next: progress.next,
     skippedExerciseOrders,
   };

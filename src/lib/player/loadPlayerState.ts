@@ -8,10 +8,12 @@ export type PlayerState =
       phase: "in-progress";
       seanceId: number;
       startedAt: string;
+      // ponytail: optionnel tant que loadDosPlayerState produit aussi ce type ; rendre obligatoire au chantier 3 (retrait du Dos)
+      resumedAt?: string | null;
       next: NextSet;
       skippedExerciseOrders: number[];
     }
-  | { phase: "pending-validation"; seanceId: number; startedAt: string }
+  | { phase: "pending-validation"; seanceId: number; startedAt: string; resumedAt?: string | null }
   | { phase: "completed"; seanceId: number };
 
 export function loadPlayerState(
@@ -33,13 +35,14 @@ export function loadPlayerState(
   const progress = deriveState(day, sets, new Set(skippedExerciseOrders));
 
   if (progress.allSetsDone) {
-    return { phase: "pending-validation", seanceId: seance.id, startedAt: seance.startedAt };
+    return { phase: "pending-validation", seanceId: seance.id, startedAt: seance.startedAt, resumedAt: seance.resumedAt };
   }
 
   return {
     phase: "in-progress",
     seanceId: seance.id,
     startedAt: seance.startedAt,
+    resumedAt: seance.resumedAt,
     next: progress.next,
     skippedExerciseOrders,
   };

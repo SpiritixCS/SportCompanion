@@ -2,7 +2,7 @@ import type Database from "better-sqlite3";
 
 export type TrackingUnit = "reps" | "seconds";
 export type TrackingExercise = { id: number; name: string; unit: TrackingUnit; createdAt: string };
-export type TrackingSeance = { id: number; startedAt: string; completedAt: string | null; dayOfWeek: number | null };
+export type TrackingSeance = { id: number; startedAt: string; resumedAt: string | null; completedAt: string | null; dayOfWeek: number | null };
 export type TrackingSetWithExercise = {
   id: number;
   seanceId: number;
@@ -43,8 +43,8 @@ export function listExercises(db: Database.Database): { name: string; unit: Trac
   }[];
 }
 
-function mapSeance(row: { id: number; started_at: string; completed_at: string | null; program_day_of_week: number | null }): TrackingSeance {
-  return { id: row.id, startedAt: row.started_at, completedAt: row.completed_at, dayOfWeek: row.program_day_of_week };
+function mapSeance(row: { id: number; started_at: string; resumed_at: string | null; completed_at: string | null; program_day_of_week: number | null }): TrackingSeance {
+  return { id: row.id, startedAt: row.started_at, resumedAt: row.resumed_at, completedAt: row.completed_at, dayOfWeek: row.program_day_of_week };
 }
 
 export function getActiveSeance(db: Database.Database): TrackingSeance | null {
@@ -59,7 +59,7 @@ export function startSeance(db: Database.Database, dayOfWeek: number | null = nu
   const result = db
     .prepare(`INSERT INTO tracking_seances (started_at, program_day_of_week) VALUES (?, ?)`)
     .run(startedAt, dayOfWeek);
-  return { id: Number(result.lastInsertRowid), startedAt, completedAt: null, dayOfWeek };
+  return { id: Number(result.lastInsertRowid), startedAt, resumedAt: null, completedAt: null, dayOfWeek };
 }
 
 // Resumes whatever seance is active, regardless of the dayOfWeek requested —
@@ -181,4 +181,8 @@ export function getSkippedExercises(db: Database.Database, seanceId: number): nu
     .prepare(`SELECT exercise_order AS exerciseOrder FROM tracking_skipped_exercises WHERE seance_id = ?`)
     .all(seanceId) as { exerciseOrder: number }[];
   return rows.map((r) => r.exerciseOrder);
+}
+
+export function resumeSeance(db: Database.Database, seanceId: number): void {
+  db.prepare(`UPDATE tracking_seances SET resumed_at = ? WHERE id = ?`).run(new Date().toISOString(), seanceId);
 }

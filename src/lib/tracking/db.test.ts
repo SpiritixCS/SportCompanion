@@ -22,6 +22,7 @@ import {
   listCompletedSeances,
   skipExercise,
   getSkippedExercises,
+  resumeSeance,
 } from "./db";
 
 let tmpDir: string;
@@ -347,5 +348,15 @@ describe("skipExercise / getSkippedExercises", () => {
     const seanceB = startSeance(db);
     skipExercise(db, seanceA.id, 1);
     expect(getSkippedExercises(db, seanceB.id)).toEqual([]);
+  });
+});
+
+describe("resumeSeance", () => {
+  it("records resumedAt on the active tracking seance", () => {
+    const db = setup();
+    const seance = startSeance(db, 0);
+    expect(getActiveSeance(db)!.resumedAt).toBeNull();
+    resumeSeance(db, seance.id);
+    expect(typeof getActiveSeance(db)!.resumedAt).toBe("string");
   });
 });

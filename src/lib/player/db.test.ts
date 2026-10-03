@@ -13,7 +13,10 @@ import {
   skipExercise,
   getSkippedExercises,
   completeSeance,
+  resumeSeance,
+  deleteSeance,
 } from "./db";
+import { computeTrophies } from "@/lib/trophies/computeTrophies";
 
 let tmpDir: string;
 
@@ -117,5 +120,32 @@ describe("skipped_exercises", () => {
     skipExercise(db, seance.id, 1);
     skipExercise(db, seance.id, 1);
     expect(getSkippedExercises(db, seance.id)).toEqual([1]);
+  });
+});
+
+describe("resume and delete", () => {
+  it("records resumedAt and reads it back on the active seance", () => {
+    const db = setup();
+    const seance = startSeance(db, "beginner", 0, 0);
+    expect(getActiveSeance(db, "beginner", 0, 0)!.resumedAt).toBeNull();
+    resumeSeance(db, seance.id);
+    expect(typeof getActiveSeance(db, "beginner", 0, 0)!.resumedAt).toBe("string");
+  });
+
+  it("deletes the seance, its sets and its skipped exercises, removing reps from Trophées", () => {
+    const db = setup();
+    const seance = startSeance(db, "beginner", 0, 0);
+    // ordre 2 = triceps-bench-dips, countsInStats: true en Débutant niveau 0 jour 0
+    logSet(db, { seanceId: seance.id, exerciseOrder: 2, setNumber: 1, repsTarget: "10", repsActual: 10, restSeconds: 90 });
+    skipExercise(db, seance.id, 1);
+    const before = computeTrophies(db).reduce((sum, c) => sum + c.total, 0);
+    expect(before).toBeGreaterThan(0);
+
+    deleteSeance(db, seance.id);
+
+    expect(getActiveSeance(db, "beginner", 0, 0)).toBeNull();
+    expect(getSetsForSeance(db, seance.id)).toEqual([]);
+    expect(getSkippedExercises(db, seance.id)).toEqual([]);
+    expect(computeTrophies(db).reduce((sum, c) => sum + c.total, 0)).toBe(0);
   });
 });

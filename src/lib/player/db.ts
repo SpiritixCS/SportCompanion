@@ -7,6 +7,7 @@ export type Seance = {
   dayIndex: number;
   cycle: number;
   startedAt: string;
+  resumedAt: string | null;
   completedAt: string | null;
 };
 
@@ -30,7 +31,7 @@ export function getActiveSeance(
 ): Seance | null {
   const row = db
     .prepare(
-      `SELECT id, parcours, level, day_index AS dayIndex, cycle, started_at AS startedAt, completed_at AS completedAt
+      `SELECT id, parcours, level, day_index AS dayIndex, cycle, started_at AS startedAt, resumed_at AS resumedAt, completed_at AS completedAt
        FROM seances
        WHERE parcours = ? AND level = ? AND day_index = ? AND cycle = ? AND completed_at IS NULL
        ORDER BY started_at DESC LIMIT 1`,
@@ -57,6 +58,7 @@ export function startSeance(
     dayIndex,
     cycle,
     startedAt,
+    resumedAt: null,
     completedAt: null,
   };
 }
@@ -126,4 +128,18 @@ export function getSkippedExercises(db: Database.Database, seanceId: number): nu
 
 export function completeSeance(db: Database.Database, seanceId: number): void {
   db.prepare(`UPDATE seances SET completed_at = ? WHERE id = ?`).run(new Date().toISOString(), seanceId);
+}
+
+export function resumeSeance(db: Database.Database, seanceId: number): void {
+  db.prepare(`UPDATE seances SET resumed_at = ? WHERE id = ?`).run(new Date().toISOString(), seanceId);
+}
+
+// « Effacer » / « Abandonner » : la séance et ses séries disparaissent, leurs
+// reps sortent des Trophées, le jour reste à faire.
+export function deleteSeance(db: Database.Database, seanceId: number): void {
+  db.transaction(() => {
+    db.prepare(`DELETE FROM sets_logged WHERE seance_id = ?`).run(seanceId);
+    db.prepare(`DELETE FROM skipped_exercises WHERE seance_id = ?`).run(seanceId);
+    db.prepare(`DELETE FROM seances WHERE id = ?`).run(seanceId);
+  })();
 }

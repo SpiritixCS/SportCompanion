@@ -5,7 +5,7 @@ import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
 import { loadPlayerState } from "./loadPlayerState";
-import { logSet, skipExercise } from "./db";
+import { logSet, skipExercise, resumeSeance } from "./db";
 import type { TrainDay } from "@/lib/workout/types";
 
 const DAY: TrainDay = {
@@ -124,5 +124,16 @@ describe("loadPlayerState — reload resilience (CLAUDE.md §2 lesson)", () => {
     if (after.phase !== "in-progress") throw new Error("unreachable");
     expect(after.next.exerciseOrder).toBe(1);
     expect(after.skippedExerciseOrders).toEqual([0]);
+  });
+});
+
+describe("loadPlayerState — resumedAt", () => {
+  it("reads resumedAt back from the DB after a resume (survives a reload)", () => {
+    const db = setup();
+    const first = loadPlayerState(db, "beginner", 0, 0, DAY);
+    expect(first.phase === "in-progress" && first.resumedAt).toBeNull();
+    resumeSeance(db, first.seanceId);
+    const reloaded = loadPlayerState(db, "beginner", 0, 0, DAY);
+    expect(reloaded.phase === "in-progress" && typeof reloaded.resumedAt).toBe("string");
   });
 });
