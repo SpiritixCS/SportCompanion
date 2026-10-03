@@ -37,7 +37,6 @@ describe("ExerciseView", () => {
     expect(screen.getByText("Exercice 2 / 4")).toBeInTheDocument();
     expect(screen.getByText("1:05")).toBeInTheDocument();
     expect(screen.getByText("3 × 12")).toBeInTheDocument();
-    expect(screen.getByAltText("Push ups")).toBeInTheDocument();
   });
 
   it("calls onQuit when the exit button is pressed", async () => {
@@ -61,5 +60,34 @@ describe("ExerciseView", () => {
     renderView({ onSkipExercise });
     await userEvent.click(screen.getByText("Passer l'exercice"));
     expect(onSkipExercise).toHaveBeenCalledOnce();
+  });
+
+  it("shows the exercise's glyph instead of a photo, and the next exercise", () => {
+    const { container } = renderView({ nextExerciseName: "Squats" });
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector('[data-testid="exercise-hero"] svg')).not.toBeNull();
+    expect(screen.getByText("Série 2 / 3")).toBeInTheDocument();
+    expect(screen.getByText("Puis Squats")).toBeInTheDocument();
+  });
+
+  it("shows the exercise's initial on a jade tile in a Tracking session", () => {
+    renderView({ accent: "sage", exercise: { ...EXERCISE, id: "day-0-0", name: "Muscle ups", movementFamily: "other" } });
+    expect(screen.getByTestId("exercise-hero")).toHaveTextContent("M");
+  });
+
+  it("one bar per set: done, current, upcoming", () => {
+    renderView();
+    const bars = screen.getAllByTestId("set-bar");
+    expect(bars).toHaveLength(3);
+    expect(bars[0]).toHaveAttribute("data-state", "done");
+    expect(bars[1]).toHaveAttribute("data-state", "current");
+    expect(bars[2]).toHaveAttribute("data-state", "upcoming");
+  });
+
+  it("names the reps sheet after the unit, with no separate Ajuster button", async () => {
+    renderView({ exercise: { ...EXERCISE, target: { unit: "seconds", value: 60, maxEffort: false, eachSide: false } } });
+    expect(screen.queryByRole("button", { name: "Ajuster les reps" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Série terminée" }));
+    expect(screen.getByText("Secondes tenues")).toBeInTheDocument();
   });
 });

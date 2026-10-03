@@ -34,7 +34,8 @@ describe("RepsSheet", () => {
 
   it("uses the sage accent on the Valider button when accent='sage'", () => {
     render(<RepsSheet open onClose={() => {}} initialValue={12} accent="sage" onConfirm={() => {}} />);
-    expect(screen.getByRole("button", { name: "Valider" })).toHaveClass("bg-sage");
+    // L'accent est porté par le balayage du FillButton (fond ink).
+    expect(screen.getByRole("button", { name: "Valider" }).querySelector('[aria-hidden="true"]')).toHaveClass("bg-sage");
   });
 
   it("uses a custom title when provided, defaults to Ajuster les reps otherwise", () => {

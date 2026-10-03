@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RestView } from "./RestView";
+import type { Exercise } from "@/lib/workout/types";
+
+const PUSH_UPS: Exercise = {
+  id: "push-ups", name: "Push ups", movementFamily: "push", countsInStats: true, videoId: null, sets: 4,
+  target: { unit: "reps", value: 6, maxEffort: false, eachSide: false },
+};
 
 const PROGRESS = { exerciseIndex: 1, totalExercises: 5, setNumber: 2, totalSets: 4 };
 
@@ -86,5 +92,24 @@ describe("RestView", () => {
       <RestView durationSeconds={90} nextLabel="Squats" variant="betweenExercises" {...PROGRESS} onComplete={() => {}} />,
     );
     expect(screen.getByText("Exercice 2 / 5 terminé")).toBeInTheDocument();
+  });
+
+  it("is a dark full screen with an Ensuite card for the next set", () => {
+    render(
+      <RestView durationSeconds={90} nextLabel="Push ups" next={{ exercise: PUSH_UPS, setNumber: 3 }} variant="betweenSets" {...PROGRESS} onComplete={() => {}} />,
+    );
+    expect(screen.getByTestId("rest-screen")).toHaveClass("bg-ink");
+    expect(screen.getByText("Ensuite")).toBeInTheDocument();
+    expect(screen.getByText("Série 3 / 4 · 6 reps")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Passer le repos" })).toHaveTextContent("Passer");
+  });
+
+  it("beats during the last 3 seconds only", () => {
+    render(<RestView durationSeconds={5} nextLabel="Push ups" variant="betweenSets" {...PROGRESS} onComplete={() => {}} />);
+    expect(screen.getByText("5")).not.toHaveClass("beat");
+    act(() => {
+      vi.advanceTimersByTime(2500);
+    });
+    expect(screen.getByText("3")).toHaveClass("beat");
   });
 });

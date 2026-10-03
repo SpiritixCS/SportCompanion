@@ -32,14 +32,20 @@ type LocalPhase =
       variant: "betweenSets" | "betweenExercises";
       durationSeconds: number;
       nextLabel: string;
+      next: { index: number; setNumber: number } | null;
     };
 
-function findNextLabel(day: TrainDay, fromExerciseOrder: number, skippedExerciseOrders: number[]): string {
+function findNextIndex(day: TrainDay, fromExerciseOrder: number, skippedExerciseOrders: number[]): number | null {
   const skipped = new Set(skippedExerciseOrders);
   for (let i = fromExerciseOrder + 1; i < day.exercises.length; i++) {
-    if (!skipped.has(i)) return day.exercises[i]!.name;
+    if (!skipped.has(i)) return i;
   }
-  return "Fin de séance";
+  return null;
+}
+
+function findNextLabel(day: TrainDay, fromExerciseOrder: number, skippedExerciseOrders: number[]): string {
+  const i = findNextIndex(day, fromExerciseOrder, skippedExerciseOrders);
+  return i === null ? "Fin de séance" : day.exercises[i]!.name;
 }
 
 // Ancré sur les horodatages DB (début, reprise, séries) — jamais un compteur
@@ -204,6 +210,12 @@ export function PlayerScreen({
       nextLabel: isLastSetOfExercise
         ? findNextLabel(day, exerciseOrder, skippedExerciseOrders)
         : exercise.name,
+      next: isLastSetOfExercise
+        ? (() => {
+            const i = findNextIndex(day, exerciseOrder, skippedExerciseOrders);
+            return i === null ? null : { index: i, setNumber: 1 };
+          })()
+        : { index: exerciseOrder, setNumber: setNumber + 1 },
     });
   }
 
@@ -217,6 +229,14 @@ export function PlayerScreen({
       <RestView
         durationSeconds={localPhase.durationSeconds}
         nextLabel={localPhase.nextLabel}
+        next={
+          localPhase.next
+            ? (() => {
+                const e = day.exercises[localPhase.next.index]!;
+                return { exercise: e, setNumber: localPhase.next.setNumber };
+              })()
+            : null
+        }
         variant={localPhase.variant}
         exerciseIndex={exerciseOrder}
         totalExercises={day.exercises.length}
@@ -240,6 +260,10 @@ export function PlayerScreen({
         setNumber={setNumber}
         elapsedSeconds={elapsedSeconds}
         accent={accent}
+        nextExerciseName={(() => {
+          const i = findNextIndex(day, exerciseOrder, skippedExerciseOrders);
+          return i === null ? null : day.exercises[i]!.name;
+        })()}
         onCompleteSet={handleCompleteSet}
         onSkipExercise={handleSkipExercise}
         onQuit={() => setQuitOpen(true)}
