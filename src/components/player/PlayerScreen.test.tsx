@@ -166,7 +166,10 @@ describe("PlayerScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
 
     expect(onSeanceFinish).toHaveBeenCalledWith(1);
-    expect(refresh).toHaveBeenCalledOnce();
+    // Retour à Aujourd'hui : recharger le player relançait aussitôt une séance
+    // vide sur le cycle suivant (séances orphelines vues en prod).
+    expect(push).toHaveBeenCalledWith("/");
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it("shows a simple message for an already-completed seance", () => {
@@ -276,6 +279,7 @@ describe("PlayerScreen — séance interrompue", () => {
     expect(screen.getByText("Séance terminée")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Terminer" }));
     expect(onSeanceFinish).toHaveBeenCalledWith(1);
+    expect(push).toHaveBeenCalledWith("/");
   });
 
   it("quit sheet with no set logged offers Abandonner instead, which discards", async () => {

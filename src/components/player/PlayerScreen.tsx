@@ -145,7 +145,7 @@ export function PlayerScreen({
         accent={accent}
         onFinish={async () => {
           await onSeanceFinish(state.seanceId);
-          router.refresh();
+          router.push("/");
         }}
       />
     );
@@ -161,7 +161,7 @@ export function PlayerScreen({
         accent={accent}
         onFinish={async () => {
           await onSeanceFinish(state.seanceId);
-          router.refresh();
+          router.push("/");
         }}
       />
     );
