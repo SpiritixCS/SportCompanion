@@ -42,10 +42,10 @@ export function TropheesScreen({ state }: { state: TropheesScreenState }) {
   return (
     <div className="pb-10">
       <div className="p-5">
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-brass">
+        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-brass">
           Trophées
         </span>
-        <div className="font-archivo text-44 font-semibold tabular-nums mt-3">{total}</div>
+        <div className="font-display text-44 font-semibold tabular-nums mt-3">{total}</div>
         <p className="text-15 text-graphite mt-1.5">
           {state.seanceCount} séance{state.seanceCount > 1 ? "s" : ""} · {state.joursActivite} jour
           {state.joursActivite > 1 ? "s" : ""} d&apos;activité

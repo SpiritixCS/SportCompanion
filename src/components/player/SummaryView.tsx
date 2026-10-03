@@ -52,7 +52,7 @@ export function SummaryView({
   return (
     <div className="min-h-dvh flex flex-col bg-canvas">
       <div className="flex-1 overflow-y-auto px-5 pt-10 pb-6">
-        <h1 className="font-archivo text-44 font-semibold">Séance terminée</h1>
+        <h1 className="font-display text-44 font-semibold">Séance terminée</h1>
 
         {palierFranchi.map(({ exercise, palier }) => (
           <p key={exercise.id} className="text-13 text-brass mt-3">
@@ -63,8 +63,8 @@ export function SummaryView({
         <div className="flex gap-3 mt-8">
           {stats.map((stat) => (
             <Card key={stat.key} className="flex-1 p-4">
-              <div className="font-archivo text-32 font-semibold tabular-nums">{stat.value}</div>
-              <div className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mt-2.5">
+              <div className="font-display text-32 font-semibold tabular-nums">{stat.value}</div>
+              <div className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mt-2.5">
                 {stat.key}
               </div>
             </Card>
@@ -88,7 +88,7 @@ export function SummaryView({
                 className={`flex justify-between items-center gap-4 px-5 py-3.5 border-hairline ${i > 0 ? "border-t" : ""}`}
               >
                 <span className="text-15">{row.exercise.name}</span>
-                <span className="font-archivo text-18 font-semibold tabular-nums flex-none">
+                <span className="font-display text-18 font-semibold tabular-nums flex-none">
                   +{row.reps} reps{row.allTime !== undefined ? ` · ${row.allTime} au total` : ""}
                 </span>
               </div>

@@ -47,7 +47,7 @@ export function DaySheet({
                 className={`flex items-baseline justify-between gap-4 ${i > 0 ? "pt-3 border-t border-hairline" : ""}`}
               >
                 <span className="text-15">{e.name}</span>
-                <span className="font-archivo text-18 font-semibold tabular-nums whitespace-nowrap">
+                <span className="font-display text-18 font-semibold tabular-nums whitespace-nowrap">
                   {formatTarget(e.sets, e.target)}
                 </span>
               </div>
@@ -57,7 +57,7 @@ export function DaySheet({
           <div className="flex flex-col gap-2.5 mt-6">
             <Link
               href={playerHref}
-              className="h-14 rounded-pill bg-cobalt text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+              className="h-14 rounded-pill bg-cobalt text-paper flex items-center justify-center font-display text-15 font-semibold"
             >
               Démarrer ce jour
             </Link>
@@ -65,7 +65,7 @@ export function DaySheet({
               <button
                 type="button"
                 onClick={() => setConfirmingMove(true)}
-                className="h-11 font-archivo text-15 font-medium text-graphite"
+                className="h-11 font-display text-15 font-medium text-graphite"
               >
                 Reprendre ici
               </button>
@@ -75,7 +75,7 @@ export function DaySheet({
                 <button
                   type="button"
                   onClick={confirmMove}
-                  className="h-11 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
+                  className="h-11 rounded-pill bg-ink text-paper font-display text-15 font-semibold"
                 >
                   Confirmer
                 </button>

@@ -36,7 +36,7 @@ export function DurationRow({
         }`}
       >
         <span className="text-15">{label}</span>
-        <span className="font-archivo text-15 font-medium text-graphite tabular-nums">{valueSeconds} s</span>
+        <span className="font-display text-15 font-medium text-graphite tabular-nums">{valueSeconds} s</span>
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title={label}>
         <div className="flex flex-col items-center gap-1 py-4">
@@ -44,7 +44,7 @@ export function DurationRow({
             <Button variant="secondary" onClick={() => setDraft((v) => Math.max(FLOOR_SECONDS, v - STEP_SECONDS))}>
               −
             </Button>
-            <span className="font-archivo text-44 font-semibold tabular-nums w-24 text-center">{draft}</span>
+            <span className="font-display text-44 font-semibold tabular-nums w-24 text-center">{draft}</span>
             <Button variant="secondary" onClick={() => setDraft((v) => v + STEP_SECONDS)}>
               +
             </Button>
@@ -57,7 +57,7 @@ export function DurationRow({
             onConfirm(draft);
             setOpen(false);
           }}
-          className="h-14 w-full rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
+          className="h-14 w-full rounded-pill bg-ink text-paper font-display text-15 font-semibold"
         >
           Valider
         </button>

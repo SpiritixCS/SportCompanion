@@ -54,7 +54,7 @@ export function ReglagesScreen({
   return (
     <div className="fixed inset-0 z-50 bg-canvas flex flex-col">
       <div className="flex-none p-5 flex items-center justify-between gap-4">
-        <span className="font-archivo text-24 font-semibold">Réglages</span>
+        <span className="font-display text-24 font-semibold">Réglages</span>
         <button
           type="button"
           onClick={onClose}
@@ -72,7 +72,7 @@ export function ReglagesScreen({
             <button
               type="button"
               onClick={load}
-              className="mt-4 h-11 px-5 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
+              className="mt-4 h-11 px-5 rounded-pill bg-ink text-paper font-display text-15 font-semibold"
             >
               Réessayer
             </button>
@@ -89,7 +89,7 @@ export function ReglagesScreen({
         {state && (
           <>
             <section>
-              <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
                 Profil
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
@@ -98,19 +98,19 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
                 Programme
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
                 <div className="min-h-14 px-5 flex items-center justify-between gap-4">
                   <span className="text-15">Parcours actif</span>
-                  <span className="font-archivo text-15 font-medium text-graphite">
+                  <span className="font-display text-15 font-medium text-graphite">
                     {programmePosition?.parcoursLabel ?? "Non défini"}
                   </span>
                 </div>
                 <div className="min-h-14 px-5 flex items-center justify-between gap-4 border-t border-hairline">
                   <span className="text-15">Position</span>
-                  <span className="font-archivo text-15 font-medium text-graphite tabular-nums">
+                  <span className="font-display text-15 font-medium text-graphite tabular-nums">
                     {programmePosition
                       ? programmePosition.dayIndex !== null
                         ? `Niveau ${programmePosition.level + 1} · Jour ${programmePosition.dayIndex + 1}`
@@ -130,7 +130,7 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
                 Séance
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
@@ -173,7 +173,7 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
                 Données
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
@@ -193,13 +193,13 @@ export function ReglagesScreen({
             </section>
 
             <section>
-              <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+              <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
                 À propos
               </h2>
               <div className="bg-paper border border-hairline rounded-card overflow-hidden">
                 <div className="min-h-14 px-5 flex items-center justify-between gap-4">
                   <span className="text-15">Version</span>
-                  <span className="font-archivo text-15 font-medium text-graphite tabular-nums">{state.version}</span>
+                  <span className="font-display text-15 font-medium text-graphite tabular-nums">{state.version}</span>
                 </div>
               </div>
             </section>

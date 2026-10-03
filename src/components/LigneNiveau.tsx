@@ -11,7 +11,7 @@ export function LigneNiveau({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="font-archivo text-18 font-semibold w-6 text-right">{level}</span>
+      <span className="font-display text-18 font-semibold w-6 text-right">{level}</span>
       <div className="flex gap-2">
         {days.map((state, i) => (
           <Pastille key={i} state={state} accent={accent} />

@@ -70,14 +70,14 @@ export function ExtraRepsSection({
           setFailed(false);
           setAddOpen(true);
         }}
-        className="mt-4 h-14 w-full rounded-pill bg-paper border border-hairline text-ink font-archivo text-15 font-semibold"
+        className="mt-4 h-14 w-full rounded-pill bg-paper border border-hairline text-ink font-display text-15 font-semibold"
       >
         Ajouter des {noun}
       </button>
 
       {entries.length > 0 && (
         <section className="mt-8">
-          <h2 className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
+          <h2 className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite mb-3">
             Hors séance
           </h2>
           <Card className="overflow-hidden">
@@ -86,7 +86,7 @@ export function ExtraRepsSection({
                 key={entry.id}
                 className={`min-h-14 px-4 flex items-center justify-between gap-4 ${i > 0 ? "border-t border-hairline" : ""}`}
               >
-                <span className="font-archivo text-15 font-semibold tabular-nums">+{entry.amount}</span>
+                <span className="font-display text-15 font-semibold tabular-nums">+{entry.amount}</span>
                 <span className="text-15 text-graphite flex-1">{formatDateFr(entry.loggedAt)}</span>
                 <button
                   type="button"
@@ -116,7 +116,7 @@ export function ExtraRepsSection({
           pattern="[0-9]*"
           value={draft}
           onChange={(e) => setDraft(e.target.value.trim())}
-          className="w-full h-14 rounded-field border border-hairline bg-paper px-4 font-archivo text-24 font-semibold tabular-nums"
+          className="w-full h-14 rounded-field border border-hairline bg-paper px-4 font-display text-24 font-semibold tabular-nums"
         />
         <p className="text-13 text-graphite mt-2">Compté aujourd&apos;hui, hors séance.</p>
         {failed && <p className="text-13 text-graphite mt-2">Impossible d&apos;enregistrer. Réessaie.</p>}
@@ -124,7 +124,7 @@ export function ExtraRepsSection({
           type="button"
           onClick={handleAdd}
           disabled={!valid || busy}
-          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-archivo text-15 font-semibold disabled:opacity-40"
+          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-display text-15 font-semibold disabled:opacity-40"
         >
           Ajouter
         </button>
@@ -140,14 +140,14 @@ export function ExtraRepsSection({
             type="button"
             onClick={handleDelete}
             disabled={busy}
-            className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold"
+            className="h-14 rounded-pill border border-alert text-alert font-display text-15 font-semibold"
           >
             Retirer
           </button>
           <button
             type="button"
             onClick={() => setToDelete(null)}
-            className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold"
+            className="h-14 rounded-pill bg-ink text-paper font-display text-15 font-semibold"
           >
             Annuler
           </button>

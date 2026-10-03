@@ -21,7 +21,7 @@ export function ProgrammeScreen({
 
   return (
     <div className="p-5">
-      <h1 className="font-archivo text-32 font-semibold">Programme</h1>
+      <h1 className="font-display text-32 font-semibold">Programme</h1>
       <p className="text-15 text-graphite mt-2">Consultation libre. Ta progression ne bouge pas.</p>
 
       <div className="flex gap-1 bg-paper border border-hairline rounded-pill p-1 mt-6">
@@ -33,7 +33,7 @@ export function ProgrammeScreen({
               setParcours(p.id);
               setOpenLevel(null);
             }}
-            className={`flex-1 h-10 rounded-pill font-archivo text-13 font-semibold ${
+            className={`flex-1 h-10 rounded-pill font-display text-13 font-semibold ${
               p.id === parcours ? "bg-ink text-paper" : "text-graphite"
             }`}
           >
@@ -50,7 +50,7 @@ export function ProgrammeScreen({
               onClick={() => setOpenLevel(openLevel === row.level ? null : row.level)}
               className="w-full text-left flex items-center gap-4 p-4"
             >
-              <span className="font-archivo text-24 font-semibold tabular-nums w-8 flex-none">{row.level + 1}</span>
+              <span className="font-display text-24 font-semibold tabular-nums w-8 flex-none">{row.level + 1}</span>
               <span className="flex-1 min-w-0">
                 <span className="block text-15">Niveau {row.level + 1}</span>
                 <span className="flex gap-1.5 mt-2">
@@ -59,7 +59,7 @@ export function ProgrammeScreen({
                   ))}
                 </span>
               </span>
-              <span className="font-archivo text-13 font-medium text-graphite tabular-nums flex-none">
+              <span className="font-display text-13 font-medium text-graphite tabular-nums flex-none">
                 {row.percentDone}%
               </span>
             </button>

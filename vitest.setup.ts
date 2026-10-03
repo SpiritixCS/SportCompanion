@@ -6,6 +6,7 @@ import { vi } from "vitest";
 // per the current font-loading contract. If future code needs .className or .style,
 // widen this mock to include them rather than debugging undefined properties.
 vi.mock("next/font/google", () => ({
-  Archivo: () => ({ variable: "__variable_archivo_hash" }),
-  Inter_Tight: () => ({ variable: "__variable_inter_tight_hash" }),
+  Big_Shoulders: () => ({ variable: "__variable_big_shoulders_hash" }),
+  Instrument_Sans: () => ({ variable: "__variable_instrument_sans_hash" }),
+  IBM_Plex_Mono: () => ({ variable: "__variable_ibm_plex_mono_hash" }),
 }));

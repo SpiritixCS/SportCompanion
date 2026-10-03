@@ -51,8 +51,8 @@ export default async function TrophyDetailPage({
           </div>
         )}
 
-        <h1 className="font-archivo text-32 font-semibold">{detail.name}</h1>
-        <div className="font-archivo text-44 font-semibold tabular-nums mt-3">
+        <h1 className="font-display text-32 font-semibold">{detail.name}</h1>
+        <div className="font-display text-44 font-semibold tabular-nums mt-3">
           {detail.total}
           {detail.unit === "seconds" && <span className="text-24 font-medium"> s</span>}
         </div>

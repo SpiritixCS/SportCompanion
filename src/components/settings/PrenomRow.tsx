@@ -21,7 +21,7 @@ export function PrenomRow({ prenom, onConfirm }: { prenom: string; onConfirm: (n
         className="w-full min-h-14 px-5 flex items-center justify-between gap-4"
       >
         <span className="text-15">Prénom</span>
-        <span className="font-archivo text-15 font-medium text-graphite">{prenom}</span>
+        <span className="font-display text-15 font-medium text-graphite">{prenom}</span>
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title="Prénom">
         <label htmlFor="reglages-prenom" className="sr-only">
@@ -43,7 +43,7 @@ export function PrenomRow({ prenom, onConfirm }: { prenom: string; onConfirm: (n
             onConfirm(draft);
             setOpen(false);
           }}
-          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-archivo text-15 font-semibold disabled:opacity-40"
+          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-display text-15 font-semibold disabled:opacity-40"
         >
           Valider
         </button>

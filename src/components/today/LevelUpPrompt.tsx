@@ -21,8 +21,8 @@ export function LevelUpPrompt({
 
   return (
     <Card className="p-5">
-      <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-cobalt">Programme</span>
-      <div className="font-archivo text-24 font-semibold mt-3.5">
+      <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-cobalt">Programme</span>
+      <div className="font-display text-24 font-semibold mt-3.5">
         {parcoursLabel} · Niveau {level + 1} terminé
       </div>
       <div className="text-15 text-graphite mt-2">
@@ -32,14 +32,14 @@ export function LevelUpPrompt({
         <button
           type="button"
           onClick={() => resolve("advance")}
-          className="h-14 rounded-pill bg-cobalt text-paper font-archivo text-15 font-semibold"
+          className="h-14 rounded-pill bg-cobalt text-paper font-display text-15 font-semibold"
         >
           Passer au niveau suivant
         </button>
         <button
           type="button"
           onClick={() => resolve("redo")}
-          className="h-14 rounded-pill border border-hairline font-archivo text-15 font-semibold"
+          className="h-14 rounded-pill border border-hairline font-display text-15 font-semibold"
         >
           Refaire ce niveau
         </button>

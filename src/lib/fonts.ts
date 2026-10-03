@@ -1,14 +1,24 @@
-import { Archivo, Inter_Tight } from "next/font/google";
+import { Big_Shoulders, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 
-export const archivo = Archivo({
+// Big Shoulders est variable avec un axe de taille optique : aux grandes
+// tailles (chiffres, titres) le navigateur prend le dessin « Display ».
+export const display = Big_Shoulders({
   subsets: ["latin"],
-  variable: "--font-archivo",
+  axes: ["opsz"],
+  variable: "--nf-display",
   display: "swap",
 });
 
-export const interTight = Inter_Tight({
+export const body = Instrument_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  variable: "--font-inter-tight",
+  variable: "--nf-body",
+  display: "swap",
+});
+
+export const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--nf-mono",
   display: "swap",
 });

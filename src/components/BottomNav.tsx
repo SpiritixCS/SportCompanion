@@ -11,7 +11,7 @@ export function BottomNav({
         <Link
           key={item.href}
           href={item.href}
-          className={`flex min-h-11 flex-col items-center justify-center gap-1 px-3 text-11 font-archivo uppercase tracking-wide ${
+          className={`flex min-h-11 flex-col items-center justify-center gap-1 px-3 text-11 font-display uppercase tracking-wide ${
             item.active ? "text-ink" : "text-graphite"
           }`}
         >

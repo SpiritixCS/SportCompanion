@@ -30,8 +30,8 @@ export function PrenomScreen() {
   return (
     <main className="min-h-dvh flex flex-col justify-center p-5 max-w-[520px] mx-auto">
       <form onSubmit={handleSubmit} className="flex flex-col">
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">Bienvenue</span>
-        <h1 className="font-archivo text-32 font-semibold mt-3">Comment tu t&apos;appelles ?</h1>
+        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite">Bienvenue</span>
+        <h1 className="font-display text-32 font-semibold mt-3">Comment tu t&apos;appelles ?</h1>
         <label htmlFor="prenom" className="text-13 text-graphite mt-8">
           Prénom
         </label>
@@ -48,7 +48,7 @@ export function PrenomScreen() {
         <button
           type="submit"
           disabled={blank || saving}
-          className="mt-6 h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold disabled:opacity-40"
+          className="mt-6 h-14 rounded-pill bg-ink text-paper font-display text-15 font-semibold disabled:opacity-40"
         >
           Continuer
         </button>

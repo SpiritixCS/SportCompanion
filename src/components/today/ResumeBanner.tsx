@@ -22,12 +22,12 @@ export function ResumeBanner({
       className={`w-full text-left bg-paper border ${ACCENT_BORDER[accent]} rounded-card p-4 flex items-center justify-between gap-4`}
     >
       <span>
-        <span className={`block font-archivo text-11 font-medium uppercase tracking-[0.08em] ${ACCENT_TEXT[accent]}`}>
+        <span className={`block font-display text-11 font-medium uppercase tracking-[0.08em] ${ACCENT_TEXT[accent]}`}>
           Séance interrompue
         </span>
         <span className="block text-15 mt-1.5">Reprendre à {exerciseName}</span>
       </span>
-      <span className={`font-archivo text-24 ${ACCENT_TEXT[accent]} flex-none`}>→</span>
+      <span className={`font-display text-24 ${ACCENT_TEXT[accent]} flex-none`}>→</span>
     </Link>
   );
 }

@@ -135,7 +135,7 @@ export function TrackingSeanceScreen({
 
   return (
     <div className="p-5 flex flex-col gap-6">
-      <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+      <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
 
       {error && (
         <div className="bg-paper border border-hairline rounded-card p-6">
@@ -210,7 +210,7 @@ export function TrackingSeanceScreen({
           <Button variant="secondary" ariaLabel="Diminuer la valeur" onClick={() => setValeur((v) => Math.max(0, v - 1))}>
             −
           </Button>
-          <span className="font-archivo text-44 font-semibold tabular-nums w-16 text-center">{valeur}</span>
+          <span className="font-display text-44 font-semibold tabular-nums w-16 text-center">{valeur}</span>
           <Button variant="secondary" ariaLabel="Augmenter la valeur" onClick={() => setValeur((v) => v + 1)}>
             +
           </Button>
@@ -223,16 +223,16 @@ export function TrackingSeanceScreen({
               type="button"
               aria-label="Retirer une série du lot"
               onClick={() => setCount((v) => Math.max(1, v - 1))}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15"
+              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
             >
               −
             </button>
-            <span className="font-archivo text-18 font-semibold tabular-nums w-6 text-center">{count}</span>
+            <span className="font-display text-18 font-semibold tabular-nums w-6 text-center">{count}</span>
             <button
               type="button"
               aria-label="Ajouter une série au lot"
               onClick={() => setCount((v) => v + 1)}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15"
+              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
             >
               +
             </button>
@@ -253,7 +253,7 @@ export function TrackingSeanceScreen({
         <button
           type="button"
           onClick={handleFinish}
-          className="h-14 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15 font-semibold"
+          className="h-14 rounded-pill border border-hairline flex items-center justify-center font-display text-15 font-semibold"
         >
           Terminer la séance
         </button>

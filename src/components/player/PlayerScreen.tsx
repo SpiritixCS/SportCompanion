@@ -253,19 +253,19 @@ export function PlayerScreen({
         <div className="flex flex-col gap-2.5 mt-6">
           {setsDoneCount > 0 ? (
             <>
-              <button type="button" onClick={handleFinishEarly} className="h-14 rounded-pill border border-hairline text-ink font-archivo text-15 font-semibold">
+              <button type="button" onClick={handleFinishEarly} className="h-14 rounded-pill border border-hairline text-ink font-display text-15 font-semibold">
                 Terminer avec ce qui est fait
               </button>
-              <button type="button" onClick={() => router.push("/")} className="h-14 rounded-pill border border-hairline text-ink font-archivo text-15 font-semibold">
+              <button type="button" onClick={() => router.push("/")} className="h-14 rounded-pill border border-hairline text-ink font-display text-15 font-semibold">
                 Quitter et reprendre plus tard
               </button>
             </>
           ) : (
-            <button type="button" onClick={handleDiscard} className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold">
+            <button type="button" onClick={handleDiscard} className="h-14 rounded-pill border border-alert text-alert font-display text-15 font-semibold">
               Abandonner
             </button>
           )}
-          <button type="button" onClick={() => setQuitOpen(false)} className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold">
+          <button type="button" onClick={() => setQuitOpen(false)} className="h-14 rounded-pill bg-ink text-paper font-display text-15 font-semibold">
             Continuer la séance
           </button>
         </div>
@@ -275,15 +275,15 @@ export function PlayerScreen({
           Le temps de pause ne compte pas dans la durée.
         </p>
         <div className="flex flex-col gap-2.5 mt-6">
-          <button type="button" onClick={handleResume} className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold">
+          <button type="button" onClick={handleResume} className="h-14 rounded-pill bg-ink text-paper font-display text-15 font-semibold">
             Reprendre
           </button>
           {setsDoneCount > 0 && (
-            <button type="button" onClick={handleFinishEarly} className="h-14 rounded-pill border border-hairline text-ink font-archivo text-15 font-semibold">
+            <button type="button" onClick={handleFinishEarly} className="h-14 rounded-pill border border-hairline text-ink font-display text-15 font-semibold">
               Terminer avec ce qui est fait
             </button>
           )}
-          <button type="button" onClick={() => setDiscardConfirmOpen(true)} className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold">
+          <button type="button" onClick={() => setDiscardConfirmOpen(true)} className="h-14 rounded-pill border border-alert text-alert font-display text-15 font-semibold">
             Effacer la séance
           </button>
         </div>
@@ -295,10 +295,10 @@ export function PlayerScreen({
             : `Effacer ${setsDoneCount} séries ? Elles sortent des Trophées.`}
         </p>
         <div className="flex flex-col gap-2.5 mt-6">
-          <button type="button" onClick={handleDiscard} className="h-14 rounded-pill border border-alert text-alert font-archivo text-15 font-semibold">
+          <button type="button" onClick={handleDiscard} className="h-14 rounded-pill border border-alert text-alert font-display text-15 font-semibold">
             Effacer
           </button>
-          <button type="button" onClick={() => setDiscardConfirmOpen(false)} className="h-14 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold">
+          <button type="button" onClick={() => setDiscardConfirmOpen(false)} className="h-14 rounded-pill bg-ink text-paper font-display text-15 font-semibold">
             Annuler
           </button>
         </div>

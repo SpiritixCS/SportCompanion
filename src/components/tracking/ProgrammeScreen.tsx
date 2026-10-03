@@ -70,7 +70,7 @@ export function ProgrammeScreen({
         <Link href="/tracking" className="text-15 text-graphite">
           ← Retour
         </Link>
-        <div className="font-archivo text-32 font-semibold leading-[1.05] mt-2">Mon programme</div>
+        <div className="font-display text-32 font-semibold leading-[1.05] mt-2">Mon programme</div>
       </div>
 
       {error && (

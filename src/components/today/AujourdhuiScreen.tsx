@@ -58,10 +58,10 @@ export function AujourdhuiScreen({
       <div className="p-5 flex flex-col gap-8">
         <AujourdhuiHeader userLabel={user.label} onOpenReglages={() => setReglagesOpen(true)} />
         <Card className="p-6">
-          <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">
+          <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite">
             Premier jour
           </span>
-          <div className="font-archivo text-24 font-semibold mt-3 leading-[1.15]">
+          <div className="font-display text-24 font-semibold mt-3 leading-[1.15]">
             Choisis ton point de départ pour commencer à suivre le programme.
           </div>
           <div className="text-15 text-graphite mt-3">
@@ -70,7 +70,7 @@ export function AujourdhuiScreen({
           <button
             type="button"
             onClick={() => setSetupOpen(true)}
-            className="mt-6 w-full h-14 rounded-pill bg-cobalt text-paper font-archivo text-15 font-semibold"
+            className="mt-6 w-full h-14 rounded-pill bg-cobalt text-paper font-display text-15 font-semibold"
           >
             Définir mon point de départ
           </button>

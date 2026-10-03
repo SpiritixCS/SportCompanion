@@ -20,12 +20,12 @@ export default function DesignSystemPage() {
   return (
     <main className="p-5 flex flex-col gap-10 pb-32">
       <section>
-        <h2 className="font-archivo text-24 font-semibold mb-3">Card</h2>
+        <h2 className="font-display text-24 font-semibold mb-3">Card</h2>
         <Card className="p-5">Contenu de carte</Card>
       </section>
 
       <section>
-        <h2 className="font-archivo text-24 font-semibold mb-3">Pastille</h2>
+        <h2 className="font-display text-24 font-semibold mb-3">Pastille</h2>
         {ACCENTS.map((accent) => (
           <div key={accent} className="flex gap-3 mb-2">
             {STATES.map((state) => (
@@ -36,7 +36,7 @@ export default function DesignSystemPage() {
       </section>
 
       <section>
-        <h2 className="font-archivo text-24 font-semibold mb-3">LigneNiveau</h2>
+        <h2 className="font-display text-24 font-semibold mb-3">LigneNiveau</h2>
         {ACCENTS.map((accent) => (
           <LigneNiveau
             key={accent}
@@ -48,7 +48,7 @@ export default function DesignSystemPage() {
       </section>
 
       <section>
-        <h2 className="font-archivo text-24 font-semibold mb-3">Button</h2>
+        <h2 className="font-display text-24 font-semibold mb-3">Button</h2>
         <div className="flex flex-col gap-2 max-w-xs">
           {ACCENTS.map((accent) => (
             <Button key={accent} variant="primary" accent={accent}>
@@ -63,7 +63,7 @@ export default function DesignSystemPage() {
       </section>
 
       <section>
-        <h2 className="font-archivo text-24 font-semibold mb-3">BottomNav</h2>
+        <h2 className="font-display text-24 font-semibold mb-3">BottomNav</h2>
         <BottomNav
           items={[
             { label: "Aujourd'hui", icon: <IconCheck size={20} />, active: true, href: "/today" },
@@ -75,7 +75,7 @@ export default function DesignSystemPage() {
       </section>
 
       <section>
-        <h2 className="font-archivo text-24 font-semibold mb-3">Sheet</h2>
+        <h2 className="font-display text-24 font-semibold mb-3">Sheet</h2>
         <Button variant="secondary" onClick={() => setSheetOpen(true)}>
           Ouvrir la feuille
         </Button>

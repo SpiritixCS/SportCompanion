@@ -2,16 +2,22 @@
 
 @theme {
   --color-paper: #FFFFFF;
-  --color-canvas: #F6F7F4;
-  --color-ink: #111310;
-  --color-graphite: #6E736B;
-  --color-hairline: #E5E7E1;
-  --color-cobalt: #1F3BE0;
-  --color-sage: #2E7D63;
-  --color-brass: #A9782C;
+  --color-canvas: #EDEFF2;
+  --color-ink: #0B0D12;
+  --color-graphite: #626B78;
+  --color-hairline: #D9DEE5;
+  --color-cobalt: #2F2BFF;
+  --color-cobalt-soft: #E6E5FF;
+  --color-sage: #0F9D74;
+  --color-sage-soft: #DDF3EC;
+  --color-sage-ink: #0A5E47;
+  --color-brass: #C8961E;
+  --color-brass-soft: #F6EDD8;
   --color-alert: #B3402E;
+  --color-rest-surface: #1A1E28;
+  --color-rest-line: #232733;
 
-  --radius-card: 20px;
+  --radius-card: 24px;
   --radius-field: 14px;
   --radius-pill: 999px;
 
@@ -24,9 +30,12 @@
   --text-44: 44px;
   --text-72: 72px;
   --text-96: 96px;
+  --text-112: 112px;
+  --text-120: 120px;
 
-  --font-archivo: var(--font-archivo);
-  --font-inter-tight: var(--font-inter-tight);
+  --font-display: var(--nf-display), "Arial Narrow", Impact, sans-serif;
+  --font-body: var(--nf-body), -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--nf-mono), ui-monospace, Menlo, monospace;
 }
 
 html, body {

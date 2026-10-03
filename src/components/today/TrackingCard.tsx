@@ -33,8 +33,8 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
       activeSeance.dayOfWeek !== null ? `/player/tracking?day=${activeSeance.dayOfWeek}` : `/tracking/${activeSeance.id}`;
     return (
       <Card className="p-5">
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-        <div className="font-archivo text-18 font-semibold mt-3">{activeSeance.dayLabel ?? "Séance en cours"}</div>
+        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+        <div className="font-display text-18 font-semibold mt-3">{activeSeance.dayLabel ?? "Séance en cours"}</div>
 
         {activeSeance.plannedExercises !== null ? (
           activeSeance.plannedExercises.length > 0 && (
@@ -42,7 +42,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
               {activeSeance.plannedExercises.map((exercise) => (
                 <div key={exercise.ordre} className="flex items-baseline justify-between gap-4">
                   <span className="text-15">{exercise.name}</span>
-                  <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
+                  <span className="font-display text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
                     {doseLabel(exercise)}
                   </span>
                 </div>
@@ -55,7 +55,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
               {activeSeance.loggedExercises.map((exercise) => (
                 <div key={exercise.name} className="flex items-baseline justify-between gap-4">
                   <span className="text-15">{exercise.name}</span>
-                  <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
+                  <span className="font-display text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
                     {exercise.totalValue}
                     {exercise.unit === "seconds" ? " s" : ""}
                   </span>
@@ -67,7 +67,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
         <Link
           href={href}
-          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-display text-15 font-semibold"
         >
           Reprendre
         </Link>
@@ -80,11 +80,11 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
   if (state.programEmpty) {
     return (
       <Card className="p-5">
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-        <div className="font-archivo text-18 font-semibold mt-3">Ton programme sur 7 jours est vide.</div>
+        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+        <div className="font-display text-18 font-semibold mt-3">Ton programme sur 7 jours est vide.</div>
         <Link
           href="/tracking/programme"
-          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-display text-15 font-semibold"
         >
           Composer mon programme
         </Link>
@@ -95,13 +95,13 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
   if (programDay.isRest) {
     return (
       <Card className="p-5">
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-        <div className="font-archivo text-18 font-semibold mt-3">{programDay.label} · Repos</div>
+        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+        <div className="font-display text-18 font-semibold mt-3">{programDay.label} · Repos</div>
         <button
           type="button"
           onClick={handleAdvance}
           disabled={advancing}
-          className="mt-5 w-full h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold disabled:opacity-40"
+          className="mt-5 w-full h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-display text-15 font-semibold disabled:opacity-40"
         >
           Jour suivant
         </button>
@@ -111,15 +111,15 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
   return (
     <Card className="p-5">
-      <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-      <div className="font-archivo text-24 font-semibold mt-3.5">{programDay.label}</div>
+      <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+      <div className="font-display text-24 font-semibold mt-3.5">{programDay.label}</div>
 
       {programDay.exercises.length > 0 && (
         <div className="flex flex-col gap-2.5 mt-5">
           {programDay.exercises.map((exercise) => (
             <div key={exercise.ordre} className="flex items-baseline justify-between gap-4">
               <span className="text-15">{exercise.name}</span>
-              <span className="font-archivo text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
+              <span className="font-display text-15 font-medium text-graphite tabular-nums whitespace-nowrap">
                 {doseLabel(exercise)}
               </span>
             </div>
@@ -132,7 +132,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
           <p className="mt-5 text-15 text-graphite">Aucun exercice configuré pour ce jour.</p>
           <Link
             href="/tracking/programme"
-            className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+            className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-display text-15 font-semibold"
           >
             Configurer le programme
           </Link>
@@ -140,7 +140,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
       ) : (
         <Link
           href={`/player/tracking?day=${programDay.dayOfWeek}`}
-          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-archivo text-15 font-semibold"
+          className="mt-5 h-14 rounded-pill bg-sage text-paper flex items-center justify-center font-display text-15 font-semibold"
         >
           Commencer
         </Link>

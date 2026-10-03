@@ -30,8 +30,8 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
   return (
     <div className="p-5 flex flex-col gap-8">
       <div>
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
-        <div className="font-archivo text-32 font-semibold leading-[1.05] mt-2">Tes séances</div>
+        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Tracking</span>
+        <div className="font-display text-32 font-semibold leading-[1.05] mt-2">Tes séances</div>
       </div>
 
       {state.activeSeance !== null && (
@@ -54,7 +54,7 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
 
       <Link
         href="/tracking/programme"
-        className="h-14 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15 font-semibold"
+        className="h-14 rounded-pill border border-hairline flex items-center justify-center font-display text-15 font-semibold"
       >
         Mon programme
       </Link>
@@ -77,11 +77,11 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
                 </div>
                 <div className="text-right">
                   {seance.totalReps > 0 && (
-                    <div className="font-archivo text-18 font-semibold tabular-nums">{seance.totalReps}</div>
+                    <div className="font-display text-18 font-semibold tabular-nums">{seance.totalReps}</div>
                   )}
                   {seance.totalSeconds > 0 && (
                     <div
-                      className={`font-archivo tabular-nums ${
+                      className={`font-display tabular-nums ${
                         seance.totalReps > 0 ? "text-13 text-graphite" : "text-18 font-semibold"
                       }`}
                     >

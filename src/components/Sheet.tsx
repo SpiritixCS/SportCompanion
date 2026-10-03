@@ -34,7 +34,7 @@ export function Sheet({
       />
       <div className="relative w-full bg-paper rounded-t-card p-5">
         <div className="flex items-center justify-between mb-4">
-          <span className="font-archivo text-18 font-semibold">{title}</span>
+          <span className="font-display text-18 font-semibold">{title}</span>
           <button type="button" onClick={onClose} aria-label="Fermer">
             <IconClose />
           </button>

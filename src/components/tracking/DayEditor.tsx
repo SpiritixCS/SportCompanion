@@ -60,7 +60,7 @@ export function DayEditor({
 
   return (
     <div className="p-5 flex flex-col gap-6">
-      <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-sage">Jour</span>
+      <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-sage">Jour</span>
 
       {error && (
         <div className="bg-paper border border-hairline rounded-card p-6">
@@ -147,16 +147,16 @@ export function DayEditor({
               type="button"
               aria-label="Retirer une série"
               onClick={() => setSetsCount((v) => Math.max(1, v - 1))}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15"
+              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
             >
               −
             </button>
-            <span className="font-archivo text-18 font-semibold tabular-nums w-6 text-center">{setsCount}</span>
+            <span className="font-display text-18 font-semibold tabular-nums w-6 text-center">{setsCount}</span>
             <button
               type="button"
               aria-label="Ajouter une série"
               onClick={() => setSetsCount((v) => v + 1)}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15"
+              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
             >
               +
             </button>
@@ -170,16 +170,16 @@ export function DayEditor({
               type="button"
               aria-label="Diminuer la cible"
               onClick={() => setTargetValue((v) => Math.max(0, v - 1))}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15"
+              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
             >
               −
             </button>
-            <span className="font-archivo text-18 font-semibold tabular-nums w-10 text-center">{targetValue}</span>
+            <span className="font-display text-18 font-semibold tabular-nums w-10 text-center">{targetValue}</span>
             <button
               type="button"
               aria-label="Augmenter la cible"
               onClick={() => setTargetValue((v) => v + 1)}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15"
+              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
             >
               +
             </button>
@@ -198,7 +198,7 @@ export function DayEditor({
         <button
           type="button"
           onClick={onCancel}
-          className="h-14 rounded-pill border border-hairline flex items-center justify-center font-archivo text-15 font-semibold"
+          className="h-14 rounded-pill border border-hairline flex items-center justify-center font-display text-15 font-semibold"
         >
           Annuler
         </button>

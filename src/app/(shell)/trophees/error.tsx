@@ -7,7 +7,7 @@ export default function TropheesError({ reset }: { error: Error; reset: () => vo
       <button
         type="button"
         onClick={reset}
-        className="h-11 px-4 rounded-pill bg-ink text-paper font-archivo text-15 font-semibold mt-4"
+        className="h-11 px-4 rounded-pill bg-ink text-paper font-display text-15 font-semibold mt-4"
       >
         Réessayer
       </button>

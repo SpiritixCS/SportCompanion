@@ -57,10 +57,10 @@ export function ExerciseView({
           >
             <IconClose size={18} />
           </button>
-          <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite tabular-nums">
+          <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite tabular-nums">
             Exercice {exerciseIndex + 1} / {totalExercises}
           </span>
-          <span className="font-archivo text-15 font-medium text-graphite tabular-nums w-11 text-right">
+          <span className="font-display text-15 font-medium text-graphite tabular-nums w-11 text-right">
             {formatClock(elapsedSeconds)}
           </span>
         </div>
@@ -93,8 +93,8 @@ export function ExerciseView({
           )}
         </div>
 
-        <h1 className="font-archivo text-32 font-semibold mt-6">{exercise.name}</h1>
-        <div className="font-archivo text-72 font-semibold tabular-nums mt-4">
+        <h1 className="font-display text-32 font-semibold mt-6">{exercise.name}</h1>
+        <div className="font-display text-72 font-semibold tabular-nums mt-4">
           {formatTarget(exercise.sets, exercise.target)}
         </div>
 

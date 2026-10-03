@@ -39,7 +39,7 @@ export function RepsSheet({
         <Button variant="secondary" onClick={() => setValue((v) => Math.max(0, v - 1))}>
           −
         </Button>
-        <span className="font-archivo text-44 font-semibold tabular-nums w-16 text-center">
+        <span className="font-display text-44 font-semibold tabular-nums w-16 text-center">
           {value}
         </span>
         <Button variant="secondary" onClick={() => setValue((v) => v + 1)}>
@@ -53,7 +53,7 @@ export function RepsSheet({
         <button
           type="button"
           onClick={onDelete}
-          className="mt-3 w-full h-11 flex items-center justify-center font-archivo text-15 font-medium text-alert"
+          className="mt-3 w-full h-11 flex items-center justify-center font-display text-15 font-medium text-alert"
         >
           Supprimer la série
         </button>

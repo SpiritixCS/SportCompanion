@@ -32,10 +32,10 @@ export function AujourdhuiHeader({
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
-        <span className="font-archivo text-11 font-medium uppercase tracking-[0.08em] text-graphite">
+        <span className="font-display text-11 font-medium uppercase tracking-[0.08em] text-graphite">
           {dateLabel}
         </span>
-        <div className="font-archivo text-32 font-semibold leading-[1.05] mt-2">Salut {userLabel}.</div>
+        <div className="font-display text-32 font-semibold leading-[1.05] mt-2">Salut {userLabel}.</div>
       </div>
       <button
         type="button"
