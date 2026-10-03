@@ -26,16 +26,22 @@ export function Sheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end">
+    <div className="fixed inset-0 z-50 flex items-end" role="dialog" aria-modal="true" aria-label={title}>
       <div
         data-testid="sheet-backdrop"
-        className="absolute inset-0 bg-ink/40"
+        className="sheet-fade absolute inset-0 bg-ink/40"
         onClick={onClose}
       />
-      <div className="relative w-full bg-paper rounded-t-card p-5">
-        <div className="flex items-center justify-between mb-4">
-          <span className="font-display text-18 font-semibold">{title}</span>
-          <button type="button" onClick={onClose} aria-label="Fermer">
+      <div className="sheet-rise relative w-full max-h-[90dvh] overflow-y-auto bg-paper rounded-t-[28px] px-[18px] pt-2.5 pb-[calc(24px+env(safe-area-inset-bottom))]">
+        <div aria-hidden="true" className="w-10 h-1 rounded-pill bg-hairline mx-auto mb-3.5" />
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <span className="font-display font-extrabold text-32 uppercase leading-[0.9]">{title}</span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fermer"
+            className="w-10 h-10 rounded-pill border border-hairline bg-paper flex items-center justify-center flex-none"
+          >
             <IconClose />
           </button>
         </div>
