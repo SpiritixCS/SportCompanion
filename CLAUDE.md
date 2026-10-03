@@ -7,7 +7,7 @@ Contexte permanent du projet. À lire au début de chaque session.
 ## 0. Priorités — non négociables
 
 1. **Fidélité au design Claude Design (§4) : c'est un objectif à atteindre, pas une inspiration.** Les tokens, la typo, les espacements, la grille pastille signature, la navigation — tout doit correspondre au brief et au prototype `.dc.html`, pas une réinterprétation « dans l'esprit de ». En cas de doute sur un détail non couvert par le brief, aller relire le prototype avant d'improviser.
-2. **Fidélité au programme (données exactes de `workout_curated.json` et `BackPainProgram.md`) et facilité d'usage.** Le contenu du programme ne se négocie pas ; l'UX doit rester simple d'une main, en séance.
+2. **Fidélité au programme (données exactes de `workout_curated.json`) et facilité d'usage.** Le contenu du programme ne se négocie pas ; l'UX doit rester simple d'une main, en séance.
 
 ---
 
@@ -15,10 +15,12 @@ Contexte permanent du projet. À lire au début de chaque session.
 
 Une web app personnelle de suivi d'entraînement, à l'origine pensée pour **utilisateur unique** (Mathis). Elle sert maintenant **deux personnes réelles et connues à l'avance**, Mathis et Clément — identifiées par le header Cloudflare Access (`Cf-Access-Authenticated-User-Email`) et cloisonnées dans leur propre fichier SQLite (voir `src/lib/auth/`). Ce n'est toujours pas un produit multi-tenant générique : pas d'inscription, pas de compte à créer, pas d'abstraction « au cas où quelqu'un d'autre l'utiliserait » — deux utilisateurs nommés, un seul point d'entrée par email connu.
 
-Deux programmes déjà écrits et validés, que l'app **sert** sans les réinventer :
+Deux modules, ouverts à chaque utilisateur :
 
-- **Programme (force)** — Caliathletics, trois parcours au poids du corps (Débutant / Intermédiaire / Advanced), récupérés depuis un site payant qui va fermer.
-- **Dos (BackPain)** — protocole de rééducation lombaire 16 semaines, contexte clinique réel (lombalgie chronique, trouble du contrôle moteur). Logique complète dans `BackPainProgram.md`, à garder **telle quelle** — ne jamais modifier les valeurs du domaine sans que ça vienne explicitement de l'utilisateur.
+- **Programme (force)** — Caliathletics, trois parcours au poids du corps (Débutant / Intermédiaire / Advanced), récupérés depuis un site payant qui va fermer. L'app **sert** ce programme sans le réinventer.
+- **Tracking** — programme personnel sur 7 jours, composé par l'utilisateur.
+
+Le module **Dos (BackPain)** de la v0.1 a été retiré le 2026-10-03 (refonte V1, aucune donnée réelle) ; récupérable via l'historique git si besoin.
 
 Le liant entre les deux : une page **Trophées** qui cumule les répétitions all-time par exercice, tous programmes confondus.
 
@@ -44,7 +46,7 @@ Le liant entre les deux : une page **Trophées** qui cumule les répétitions al
 | Hébergement | VM Oracle Cloud perso, systemd + tunnel Cloudflare existant | Détails complets, accès SSH, script de déploiement : `DEPLOYMENT.md`. Ne pas dupliquer cette info ici. |
 | Auth | Aucune côté app — déléguée à Cloudflare Access en amont (Gmail perso) | App mono-utilisateur, pas de session à gérer côté Next.js. |
 | Appareils cibles | iPhone 17 et MacBook Pro 16, **Chrome** sur les deux | Voir contrainte Chrome iOS ci-dessous. |
-| Langue | Français partout — UI et code commenté en français si commentaire nécessaire | Cohérent avec `Objective.md` et `BackPainProgram.md`. |
+| Langue | Français partout — UI et code commenté en français si commentaire nécessaire | Cohérent avec `Objective.md`. |
 
 ### Contrainte Chrome iOS — importante, ne pas la perdre de vue
 
@@ -73,7 +75,7 @@ Ces fichiers sont la référence à relire en cas de doute — ne pas dépendre 
 **La couleur encode le module** — c'est le principe structurant de toute l'app :
 
 - Programme (force) → **Cobalt**
-- Dos / BackPain (mobilité, restauration) → **Sauge**
+- Tracking (programme personnel) → **Sauge**
 - Trophées (accompli, cumulé) → **Laiton**
 - Le reste de l'interface est neutre en toute circonstance. L'onglet actif dans la nav ne prend jamais la couleur d'accent.
 
@@ -86,7 +88,7 @@ Ces fichiers sont la référence à relire en cas de doute — ne pas dépendre 
 --graphite     #6E736B   texte secondaire, labels
 --hairline     #E5E7E1   filets 1px, séparateurs
 --cobalt       #1F3BE0   accent programme
---sage         #2E7D63   accent BackPain
+--sage         #2E7D63   accent Tracking
 --brass        #A9782C   accent trophées et paliers
 --alert        #B3402E   uniquement destructif (réinitialiser, abandonner)
 ```
@@ -109,7 +111,7 @@ Chaque niveau = **une ligne de 7 pastilles** (un jour = une pastille). États : 
 
 ### Navigation
 
-Barre d'onglets fixe en bas, **4 entrées** : `Aujourd'hui` / `Programme` / `Dos` / `Trophées`. Réglages accessibles par icône dans l'en-tête d'Aujourd'hui, pas un 5ᵉ onglet. Le **mode séance est plein écran**, sans barre d'onglets — sortie par croix avec confirmation si séance entamée. Desktop (≥1024px) : colonne centrée 520px max, rail vertical à gauche au lieu de la barre du bas.
+Barre d'onglets fixe en bas, **4 entrées** : `Aujourd'hui` / `Programme` / `Tracking` / `Trophées`. Réglages accessibles par icône dans l'en-tête d'Aujourd'hui, pas un 5ᵉ onglet. Le **mode séance est plein écran**, sans barre d'onglets — sortie par croix avec confirmation si séance entamée. Desktop (≥1024px) : colonne centrée 520px max, rail vertical à gauche au lieu de la barre du bas.
 
 ### Mouvement
 
@@ -153,20 +155,9 @@ Trois parcours indépendants :
 
 **Montée de niveau** : proposée seulement après **7 jours validés** du niveau courant (pas 7 jours écoulés). **Jamais d'avancement automatique** — l'app propose un choix explicite (monter au niveau suivant / refaire ce niveau une semaine de plus), l'utilisateur tranche. Refaire un niveau doit être aussi simple que monter : pas de friction, pas de sentiment d'échec (cohérent avec le ton §4 — l'app constate, elle n'encourage pas).
 
-### Axe Dos (BackPain)
+### Axe Tracking
 
-Logique complète et déjà figée dans `BackPainProgram.md` — **source de vérité du domaine, ne jamais la modifier sans demande explicite**. Résumé (voir le fichier pour le détail complet) :
-
-- 16 semaines, 4 blocs de 4 semaines. RPE cible par bloc : 6, 7, 8, 8.
-- Semaine 1 = calibrage (recherche du cran de départ par arbre). Semaines 4/8/12/16 = décharge (volume réduit, pas de test de montée).
-- 10 arbres de progression (A à J), indépendants, chacun une échelle de crans.
-- Règle de montée de cran soumise à plusieurs conditions strictes (voir `BackPainProgram.md` — notamment la **règle douleur : gêne > 3/10 bloque toute montée, jamais contournable**).
-
-**Avertissement** — ce protocole vient de recommandations générales, pas d'un examen clinique. Outil de suivi personnel, jamais une source d'avis médical. Ne pas ajouter de diagnostic, d'interprétation de symptômes ou de conseil thérapeutique automatisé. Les critères d'alerte peuvent être affichés comme rappels, jamais évalués automatiquement.
-
-### Axe Tracking (Clément)
-
-Journal de séance libre, remplace l'onglet Dos dans la navigation de Clément (Mathis n'y a pas accès). Pas de programme prédéfini : à chaque série, Clément saisit un nom d'exercice (saisie libre, autocomplétion depuis son historique) et un nombre de reps — logique dans `src/lib/tracking/db.ts`. Ces séries alimentent aussi le cumul Trophées de Clément au même titre que le reste.
+Programme personnel sur 7 jours fixes (Lundi→Dimanche), ouvert à tous les utilisateurs. Chacun compose ses jours (exercices en saisie libre, autocomplétion depuis son historique, ou repos) et les joue dans le même player que le Programme — logique dans `src/lib/tracking/`. Ces séries alimentent le cumul Trophées au même titre que le reste.
 
 ### Trophées
 
@@ -192,8 +183,8 @@ Reprise possible si la séance est quittée en cours (bandeau « Reprendre la s�
 ## 7. Conventions de travail
 
 - **Git** : le repo n'est **pas encore initialisé** (`git init` à faire avant le premier commit). Une fois fait : commits atomiques, messages en français, à l'impératif. Branches de fonctionnalité, `main` toujours déployable.
-- Les données de programme (`data.ts` généré, `BackPainProgram.md`) vivent dans un module dédié, séparées de la logique applicative — jamais dupliquées ailleurs dans le code.
-- La logique de progression (montée de niveau, calcul de semaine/bloc BackPain, règle douleur) est **pure et testée unitairement** — c'est le cœur du produit, un bug ici fausse des mois de suivi.
+- Les données de programme (`data.ts` généré) vivent dans un module dédié, séparées de la logique applicative — jamais dupliquées ailleurs dans le code.
+- La logique de progression (montée de niveau, durée active de séance) est **pure et testée unitairement** — c'est le cœur du produit, un bug ici fausse des mois de suivi.
 - Test d'intégration obligatoire sur la persistance du player : enregistrer une série, naviguer ailleurs, revenir, vérifier que l'état est intact (cf. le bug de la v1, §2).
 - Migrations de schéma SQL versionnées (voir pattern v1 : `migrations/0001_init.sql`, etc.), avec sauvegarde avant application.
 
@@ -209,7 +200,6 @@ Tout est dans **`DEPLOYMENT.md`** : accès VM, architecture Cloudflare Tunnel + 
 
 ```
 Objective.md                          objectif produit d'origine (source brute)
-BackPainProgram.md                    domaine BackPain — source de vérité, ne pas modifier
 DEPLOYMENT.md                         infra, accès VM, script de déploiement
 deploy/                               deploy.sh + unité systemd
 design/                               brief + prototype Claude Design vendorisés (§4) — source de vérité locale
