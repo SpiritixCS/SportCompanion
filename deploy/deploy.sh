@@ -28,15 +28,17 @@ ssh -i "$SSH_KEY" "$REMOTE" "
   cd $REMOTE_DIR
   npm ci
   ts=\$(date +%s)
-  for f in data/*.db; do
+  for f in data/*.db data/users/*.db; do
     [ -e \"\$f\" ] || continue
     cp \"\$f\" \"\$f.bak-\$ts\" 2>/dev/null || true
   done
   set -a; [ -f .env ] && . ./.env; set +a
+  npm run db:adopt-legacy
   npm run db:migrate
   npm run build
   cp -r public .next/standalone/public
   cp -r .next/static .next/standalone/.next/static
+  rm -rf .next/standalone/migrations && cp -r migrations .next/standalone/migrations
 "
 
 echo "==> Ensuring systemd unit is up to date"
