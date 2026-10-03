@@ -88,7 +88,7 @@ Depuis la racine du repo local :
 ./deploy/deploy.sh
 ```
 
-Le script (`deploy/deploy.sh`) : rsync du code (hors `node_modules`, `.next`, `data`, `.git`) vers `/home/ubuntu/sportcompanion/`, `npm ci && npm run build` sur la VM, puis pousse `deploy/sportcompanion.service` et redémarre le service systemd. Le dossier `data/` (DB SQLite) n'est jamais touché par le sync — persistant entre déploiements.
+Le script (`deploy/deploy.sh`) : rsync du code (hors `node_modules`, `.next`, `data`, `.git`) vers `/home/ubuntu/sportcompanion/`, puis `npm ci && npm run build` sur la VM pendant que l'ancien serveur tourne encore (aucune base touchée). Ensuite **service arrêté** → sauvegarde de chaque base (`.db`, `-wal`, `-shm` → `.bak-<timestamp>`) → `db:adopt-legacy` → `db:migrate` → service redémarré. Si une étape échoue, le service **reste arrêté** (voulu : jamais servir une copie incomplète) — corriger puis relancer le script. Le dossier `data/` n'est jamais touché par le rsync.
 
 Prérequis : `next.config.ts` doit avoir `output: "standalone"` (le service pointe sur `.next/standalone/server.js`).
 

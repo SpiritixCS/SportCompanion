@@ -2,7 +2,7 @@
 // bases v0.1 de Mathis et Clément sous leur email ; sans effet ensuite.
 import path from "node:path";
 import { dataDir } from "../src/lib/auth/email";
-import { adoptLegacyDb } from "../src/lib/db/adoptLegacy";
+import { adoptLegacyDbs } from "../src/lib/db/adoptLegacy";
 
 const LEGACY: [file: string, email: string | undefined, prenom: string][] = [
   ["sportcompanion.db", process.env.MATHIS_EMAIL, "Mathis"],
@@ -10,10 +10,12 @@ const LEGACY: [file: string, email: string | undefined, prenom: string][] = [
 ];
 
 async function main() {
-  for (const [file, email, prenom] of LEGACY) {
-    const result = await adoptLegacyDb({ legacyPath: path.join(dataDir(), file), email, prenom });
-    console.log(`[${file}] ${result === "adopted" ? "repris sous son email" : "ignoré (déjà repris ou rien à reprendre)"}`);
-  }
+  const entries = LEGACY.map(([file, email, prenom]) => ({ legacyPath: path.join(dataDir(), file), email, prenom }));
+  const results = await adoptLegacyDbs(entries);
+  results.forEach((result, i) => {
+    const [file, email] = LEGACY[i]!;
+    console.log(`[${file}] ${result === "adopted" ? `repris sous ${email}` : "ignoré (déjà repris ou rien à reprendre)"}`);
+  });
 }
 
 main().catch((err) => {

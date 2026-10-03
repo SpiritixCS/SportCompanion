@@ -8,7 +8,7 @@ import { getDb } from "./client";
 import { runMigrations } from "./migrate";
 import { userDbPath } from "@/lib/auth/email";
 import { getPrenom } from "@/lib/profile/db";
-import { adoptLegacyDb } from "./adoptLegacy";
+import { adoptLegacyDb, adoptLegacyDbs } from "./adoptLegacy";
 
 let tmpDir: string;
 const ORIGINAL = { ...process.env };
@@ -69,11 +69,48 @@ describe("adoptLegacyDb", () => {
     again.close();
   });
 
-  it("skips when the email is missing or invalid, or the legacy file is absent", async () => {
-    const legacy = legacyDb("sportcompanion.db");
-    expect(await adoptLegacyDb({ legacyPath: legacy, email: undefined, prenom: "X" })).toBe("skipped");
-    expect(await adoptLegacyDb({ legacyPath: legacy, email: "../evil", prenom: "X" })).toBe("skipped");
-    expect(await adoptLegacyDb({ legacyPath: path.join(tmpDir, "absent.db"), email: "a@b.fr", prenom: "X" })).toBe("skipped");
+  it("skips when the legacy file is absent, whatever the email", async () => {
+    expect(await adoptLegacyDb({ legacyPath: path.join(tmpDir, "absent.db"), email: undefined, prenom: "X" })).toBe("skipped");
     expect(existsSync(path.join(tmpDir, "users"))).toBe(false);
+  });
+
+  it("fails loudly when a legacy file exists but its email is missing or invalid (never an empty account)", async () => {
+    const legacy = legacyDb("sportcompanion.db");
+    await expect(adoptLegacyDb({ legacyPath: legacy, email: undefined, prenom: "X" })).rejects.toThrow();
+    await expect(adoptLegacyDb({ legacyPath: legacy, email: "../evil", prenom: "X" })).rejects.toThrow();
+    expect(existsSync(path.join(tmpDir, "users"))).toBe(false);
+  });
+
+  it("never leaves a target that looks adopted when the copy fails mid-way", async () => {
+    const legacy = legacyDb("sportcompanion.db");
+    // prénom invalide → setPrenom lève après la copie, avant le renommage
+    await expect(adoptLegacyDb({ legacyPath: legacy, email: "m@x.fr", prenom: "" })).rejects.toThrow();
+    expect(existsSync(userDbPath("m@x.fr"))).toBe(false);
+    expect(await adoptLegacyDb({ legacyPath: legacy, email: "m@x.fr", prenom: "Mathis" })).toBe("adopted");
+  });
+});
+
+describe("adoptLegacyDbs", () => {
+  it("validates every entry before copying any (no half-adopted state)", async () => {
+    const mathis = legacyDb("sportcompanion.db");
+    const clement = legacyDb("sportcompanion.clement.db");
+    await expect(
+      adoptLegacyDbs([
+        { legacyPath: mathis, email: "m@x.fr", prenom: "Mathis" },
+        { legacyPath: clement, email: undefined, prenom: "Clément" },
+      ]),
+    ).rejects.toThrow();
+    expect(existsSync(userDbPath("m@x.fr"))).toBe(false);
+  });
+
+  it("adopts every valid entry", async () => {
+    const mathis = legacyDb("sportcompanion.db");
+    const clement = legacyDb("sportcompanion.clement.db");
+    expect(
+      await adoptLegacyDbs([
+        { legacyPath: mathis, email: "m@x.fr", prenom: "Mathis" },
+        { legacyPath: clement, email: "c@x.fr", prenom: "Clément" },
+      ]),
+    ).toEqual(["adopted", "adopted"]);
   });
 });
