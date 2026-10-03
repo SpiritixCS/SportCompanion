@@ -1,12 +1,12 @@
 import { Icon } from "../Icon";
 
-export function IconTracking({ active, size, className }: { active: boolean; size?: number; className?: string }) {
+// Icône de la barre de navigation (maquettes design/v1). L'onglet actif est
+// signalé par la pastille blanche, pas par l'icône.
+export function IconTracking({ size = 22, className }: { active?: boolean; size?: number; className?: string }) {
   return (
-    <Icon size={size} className={className}>
-      <rect x="5" y="4" width="14" height="17" rx="2" strokeWidth={active ? 3 : 1.5} />
-      <path d="M9 9h6" strokeWidth={active ? 3 : 1.5} />
-      <path d="M9 13h6" strokeWidth={active ? 3 : 1.5} />
-      <path d="M9 17h3" strokeWidth={active ? 3 : 1.5} />
+    <Icon size={size} className={className} strokeWidth={1.7}>
+      <path d="M4 18l5-6 4 3 7-9" />
+      <path d="M4 21h16" />
     </Icon>
   );
 }

@@ -25,7 +25,21 @@ describe("BottomNav", () => {
     expect(active.className).not.toMatch(/text-(cobalt|sage|brass)/);
 
     const inactive = screen.getByRole("link", { name: "Programme" });
-    expect(inactive).toHaveClass("text-graphite");
+    expect(inactive).toHaveClass("text-mist");
+    expect(active).toHaveAttribute("aria-current", "page");
+    expect(inactive).not.toHaveAttribute("aria-current");
+  });
+
+  it("floats as a dark pill whose white capsule sits under the active tab", () => {
+    render(<BottomNav items={items.map((it, i) => ({ ...it, active: i === 2 }))} />);
+    const nav = screen.getByRole("navigation");
+    expect(nav).toHaveClass("fixed", "rounded-pill", "bg-ink/90");
+    expect(screen.getByTestId("nav-capsule")).toHaveStyle({ "--nav-index": "2" });
+  });
+
+  it("turns into a vertical rail on desktop", () => {
+    render(<BottomNav items={items} />);
+    expect(screen.getByRole("navigation")).toHaveClass("lg:sticky", "lg:grid-rows-4");
   });
 
   // Régression : sans z-index, les éléments positionnés de <main> (pastilles

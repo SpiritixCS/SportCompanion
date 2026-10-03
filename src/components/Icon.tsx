@@ -2,10 +2,12 @@ export function Icon({
   children,
   size = 24,
   className,
+  strokeWidth = 1.5,
 }: {
   children: React.ReactNode;
   size?: number;
   className?: string;
+  strokeWidth?: number;
 }) {
   return (
     <svg
@@ -14,7 +16,7 @@ export function Icon({
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}

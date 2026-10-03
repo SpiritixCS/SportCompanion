@@ -1,21 +1,13 @@
 import { Icon } from "../Icon";
 
-const DOTS = [
-  [7, 7], [12, 7], [17, 7],
-  [7, 12], [12, 12], [17, 12],
-  [7, 17], [12, 17], [17, 17],
-];
-
-export function IconProgram({ active, size, className }: { active: boolean; size?: number; className?: string }) {
+// Icône de la barre de navigation (maquettes design/v1). L'onglet actif est
+// signalé par la pastille blanche, pas par l'icône.
+export function IconProgram({ size = 22, className }: { active?: boolean; size?: number; className?: string }) {
   return (
-    <Icon size={size} className={className}>
-      {DOTS.map(([cx, cy]) =>
-        active ? (
-          <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.6" fill="currentColor" stroke="none" />
-        ) : (
-          <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.1" fill="currentColor" stroke="none" opacity="0.6" />
-        ),
-      )}
+    <Icon size={size} className={className} strokeWidth={1.7}>
+      <circle cx="8" cy="9" r="4" />
+      <circle cx="16" cy="9" r="4" />
+      <path d="M8 13v7M16 13v7" />
     </Icon>
   );
 }
