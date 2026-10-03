@@ -1,0 +1,266 @@
+<title>Agrès · Programme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDEFF2; --surface:#FFFFFF; --ink:#0B0D12; --muted:#626B78; --line:#D9DEE5;
+  --prog:#2F2BFF; --prog-soft:#E6E5FF;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);margin:0;padding-inline:16px;padding-block:24px 48px}
+.stage{display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start;max-width:1080px;margin:0 auto}
+.phone{width:390px;max-width:100%;background:var(--bg);border-radius:44px;box-shadow:0 0 0 10px #0B0D12,0 40px 80px -30px rgba(11,13,18,.45);overflow:hidden;position:relative;height:844px}
+.screen{position:absolute;inset:0;overflow-y:auto;padding:20px 18px 120px;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+@media (max-width:480px){ .phone{border-radius:0;box-shadow:none;width:100%;height:100dvh} body{padding-inline:0;padding-block:0} .notes{padding:24px 16px 48px} }
+
+.kick{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1.title{font-family:var(--display);font-weight:800;font-size:56px;line-height:.9;text-transform:uppercase;margin:6px 0 6px}
+.lede{margin:0;color:var(--muted);font-size:14px}
+
+/* Parcours */
+.seg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;margin-top:18px}
+.seg .cap{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);border-radius:999px;background:var(--ink);transition:transform .45s cubic-bezier(.3,1.25,.4,1)}
+.seg button{position:relative;z-index:1;height:38px;border:0;background:none;font:600 13px var(--body);color:var(--muted);cursor:pointer;border-radius:999px;transition:color .3s}
+.seg button[aria-pressed="true"]{color:#fff}
+.seg button:focus-visible{outline:2px solid var(--prog);outline-offset:2px}
+
+/* Niveaux */
+.levels{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+.lv{background:var(--surface);border-radius:22px;overflow:hidden;animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.lv-head{width:100%;display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:12px;padding:14px 16px;background:none;border:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.lv-head:focus-visible{outline:2px solid var(--prog);outline-offset:-2px;border-radius:22px}
+.lv-num{font-family:var(--display);font-weight:800;font-size:40px;line-height:.85}
+.lv.current .lv-num{color:var(--prog)}
+.lv-name{font-size:15px;display:flex;align-items:center;gap:8px}
+.tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--prog);background:var(--prog-soft);border-radius:999px;padding:3px 7px}
+.traits{display:flex;gap:4px;margin-top:9px}
+.traits i{display:block;width:22px;height:4px;border-radius:2px;background:var(--line);transform-origin:left;animation:grow .4s cubic-bezier(.4,0,.2,1) both}
+.traits i.done{background:var(--prog)}
+.traits i.rest{height:2px;margin-top:1px;background:#E3E7EC}
+@keyframes grow{from{transform:scaleX(0)}}
+.pct{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right}
+.pct b{font-family:var(--display);font-weight:700;font-size:22px;color:var(--ink);letter-spacing:.02em}
+.lv-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s cubic-bezier(.4,0,.2,1)}
+.lv.open .lv-body{grid-template-rows:1fr}
+.lv-body > div{overflow:hidden}
+.day{width:100%;display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:12px 16px;border:0;border-top:1px solid var(--line);background:none;text-align:left;font:inherit;color:inherit;cursor:pointer;min-height:52px}
+.day:focus-visible{outline:2px solid var(--prog);outline-offset:-2px}
+.day .mk{width:22px;height:4px;border-radius:2px;background:var(--line)}
+.day .mk.done{background:var(--prog)}
+.day .mk.rest{height:2px;background:#E3E7EC}
+.day .t{font-size:15px}
+.day .s{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+.day .now{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:var(--prog);border-radius:999px;padding:3px 7px}
+.day .chev{color:var(--muted)}
+.day[disabled]{cursor:default}
+
+/* Feuille jour */
+.scrim{position:absolute;inset:0;background:rgba(11,13,18,.4);opacity:0;pointer-events:none;transition:opacity .3s;z-index:8}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:28px 28px 0 0;padding:10px 18px 28px;transform:translateY(105%);transition:transform .42s cubic-bezier(.2,.8,.2,1);z-index:9;max-height:78%;overflow-y:auto}
+.open-sheet .scrim{opacity:1;pointer-events:auto}
+.open-sheet .sheet{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.sheet .kick{color:var(--prog)}
+.sheet h2{font-family:var(--display);font-weight:800;font-size:40px;line-height:.9;text-transform:uppercase;margin:6px 0 4px}
+.sheet .meta{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ex{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.glyph{width:36px;height:36px;border-radius:10px;background:var(--prog-soft);display:grid;place-items:center;color:var(--prog)}
+.ex:last-child{border-bottom:0}
+.ex .n{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.02em;text-align:right}
+.ex .bars{display:flex;gap:3px;justify-content:flex-end;margin-top:5px}
+.ex .bars i{width:10px;height:4px;border-radius:2px;background:var(--prog)}
+.close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center}
+
+/* Nav */
+.nav{position:absolute;left:14px;right:14px;bottom:18px;height:66px;background:rgba(11,13,18,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:999px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;z-index:5}
+.nav .cap{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);border-radius:999px;background:#fff;transform:translateX(100%)}
+.nav span{position:relative;z-index:1;color:#9AA2AE;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.nav span.on{color:var(--ink)}
+.nav svg{width:22px;height:22px}
+
+/* Notes */
+.notes{flex:1 1 320px;max-width:460px}
+.notes h1{font-family:var(--display);font-weight:800;font-size:56px;line-height:.9;text-transform:uppercase;margin:8px 0 6px}
+.notes p,.notes li{font-size:15px;line-height:1.55;color:#2B313B}
+.notes h2{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;font-weight:500}
+.notes ol{padding-left:18px;margin:0}
+.notes li{margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="stage">
+  <div class="phone" id="phone" aria-label="Maquette de l'écran Programme">
+    <div class="screen">
+      <div class="kick">Consultation libre</div>
+      <h1 class="title">Programme</h1>
+      <p class="lede">Ta progression ne bouge pas quand tu consultes.</p>
+
+      <div class="seg" id="seg" role="group" aria-label="Parcours">
+        <span class="cap" aria-hidden="true"></span>
+        <button type="button" data-p="beginner" aria-pressed="true">Débutant</button>
+        <button type="button" data-p="intermediate" aria-pressed="false">Intermédiaire</button>
+        <button type="button" data-p="advanced" aria-pressed="false">Advanced</button>
+      </div>
+
+      <div class="levels" id="levels"></div>
+    </div>
+
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <div class="grab" aria-hidden="true"></div>
+      <button class="close" id="close" type="button" aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="kick" id="sheet-kick"></div>
+      <h2 id="sheet-title"></h2>
+      <div class="meta" id="sheet-meta"></div>
+      <div id="sheet-list" style="margin-top:12px"></div>
+    </div>
+
+    <nav class="nav" aria-label="Navigation">
+      <span class="cap" aria-hidden="true"></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>Aujourd'hui</span>
+      <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="9" r="4"/><circle cx="16" cy="9" r="4"/><path d="M8 13v7M16 13v7"/></svg>Programme</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 21h16"/></svg>Tracking</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 4h10v5a5 5 0 01-10 0z"/><path d="M12 14v4M8 21h8M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3"/></svg>Trophées</span>
+    </nav>
+  </div>
+
+  <aside class="notes">
+    <div class="kick">Proposition 2 · Programme</div>
+    <h1>Programme</h1>
+    <p>Même langage que la page Aujourd'hui : les sept traits remplacent les pastilles partout, chiffres en grand, une seule couleur. Ton niveau en cours est ouvert par défaut.</p>
+    <h2>À tester</h2>
+    <ol>
+      <li><b>Les parcours</b> : la pastille noire glisse entre Débutant, Intermédiaire et Advanced, et la liste se recompose.</li>
+      <li><b>Un niveau</b> : touche-le pour l'ouvrir ou le refermer. Les jours se déplient en douceur.</li>
+      <li><b>Un jour d'entraînement</b> du niveau 3 : la fiche du jour monte depuis le bas, avec les exercices et leurs séries en barrettes.</li>
+    </ol>
+    <h2>Ce qui change</h2>
+    <ol>
+      <li>Chaque niveau est une carte, plus une longue liste dans un seul cadre.</li>
+      <li>Le pourcentage du niveau passe en grand chiffre à droite.</li>
+      <li>Le jour en cours porte une étiquette « Aujourd'hui ».</li>
+      <li>Dans la fiche d'un jour, chaque exercice a son picto de famille (tirage, poussée, dips, jambes, gainage, équilibre), comme sur Aujourd'hui.</li>
+    </ol>
+  </aside>
+</div>
+
+<script>
+(function(){
+  // Données réelles : Débutant niveau 3, jours 1 et 3 faits, jour 5 en cours. 18 + 4 min par exercice.
+  var KINDS={
+    beginner:[[7,0,8,0,8,0,0],[7,0,8,0,8,0,0],[8,0,8,0,9,0,0],[8,0,8,0,9,0,0],[10,0,9,0,9,0,8],[10,0,9,0,9,0,7],[10,0,9,0,9,0,7],[9,0,9,0,9,0,5]],
+    intermediate:[[7, 0, 7, 0, 6, 0, 0], [7, 0, 7, 0, 7, 0, 0], [7, 0, 7, 0, 7, 0, 0], [7, 0, 7, 0, 7, 0, 0], [6, 0, 6, 0, 6, 6, 0], [6, 0, 6, 0, 6, 6, 0], [6, 0, 6, 0, 6, 6, 0], [6, 0, 6, 0, 6, 6, 0]],
+    advanced:[[6, 0, 6, 0, 6, 6, 0], [6, 0, 6, 0, 6, 6, 0], [6, 0, 6, 0, 6, 6, 0], [6, 0, 6, 0, 6, 6, 0]]
+  };
+  var LEVELS={beginner:8,intermediate:8,advanced:4};
+  var DONE={beginner:{2:[0,2]}};
+  var TODAY={beginner:{level:2,day:4}};
+  var EX={
+    0:[["Push ups",4,6,"push"],["Jump chin ups",4,3,"pull"],["Incline push ups",4,8,"push"],["Australian chin ups",4,8,"pull"],["Dips negatives",5,3,"dip"],["Beginner Hindu push ups",3,5,"push"],["Hanging knee raises",4,6,"hangingKnee"],["Jump squats",4,10,"squat"]],
+    2:[["Jump pull ups",4,3,"pull"],["Push ups",4,6,"push"],["Partner/band assisted chin ups",4,6,"pull"],["Dips negatives",5,3,"dip"],["Incline diamond push ups",4,10,"push"],["Wall walks",3,2,"handstand"],["Squats",4,20,"squat"],["Reverse lunges",4,"15 / côté","squat"]],
+    4:[["Assisted close grip chin ups",4,6,"pull"],["Push ups",4,6,"push"],["Pull up negatives",5,1,"pull"],["Bench dips",4,15,"dip"],["Australian pull ups",3,10,"pull"],["Tuck hollowbody hold",4,"60 s","core"],["Superman raises",4,10,"core"],["Hip lifts",4,20,"core"],["Calf raises",4,"12 / côté","calf"]]
+  };
+  var G='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+  var GLYPH={
+    pull: G+'<path d="M3 4h18"/><path d="M8 4v5M16 4v5"/><circle cx="12" cy="11" r="2.4"/><path d="M12 13.5v5M9 21l3-2.5 3 2.5"/></svg>',
+    push: G+'<path d="M3 17h18"/><circle cx="5.5" cy="12" r="2"/><path d="M7.5 12.5l9 2.5M9 14v3M16 15v2"/></svg>',
+    dip: G+'<path d="M4 13h5M15 13h5M6 13v8M18 13v8"/><circle cx="12" cy="5" r="2.2"/><path d="M12 7.5v6M9 13l3-2 3 2M10.5 20l1.5-3 1.5 3"/></svg>',
+    squat: G+'<circle cx="11" cy="4.5" r="2.2"/><path d="M11 7v5l5 1.5-1 6.5M11 12l-4 3 1 5M4 21h16"/></svg>',
+    core: G+'<path d="M3 18h18"/><circle cx="19" cy="11.5" r="2"/><path d="M17 12.5L5 15M5 15v3M14 13.2v4.8"/></svg>',
+    handstand: G+'<path d="M3 21h18"/><path d="M9 21v-4M15 21v-4"/><circle cx="12" cy="13.5" r="2.2"/><path d="M12 11V5M10 3l2 2 2-2"/></svg>',
+    hangingKnee: G+'<path d="M3 4h18"/><path d="M9.5 4v4.5M14.5 4v4.5"/><circle cx="12" cy="10" r="2.2"/><path d="M12 12.5v4h5v4"/></svg>',
+    calf: G+'<circle cx="10" cy="4" r="2"/><path d="M10 6.5v7.5M10 14l-1.5 4.5h-2M10 14l1.5 4.5h-2"/><path d="M4 21h11"/><path d="M19 20v-6M17 16l2-2 2 2"/></svg>',
+    other: G+'<circle cx="12" cy="12" r="7"/><path d="M12 8v4l2.5 2"/></svg>'
+  };
+  var parcours='beginner', openLevel=2;
+  var list=document.getElementById('levels');
+
+  function dayState(p,lv,d,count){
+    if(count===0) return 'rest';
+    var done=(DONE[p]&&DONE[p][lv])||[];
+    if(done.indexOf(d)>=0) return 'done';
+    return 'upcoming';
+  }
+
+  function render(){
+    list.innerHTML='';
+    var n=LEVELS[parcours];
+    for(var lv=0;lv<n;lv++){
+      var counts=(KINDS[parcours]&&KINDS[parcours][lv]) || null;
+      var states=[], train=0, done=0;
+      for(var d=0;d<7;d++){
+        var c=counts?counts[d]:null;
+        var st=c===null?'upcoming':dayState(parcours,lv,d,c);
+        states.push(st); if(c!==0){ train++; if(st==='done') done++; }
+      }
+      var pct=train?Math.round(done/train*100):0;
+      var isCur=TODAY[parcours]&&TODAY[parcours].level===lv;
+      var card=document.createElement('section');
+      card.className='lv'+(isCur?' current':'')+(lv===openLevel?' open':'');
+      card.style.animationDelay=(lv*45)+'ms';
+      var traits=states.map(function(s,i){ return '<i class="'+s+'" style="animation-delay:'+(200+lv*45+i*35)+'ms"></i>'; }).join('');
+      var head='<button class="lv-head" type="button" aria-expanded="'+(lv===openLevel)+'">'+
+        '<span class="lv-num">'+(lv+1)+'</span>'+
+        '<span><span class="lv-name">Niveau '+(lv+1)+(isCur?' <span class="tag">En cours</span>':'')+'</span><span class="traits">'+traits+'</span></span>'+
+        '<span class="pct"><b>'+pct+'</b>%</span></button>';
+      var days='';
+      for(var d2=0;d2<7;d2++){
+        var cnt=counts?counts[d2]:null, st2=states[d2], isToday=isCur&&TODAY[parcours].day===d2;
+        var sub = cnt===0 ? 'Repos' : (cnt===null ? 'Jour d’entraînement' : cnt+' exercices · '+(18+cnt*4)+' min');
+        var clickable = cnt!==0;
+        days+='<button class="day" type="button" data-lv="'+lv+'" data-d="'+d2+'" '+(clickable?'':'disabled')+'>'+
+          '<span class="mk '+(isToday?'':st2)+'" style="'+(isToday?'background:var(--prog);opacity:.35':'')+'"></span>'+
+          '<span><span class="t">Jour '+(d2+1)+'</span><span class="s">'+sub+'</span></span>'+
+          (isToday?'<span class="now">Aujourd’hui</span>':(clickable?'<span class="chev">›</span>':'<span></span>'))+'</button>';
+      }
+      card.innerHTML=head+'<div class="lv-body"><div>'+days+'</div></div>';
+      list.appendChild(card);
+    }
+  }
+
+  list.addEventListener('click',function(e){
+    var head=e.target.closest('.lv-head');
+    if(head){ var card=head.parentNode, wasOpen=card.classList.contains('open');
+      list.querySelectorAll('.lv.open').forEach(function(c){ c.classList.remove('open'); c.querySelector('.lv-head').setAttribute('aria-expanded','false'); });
+      if(!wasOpen){ card.classList.add('open'); head.setAttribute('aria-expanded','true'); }
+      return; }
+    var day=e.target.closest('.day');
+    if(day && !day.disabled) openSheet(+day.dataset.lv, +day.dataset.d);
+  });
+
+  var phone=document.getElementById('phone');
+  function openSheet(lv,d){
+    var counts=KINDS[parcours]&&KINDS[parcours][lv];
+    var exs=(parcours==='beginner'&&lv===2&&EX[d])?EX[d]:null;
+    var cnt=counts?counts[d]:(exs?exs.length:null);
+    document.getElementById('sheet-kick').textContent={beginner:'Débutant',intermediate:'Intermédiaire',advanced:'Advanced'}[parcours]+' · Niveau '+(lv+1);
+    document.getElementById('sheet-title').textContent='Jour '+(d+1);
+    document.getElementById('sheet-meta').textContent=cnt?cnt+' exercices · '+(18+cnt*4)+' min':'';
+    var html='';
+    if(exs){ exs.forEach(function(x){ var bars=''; for(var k=0;k<x[1];k++) bars+='<i></i>'; html+='<div class="ex"><span class="glyph" aria-hidden="true">'+(GLYPH[x[3]]||GLYPH.other)+'</span><span>'+x[0]+'</span><span><span class="n" style="display:block">'+x[1]+' × '+x[2]+'</span><span class="bars">'+bars+'</span></span></div>'; }); }
+    else html='<p style="color:var(--muted);font-size:14px;margin:12px 0 0">Dans la maquette, seuls les jours du niveau 3 Débutant ont leur liste d’exercices.</p>';
+    document.getElementById('sheet-list').innerHTML=html;
+    phone.classList.add('open-sheet');
+  }
+  function closeSheet(){ phone.classList.remove('open-sheet'); }
+  document.getElementById('scrim').addEventListener('click',closeSheet);
+  document.getElementById('close').addEventListener('click',closeSheet);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeSheet(); });
+
+  var seg=document.getElementById('seg'), cap=seg.querySelector('.cap');
+  seg.querySelectorAll('button').forEach(function(b,i){ b.addEventListener('click',function(){
+    seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed','false'); }); b.setAttribute('aria-pressed','true');
+    cap.style.transform='translateX('+(i*100)+'%)';
+    parcours=b.dataset.p; openLevel = parcours==='beginner' ? 2 : -1; render();
+  }); });
+
+  render();
+})();
+</script>

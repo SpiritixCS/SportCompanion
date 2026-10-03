@@ -1,0 +1,337 @@
+<title>Agrès · Séance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDEFF2; --surface:#FFFFFF; --ink:#0B0D12; --muted:#626B78; --line:#D9DEE5;
+  --prog:#2F2BFF; --prog-soft:#E6E5FF; --gold:#C8961E;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);margin:0;padding-inline:16px;padding-block:24px 48px}
+.stage{display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start;max-width:1080px;margin:0 auto}
+.phone{width:390px;max-width:100%;height:844px;border-radius:44px;box-shadow:0 0 0 10px #0B0D12,0 40px 80px -30px rgba(11,13,18,.45);overflow:hidden;position:relative;background:var(--bg)}
+@media (max-width:480px){ .phone{border-radius:0;box-shadow:none;width:100%;height:100dvh} body{padding:0} .notes{padding:24px 16px 48px} }
+.view{position:absolute;inset:0;display:flex;flex-direction:column;transition:opacity .35s ease, transform .35s cubic-bezier(.2,.8,.2,1)}
+.view[hidden]{display:flex!important;opacity:0;pointer-events:none;transform:translateX(24px)}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- Exercice ---------- */
+.ex-top{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:18px 18px 0}
+.iconbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.iconbtn:focus-visible,.btn:focus-visible{outline:2px solid var(--prog);outline-offset:2px}
+.track{display:flex;gap:4px}
+.track i{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background .3s}
+.track i.done{background:var(--prog)}
+.track i.cur{background:var(--prog);opacity:.35}
+.clock{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.ex-body{flex:1;display:flex;flex-direction:column;padding:22px 18px 0;overflow:hidden}
+.ex-card{background:var(--surface);border-radius:28px;padding:22px 20px;display:flex;flex-direction:column;align-items:flex-start;flex:1;position:relative}
+.bigglyph{width:84px;height:84px;border-radius:24px;background:var(--prog-soft);color:var(--prog);display:grid;place-items:center}
+.bigglyph svg{width:48px;height:48px}
+.ex-name{font-family:var(--display);font-weight:800;font-size:44px;line-height:.92;text-transform:uppercase;margin:18px 0 0;text-wrap:balance}
+.target{margin-top:auto;width:100%}
+.target .n{font-family:var(--display);font-weight:800;font-size:112px;line-height:.8;letter-spacing:-.01em}
+.target .n small{font-size:36px;color:var(--muted);margin-left:4px}
+.sets{display:flex;gap:6px;margin-top:16px}
+.sets i{flex:1;height:8px;border-radius:4px;background:var(--line);position:relative;overflow:hidden}
+.sets i.done{background:var(--prog)}
+.sets i.cur{background:var(--prog-soft)}
+.sets i.cur::after{content:"";position:absolute;inset:0;background:var(--prog);opacity:.5;animation:fillpulse 1.8s ease-in-out infinite;transform-origin:left}
+@keyframes fillpulse{0%{transform:scaleX(0)}60%,100%{transform:scaleX(1);opacity:0}}
+.setlbl{display:flex;justify-content:space-between;margin-top:10px}
+.ex-actions{padding:14px 18px 26px;display:flex;flex-direction:column;gap:6px}
+.btn{height:60px;border-radius:999px;border:0;font:600 16px var(--body);cursor:pointer;position:relative;overflow:hidden;width:100%}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.primary .fill{position:absolute;inset:0;background:var(--prog);transform:scaleX(0);transform-origin:left;transition:transform .45s cubic-bezier(.7,0,.2,1)}
+.btn.primary.go .fill{transform:scaleX(1)}
+.btn.primary span{position:relative}
+.btn.ghost{background:none;color:var(--muted);height:44px;font-size:15px;font-weight:500}
+
+/* Feuille reps */
+.scrim{position:absolute;inset:0;background:rgba(11,13,18,.4);opacity:0;pointer-events:none;transition:opacity .3s;z-index:8}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:28px 28px 0 0;padding:12px 18px 26px;transform:translateY(105%);transition:transform .4s cubic-bezier(.2,.8,.2,1);z-index:9}
+.phone.reps .scrim{opacity:1;pointer-events:auto}
+.phone.reps .sheet{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.stepper{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;margin:14px 0 18px}
+.stepper button{width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font:500 30px var(--body);cursor:pointer;color:var(--ink)}
+.stepper .v{text-align:center;font-family:var(--display);font-weight:800;font-size:112px;line-height:.85;font-variant-numeric:tabular-nums}
+.stepper .v.bump{animation:bump .18s ease}
+@keyframes bump{50%{transform:scale(1.06)}}
+
+/* ---------- Repos ---------- */
+#rest{background:var(--ink);color:#fff}
+#rest .mono{color:#8A93A0}
+.rest-top{padding:22px 18px 0;display:flex;justify-content:space-between;align-items:center}
+.rest-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.dial{position:relative;width:280px;height:280px}
+.dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dial .bgc{fill:none;stroke:#232733;stroke-width:6}
+.dial .fg{fill:none;stroke:#fff;stroke-width:6;stroke-linecap:round}
+.dial .tick{stroke:#3A404C;stroke-width:2}
+.count{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.count .t{font-family:var(--display);font-weight:800;font-size:120px;line-height:.85;font-variant-numeric:tabular-nums}
+.count .t.last{animation:beat 1s ease infinite}
+@keyframes beat{0%{transform:scale(1)}15%{transform:scale(1.08)}30%{transform:scale(1)}}
+.count .l{margin-top:8px}
+.next{margin:28px 18px 0;padding:16px;border:1px solid #232733;border-radius:22px;display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;width:calc(100% - 36px)}
+.next .g{width:44px;height:44px;border-radius:12px;background:#1A1E28;color:#B9B7FF;display:grid;place-items:center}
+.next b{display:block;font-weight:600;font-size:16px;margin-top:2px}
+.rest-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:18px 18px 26px}
+.btn.dark{background:#1A1E28;color:#fff}
+.btn.light{background:#fff;color:var(--ink)}
+
+/* ---------- Récap ---------- */
+#recap{background:var(--bg)}
+.recap-body{flex:1;overflow-y:auto;padding:30px 18px 0}
+.recap-body h1{font-family:var(--display);font-weight:800;font-size:64px;line-height:.86;text-transform:uppercase;margin:6px 0 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:22px}
+.stat{background:var(--surface);border-radius:20px;padding:14px 12px}
+.stat .v{font-family:var(--display);font-weight:800;font-size:40px;line-height:.9;font-variant-numeric:tabular-nums}
+.stat .k{margin-top:8px}
+.rows{background:var(--surface);border-radius:24px;margin-top:12px;padding:4px 16px}
+.row{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .gl{width:36px;height:36px;border-radius:10px;background:var(--prog-soft);color:var(--prog);display:grid;place-items:center}
+.row .r{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:.02em}
+.recap-actions{padding:14px 18px 26px;background:var(--surface);border-top:1px solid var(--line)}
+
+/* Notes */
+.notes{flex:1 1 320px;max-width:460px}
+.notes h1{font-family:var(--display);font-weight:800;font-size:56px;line-height:.9;text-transform:uppercase;margin:8px 0 6px}
+.notes p,.notes li{font-size:15px;line-height:1.55;color:#2B313B}
+.notes h2{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;font-weight:500}
+.notes ol{padding-left:18px;margin:0}
+.notes li{margin-bottom:6px}
+.demo{display:flex;flex-wrap:wrap;gap:8px}
+.demo button{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--ink);background:none;font:600 13px var(--body);cursor:pointer}
+.demo button[aria-pressed="true"]{background:var(--ink);color:#fff}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="stage">
+  <div class="phone" id="phone" aria-label="Maquette du mode séance">
+    <!-- Exercice -->
+    <section class="view" id="exercise" aria-label="Exercice en cours">
+      <div class="ex-top">
+        <button class="iconbtn" type="button" aria-label="Quitter la séance"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <div><div class="mono" id="ex-count">Exercice 1 / 9</div><div class="track" id="ex-track" style="margin-top:8px"></div></div>
+        <div class="clock" id="clock" aria-label="Durée active">0:00</div>
+      </div>
+      <div class="ex-body">
+        <div class="ex-card">
+          <div class="bigglyph" id="ex-glyph" aria-hidden="true"></div>
+          <h2 class="ex-name" id="ex-name"></h2>
+          <div class="target">
+            <div class="n" id="ex-target"></div>
+            <div class="sets" id="ex-sets"></div>
+            <div class="setlbl"><span class="mono" id="ex-set">Série 1 / 4</span><span class="mono" id="ex-next"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="ex-actions">
+        <button class="btn primary" id="done-set" type="button"><span class="fill"></span><span>Série terminée</span></button>
+        <button class="btn ghost" id="skip-ex" type="button">Passer l'exercice</button>
+      </div>
+    </section>
+
+    <!-- Repos -->
+    <section class="view" id="rest" aria-label="Repos" hidden>
+      <div class="rest-top"><span class="mono" id="rest-lbl">Repos</span><span class="mono" id="rest-prog"></span></div>
+      <div class="rest-center">
+        <div class="dial">
+          <svg viewBox="0 0 200 200" aria-hidden="true"><g id="ticks"></g><circle class="bgc" cx="100" cy="100" r="88"/><circle class="fg" id="arc" cx="100" cy="100" r="88"/></svg>
+          <div class="count"><div class="t" id="rest-t">90</div><div class="mono l">secondes</div></div>
+        </div>
+        <div class="next"><span class="g" id="next-g" aria-hidden="true"></span><span><span class="mono">Ensuite</span><b id="next-name"></b><span class="mono" id="next-sub"></span></span></div>
+      </div>
+      <div class="rest-actions">
+        <button class="btn dark" id="plus15" type="button">+15 s</button>
+        <button class="btn light" id="skip-rest" type="button">Passer</button>
+      </div>
+    </section>
+
+    <!-- Récap -->
+    <section class="view" id="recap" aria-label="Récapitulatif" hidden>
+      <div class="recap-body">
+        <div class="mono">Débutant · Niveau 3 · Jour 5</div>
+        <h1>Séance<br>terminée</h1>
+        <div class="stats">
+          <div class="stat"><div class="v" id="s-dur">0:00</div><div class="mono k">Durée</div></div>
+          <div class="stat"><div class="v" id="s-ex">0</div><div class="mono k">Exercices</div></div>
+          <div class="stat"><div class="v" id="s-reps">0</div><div class="mono k">Reps</div></div>
+        </div>
+        <div class="rows" id="rows"></div>
+        <div style="height:16px"></div>
+      </div>
+      <div class="recap-actions"><button class="btn primary" type="button" id="finish"><span class="fill"></span><span>Terminer</span></button></div>
+    </section>
+
+    <div class="scrim" id="scrim"></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t">
+      <div class="grab" aria-hidden="true"></div>
+      <div class="mono" id="sheet-t">Reps faites</div>
+      <div class="stepper">
+        <button type="button" id="minus" aria-label="Moins un">−</button>
+        <div class="v" id="reps-v" aria-live="polite">6</div>
+        <button type="button" id="plus" aria-label="Plus un">+</button>
+      </div>
+      <button class="btn primary" id="validate" type="button"><span class="fill"></span><span>Valider</span></button>
+    </div>
+  </div>
+
+  <aside class="notes">
+    <div class="mono">Proposition 3 · Séance</div>
+    <h1>La séance</h1>
+    <p>Ta vraie séance du jour (Débutant, niveau 3, jour 5), jouable de bout en bout. L'exercice est clair et le repos passe en sombre : on ne confond jamais les deux.</p>
+    <h2>Démo</h2>
+    <div class="demo">
+      <button type="button" id="speed" aria-pressed="true">Repos de démo : 6 s</button>
+      <button type="button" id="to-recap">Aller au récap</button>
+      <button type="button" id="restart">Recommencer</button>
+    </div>
+    <h2>Exercice</h2>
+    <ol>
+      <li>En haut, un trait par exercice de la séance : la progression d'un coup d'œil, comme les sept traits de la semaine.</li>
+      <li>Le picto de l'exercice en grand, le nom, puis l'objectif en très gros chiffres.</li>
+      <li>Les séries sont des barrettes ; celle en cours se remplit doucement en boucle.</li>
+      <li>« Série terminée » se remplit d'indigo puis ouvre la saisie des reps : gros chiffre, − et +, Valider.</li>
+    </ol>
+    <h2>Repos (refondu)</h2>
+    <ol>
+      <li>Fond sombre plein écran. Le compte à rebours au centre, entouré d'un cercle blanc qui se vide en continu sur un cadran gradué.</li>
+      <li>Les 3 dernières secondes, le chiffre bat.</li>
+      <li>En dessous, la carte « Ensuite » : picto, nom de l'exercice, série à venir.</li>
+      <li>Deux boutons seulement : +15 s et Passer.</li>
+    </ol>
+    <h2>Récap</h2>
+    <ol>
+      <li>Durée active, nombre d'exercices et reps comptent de 0 à leur valeur.</li>
+      <li>« Aller au récap » simule les 3 premiers exercices faits en entier, avec une durée estimée (exemple).</li>
+      <li>Une ligne par exercice fait, avec son picto et les reps de la séance.</li>
+    </ol>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var G='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+  var GL={
+    pull:G+'<path d="M3 4h18"/><path d="M8 4v5M16 4v5"/><circle cx="12" cy="11" r="2.4"/><path d="M12 13.5v5M9 21l3-2.5 3 2.5"/></svg>',
+    push:G+'<path d="M3 17h18"/><circle cx="5.5" cy="12" r="2"/><path d="M7.5 12.5l9 2.5M9 14v3M16 15v2"/></svg>',
+    dip:G+'<path d="M4 13h5M15 13h5M6 13v8M18 13v8"/><circle cx="12" cy="5" r="2.2"/><path d="M12 7.5v6M9 13l3-2 3 2M10.5 20l1.5-3 1.5 3"/></svg>',
+    core:G+'<path d="M3 18h18"/><circle cx="19" cy="11.5" r="2"/><path d="M17 12.5L5 15M5 15v3M14 13.2v4.8"/></svg>',
+    calf:G+'<circle cx="10" cy="4" r="2"/><path d="M10 6.5v7.5M10 14l-1.5 4.5h-2M10 14l1.5 4.5h-2"/><path d="M4 21h11"/><path d="M19 20v-6M17 16l2-2 2 2"/></svg>'
+  };
+  // Séance réelle : Débutant niveau 3, jour 5
+  var EX=[
+    {n:"Assisted close grip chin ups",s:4,v:6,f:"pull"},{n:"Push ups",s:4,v:6,f:"push"},{n:"Pull up negatives",s:5,v:1,f:"pull"},
+    {n:"Bench dips",s:4,v:15,f:"dip"},{n:"Australian pull ups",s:3,v:10,f:"pull"},{n:"Tuck hollowbody hold",s:4,v:60,f:"core",u:"s"},
+    {n:"Superman raises",s:4,v:10,f:"core"},{n:"Hip lifts",s:4,v:20,f:"core"},{n:"Calf raises",s:4,v:12,f:"calf",side:true}
+  ];
+  var REST_SET=90, REST_EX=120, demo=true;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $=function(id){return document.getElementById(id);};
+  var phone=$('phone'), views={exercise:$('exercise'),rest:$('rest'),recap:$('recap')};
+  var cur, set, logged, startedAt, clockT, restT;
+
+  function show(name){ Object.keys(views).forEach(function(k){ views[k].hidden = k!==name; }); }
+  function fmt(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+  function unit(e){ return e.u==='s' ? '<small>s</small>' : ''; }
+
+  function renderExercise(){
+    var e=EX[cur];
+    $('ex-count').textContent='Exercice '+(cur+1)+' / '+EX.length;
+    $('ex-track').innerHTML=EX.map(function(_,i){ return '<i class="'+(i<cur?'done':i===cur?'cur':'')+'"></i>'; }).join('');
+    $('ex-glyph').innerHTML=GL[e.f]; $('ex-name').textContent=e.n;
+    $('ex-target').innerHTML=e.s+' × '+e.v+unit(e)+(e.side?'<small>/ côté</small>':'');
+    $('ex-sets').innerHTML=Array.from({length:e.s},function(_,i){ return '<i class="'+(i<set-1?'done':i===set-1?'cur':'')+'"></i>'; }).join('');
+    $('ex-set').textContent='Série '+set+' / '+e.s;
+    $('ex-next').textContent = cur<EX.length-1 ? 'Puis '+EX[cur+1].n.split(' ').slice(0,2).join(' ') : 'Dernier exercice';
+    var card=document.querySelector('.ex-card'); if(!reduce){ card.animate([{transform:'translateX(28px)',opacity:0},{transform:'none',opacity:1}],{duration:240,easing:'cubic-bezier(.2,.8,.2,1)'}); }
+  }
+
+  function tickClock(){ $('clock').textContent=fmt((Date.now()-startedAt)/1000); }
+
+  // Saisie des reps
+  var val=0;
+  function openReps(){ var e=EX[cur]; val=e.v; $('reps-v').textContent=val; $('sheet-t').textContent=e.u==='s'?'Secondes tenues':'Reps faites'; phone.classList.add('reps'); }
+  function closeReps(){ phone.classList.remove('reps'); }
+  function bump(){ var v=$('reps-v'); v.textContent=val; v.classList.remove('bump'); void v.offsetWidth; v.classList.add('bump'); }
+  $('minus').onclick=function(){ val=Math.max(0,val-1); bump(); };
+  $('plus').onclick=function(){ val++; bump(); };
+  $('scrim').onclick=closeReps;
+
+  function pressFill(btn,cb){ btn.classList.add('go'); setTimeout(function(){ btn.classList.remove('go'); cb(); }, reduce?0:420); }
+  $('done-set').onclick=function(){ pressFill(this,openReps); };
+  $('validate').onclick=function(){
+    var e=EX[cur]; logged.push({i:cur,v:val});
+    pressFill(this,function(){ closeReps(); afterSet(); });
+  };
+  $('skip-ex').onclick=function(){ cur++; set=1; if(cur>=EX.length) return toRecap(); renderExercise(); };
+
+  function afterSet(){
+    var e=EX[cur], lastSet = set>=e.s, lastEx = cur>=EX.length-1;
+    if(lastSet && lastEx) return toRecap();
+    var nextIdx = lastSet ? cur+1 : cur, nextSet = lastSet ? 1 : set+1;
+    startRest(lastSet ? REST_EX : REST_SET, nextIdx, nextSet, lastSet);
+  }
+
+  // Repos
+  var C=2*Math.PI*88;
+  (function ticks(){ var g=$('ticks'), h=''; for(var k=0;k<60;k++){ var a=k/60*2*Math.PI, r1=97, r2=k%5===0?92:95; h+='<line class="tick" x1="'+(100+r1*Math.cos(a))+'" y1="'+(100+r1*Math.sin(a))+'" x2="'+(100+r2*Math.cos(a))+'" y2="'+(100+r2*Math.sin(a))+'"/>'; } g.innerHTML=h; })();
+  var restEnd, restTotal, pending;
+  function startRest(sec,nextIdx,nextSet,betweenEx){
+    var real = demo ? 6 : sec;
+    restTotal=real*1000; restEnd=Date.now()+restTotal; pending={i:nextIdx,s:nextSet};
+    var e=EX[nextIdx];
+    $('rest-lbl').textContent = betweenEx ? 'Repos entre exercices' : 'Repos';
+    $('rest-prog').textContent = betweenEx ? 'Exercice '+(cur+1)+' / '+EX.length+' terminé' : 'Série '+set+' / '+EX[cur].s+' faite';
+    $('next-g').innerHTML=GL[e.f]; $('next-name').textContent=e.n; $('next-sub').textContent='Série '+nextSet+' / '+e.s+' · '+e.v+(e.u==='s'?' s':' reps');
+    $('arc').style.strokeDasharray=C;
+    show('rest'); clearInterval(restT); restT=setInterval(restTick,50); restTick();
+  }
+  function restTick(){
+    var left=restEnd-Date.now(), shown=Math.ceil(left/1000)*(demo?15:1);
+    if(demo) shown=Math.ceil(left/restTotal*90);
+    var t=$('rest-t'); t.textContent=Math.max(0,shown);
+    t.classList.toggle('last', left<=3000 && left>0);
+    $('arc').style.strokeDashoffset = C*(1-Math.max(0,left)/restTotal);
+    if(left<=0){ clearInterval(restT); endRest(); }
+  }
+  function endRest(){ cur=pending.i; set=pending.s; show('exercise'); renderExercise(); }
+  $('plus15').onclick=function(){ var add=demo?1000:15000; restEnd+=add; restTotal+=add; };
+  $('skip-rest').onclick=function(){ clearInterval(restT); endRest(); };
+
+  // Récap
+  function countUp(el,to,format){ if(reduce){ el.textContent=format(to); return; } var t0=null; function f(ts){ if(!t0) t0=ts; var k=Math.min(1,(ts-t0)/600), e=1-Math.pow(1-k,3); el.textContent=format(to*e); if(k<1) requestAnimationFrame(f); } requestAnimationFrame(f); }
+  function toRecap(example){
+    clearInterval(restT); closeReps();
+    var dur=(Date.now()-startedAt)/1000;
+    if(example===true){
+      // Exemple : les 3 premiers exercices faits en entier, durée active estimée (séries + repos)
+      logged=[]; var sets=0;
+      EX.slice(0,3).forEach(function(e,i){ for(var k=0;k<e.s;k++){ logged.push({i:i,v:e.v}); sets++; } });
+      dur=sets*(30+REST_SET);
+    }
+    var by={}; logged.forEach(function(l){ by[l.i]=(by[l.i]||0)+l.v; });
+    var idx=Object.keys(by).map(Number);
+    var reps=idx.filter(function(i){ return EX[i].u!=='s'; }).reduce(function(a,i){ return a+by[i]; },0);
+    $('rows').innerHTML=idx.map(function(i){ var e=EX[i]; return '<div class="row"><span class="gl">'+GL[e.f]+'</span><span>'+e.n+'</span><span class="r">+'+by[i]+(e.u==='s'?' s':'')+'</span></div>'; }).join('');
+    show('recap');
+    countUp($('s-dur'),dur,fmt); countUp($('s-ex'),idx.length,function(v){return Math.round(v);}); countUp($('s-reps'),reps,function(v){return Math.round(v);});
+  }
+  $('finish').onclick=function(){ pressFill(this,start); };
+
+  function start(){ cur=0; set=1; logged=[]; startedAt=Date.now(); clearInterval(clockT); clockT=setInterval(tickClock,1000); tickClock(); show('exercise'); renderExercise(); }
+  $('speed').onclick=function(){ demo=!demo; this.setAttribute('aria-pressed',demo); this.textContent= demo ? 'Repos de démo : 6 s' : 'Repos réel : 1 min 30'; };
+  $('to-recap').onclick=function(){ toRecap(true); };
+  $('restart').onclick=start;
+  start();
+})();
+</script>

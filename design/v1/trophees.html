@@ -1,0 +1,228 @@
+<title>Agrès · Trophées</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDEFF2; --surface:#FFFFFF; --ink:#0B0D12; --muted:#626B78; --line:#D9DEE5;
+  --prog:#2F2BFF; --prog-soft:#E6E5FF; --gold:#C8961E; --gold-soft:#F6EDD8; --gold-ink:#7A5A10;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);margin:0;padding-inline:16px;padding-block:24px 48px}
+.stage{display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start;max-width:1080px;margin:0 auto}
+.phone{width:390px;max-width:100%;height:844px;border-radius:44px;box-shadow:0 0 0 10px #0B0D12,0 40px 80px -30px rgba(11,13,18,.45);overflow:hidden;position:relative;background:var(--bg)}
+@media (max-width:480px){ .phone{border-radius:0;box-shadow:none;width:100%;height:100dvh} body{padding:0} .notes{padding:24px 16px 48px} }
+.view{position:absolute;inset:0;overflow-y:auto;padding:20px 18px 120px;scrollbar-width:none;transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .3s}
+.view::-webkit-scrollbar{display:none}
+.view.off-right{transform:translateX(100%);opacity:0;pointer-events:none}
+.view.off-left{transform:translateX(-18%);opacity:0;pointer-events:none}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.gold{color:var(--gold)}
+
+/* Liste */
+.total{font-family:var(--display);font-weight:800;font-size:112px;line-height:.82;margin-top:10px;font-variant-numeric:tabular-nums}
+.total small{font-family:var(--mono);font-size:12px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-left:6px}
+.sub{margin-top:10px;color:var(--muted);font-size:14px}
+.next{margin-top:18px;background:var(--surface);border-radius:22px;padding:14px 16px}
+.next .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.next b{font-weight:600}
+.next .n{font-family:var(--display);font-weight:700;font-size:20px}
+.bar{height:4px;border-radius:2px;background:var(--line);margin-top:10px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:2px;transform-origin:left;transform:scaleX(var(--p));transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.bar.start i{transform:scaleX(0)}
+.controls{display:flex;gap:8px;margin-top:18px;overflow-x:auto;scrollbar-width:none}
+.controls::-webkit-scrollbar{display:none}
+.chip{height:34px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:500 13px var(--body);color:var(--ink);white-space:nowrap;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip:focus-visible,.tile:focus-visible,.back:focus-visible,.btn:focus-visible{outline:2px solid var(--prog);outline-offset:2px}
+.sortbtn{display:inline-flex;align-items:center;gap:7px;background:var(--ink);border-color:var(--ink);color:#fff}
+.sortbtn .sl{display:inline-block;overflow:hidden;height:1.2em;line-height:1.2em}
+.sortbtn .sl span{display:inline-block}
+.sortbtn .sl span.flip{animation:flip .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes flip{from{transform:translateY(100%);opacity:0}}
+.sep{width:1px;background:var(--line);flex:none;margin:4px 2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.tile{background:var(--surface);border-radius:22px;padding:14px;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:10px;animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.glyph{width:34px;height:34px;border-radius:10px;background:var(--prog-soft);color:var(--prog);display:grid;place-items:center}
+.tile .v{font-family:var(--display);font-weight:800;font-size:44px;line-height:.85;font-variant-numeric:tabular-nums}
+.tile .name{font-size:14px;line-height:1.25;min-height:2.5em}
+.tile .pal{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em}
+.tile .bar{margin-top:4px}
+.tile > span:last-child{display:block;width:100%}
+.bar{display:block}
+
+/* Détail */
+.back{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.d-glyph{width:72px;height:72px;border-radius:22px;background:var(--prog-soft);color:var(--prog);display:grid;place-items:center;margin-top:18px}
+.d-glyph svg{width:40px;height:40px}
+.d-name{font-family:var(--display);font-weight:800;font-size:44px;line-height:.9;text-transform:uppercase;margin:14px 0 0}
+.d-total{font-family:var(--display);font-weight:800;font-size:96px;line-height:.82;margin-top:12px;font-variant-numeric:tabular-nums}
+.ladder{background:var(--surface);border-radius:22px;padding:16px;margin-top:18px}
+.marks{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:12px}
+.mark{display:flex;flex-direction:column;gap:6px}
+.mark i{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.mark i b{position:absolute;inset:0;background:var(--gold);transform-origin:left;transform:scaleX(var(--p));transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.mark span{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center}
+.mark.hit span{color:var(--gold-ink);font-weight:500}
+.ladder .left{margin-top:14px;font-size:14px;color:var(--muted)}
+.ladder .left b{color:var(--ink);font-weight:600}
+.facts{background:var(--surface);border-radius:22px;margin-top:10px;padding:2px 16px}
+.fact{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+.fact:last-child{border-bottom:0}
+.fact span:first-child{color:var(--muted)}
+.btn{height:54px;width:100%;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:600 15px var(--body);cursor:pointer;margin-top:12px;color:var(--ink)}
+
+/* Nav */
+.nav{position:absolute;left:14px;right:14px;bottom:18px;height:66px;background:rgba(11,13,18,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:999px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;z-index:5}
+.nav .cap{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);border-radius:999px;background:#fff;transform:translateX(300%)}
+.nav span{position:relative;z-index:1;color:#9AA2AE;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.nav span.on{color:var(--ink)}
+.nav svg{width:22px;height:22px}
+
+/* Notes */
+.notes{flex:1 1 320px;max-width:460px}
+.notes h1{font-family:var(--display);font-weight:800;font-size:56px;line-height:.9;text-transform:uppercase;margin:8px 0 6px}
+.notes p,.notes li{font-size:15px;line-height:1.55;color:#2B313B}
+.notes h2{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;font-weight:500}
+.notes ol{padding-left:18px;margin:0}
+.notes li{margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="stage">
+  <div class="phone" aria-label="Maquette de l'écran Trophées">
+    <section class="view" id="list">
+      <div class="mono gold">Trophées</div>
+      <div class="total" id="total">0<small>reps</small></div>
+      <div class="sub">2 séances · 2 jours d'activité</div>
+
+      <div class="next" id="next"></div>
+
+      <div class="controls" role="group" aria-label="Tri et filtre">
+        <button class="chip sortbtn" id="sortbtn" type="button" aria-label="Changer le tri, actuellement : Plus de reps"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg><span class="sl"><span id="sortlbl">Plus de reps</span></span></button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="chip" data-filter="tous" aria-pressed="true">Tous</button>
+        <button class="chip" data-filter="programme" aria-pressed="false">Programme</button>
+        <button class="chip" data-filter="tracking" aria-pressed="false">Tracking</button>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <section class="view off-right" id="detail" aria-label="Fiche exercice"></section>
+
+    <nav class="nav" aria-label="Navigation">
+      <span class="cap" aria-hidden="true"></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>Aujourd'hui</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="9" r="4"/><circle cx="16" cy="9" r="4"/><path d="M8 13v7M16 13v7"/></svg>Programme</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 21h16"/></svg>Tracking</span>
+      <span class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 4h10v5a5 5 0 01-10 0z"/><path d="M12 14v4M8 21h8M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3"/></svg>Trophées</span>
+    </nav>
+  </div>
+
+  <aside class="notes">
+    <div class="mono">Proposition 4 · Trophées</div>
+    <h1>Trophées</h1>
+    <p>Tes vrais chiffres. L'or reste la couleur des Trophées, utilisée seulement pour les paliers. Les grandes photos laissent place aux pictos, comme partout ailleurs.</p>
+    <h2>Ce qui change</h2>
+    <ol>
+      <li>Le total en très grand, compté de 0 à l'ouverture.</li>
+      <li>Une carte « Prochain palier » : l'exercice le plus proche de son prochain palier, avec ce qu'il reste à faire.</li>
+      <li>Le tri tient dans un seul bouton : chaque toucher passe au suivant (Plus de reps → Récent → A → Z). Le filtre reste en puces à côté.</li>
+      <li>Chaque exercice est une tuile : picto, total, et un trait or vers son prochain palier.</li>
+    </ol>
+    <h2>Fiche exercice (touche une tuile)</h2>
+    <ol>
+      <li>Les 6 paliers (100 à 25 000) en six traits : ceux atteints sont pleins en or, celui en cours se remplit en partie.</li>
+      <li>Premier et dernier passage, puis « Ajouter des reps » (hors séance) en bas.</li>
+    </ol>
+    <p style="font-size:13px;color:var(--muted)">Aucun de tes exercices n'a encore atteint 100 : tu ne verras donc pas de palier en or plein dans tes données.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var G='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">';
+  var GL={
+    pull:G+'<path d="M3 4h18"/><path d="M8 4v5M16 4v5"/><circle cx="12" cy="11" r="2.4"/><path d="M12 13.5v5M9 21l3-2.5 3 2.5"/></svg>',
+    push:G+'<path d="M3 17h18"/><circle cx="5.5" cy="12" r="2"/><path d="M7.5 12.5l9 2.5M9 14v3M16 15v2"/></svg>',
+    squat:G+'<circle cx="11" cy="4.5" r="2.2"/><path d="M11 7v5l5 1.5-1 6.5M11 12l-4 3 1 5M4 21h16"/></svg>'
+  };
+  // Données réelles de Mathis (copie de prod du 3 octobre)
+  var CARDS=[
+    {id:'push-ups',n:'Push ups',t:47,f:'push',m:'programme',a:'2026-08-17',z:'2026-08-24'},
+    {id:'jump-chin-ups',n:'Jump chin ups',t:8,f:'pull',m:'programme',a:'2026-08-17',z:'2026-08-17'},
+    {id:'jump-squats',n:'Jump squats',t:20,f:'squat',m:'programme',a:'2026-08-17',z:'2026-08-17'},
+    {id:'jump-pull-ups',n:'Jump pull ups',t:12,f:'pull',m:'programme',a:'2026-08-24',z:'2026-08-24'},
+    {id:'squats',n:'Squats',t:10,f:'squat',m:'programme',a:'2026-08-24',z:'2026-08-24'}
+  ];
+  var PAL=[100,500,1000,5000,10000,25000];
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sort='reps', filter='tous';
+  var $=function(id){return document.getElementById(id);};
+  function nextPal(t){ for(var i=0;i<PAL.length;i++) if(t<PAL[i]) return {i:i,v:PAL[i],prev:i?PAL[i-1]:0}; return null; }
+  function fr(d){ return new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric'}).format(new Date(d)); }
+  function nf(v){ return Math.round(v).toLocaleString('fr-FR'); }
+  function countUp(el,to,suffix){ if(reduce){ el.innerHTML=nf(to)+(suffix||''); return; } var t0=null; function f(ts){ if(!t0) t0=ts; var k=Math.min(1,(ts-t0)/600), e=1-Math.pow(1-k,3); el.innerHTML=nf(to*e)+(suffix||''); if(k<1) requestAnimationFrame(f); } requestAnimationFrame(f); }
+  function growBars(root){ var bars=root.querySelectorAll('.bar'); bars.forEach(function(b){ b.classList.add('start'); }); requestAnimationFrame(function(){ requestAnimationFrame(function(){ bars.forEach(function(b){ b.classList.remove('start'); }); }); }); }
+
+  function renderNext(){
+    var best=null;
+    CARDS.forEach(function(c){ var p=nextPal(c.t); if(!p) return; var left=p.v-c.t; if(!best||left<best.left) best={c:c,p:p,left:left}; });
+    if(!best){ $('next').hidden=true; return; }
+    var pct=(best.c.t-best.p.prev)/(best.p.v-best.p.prev);
+    $('next').innerHTML='<div class="row"><span class="mono gold">Prochain palier</span><span class="n">'+nf(best.c.t)+' / '+nf(best.p.v)+'</span></div>'+
+      '<div class="row" style="margin-top:4px"><b>'+best.c.n+'</b><span style="color:var(--muted);font-size:13px">'+nf(best.left)+' restants</span></div>'+
+      '<div class="bar"><i style="--p:'+pct+'"></i></div>';
+  }
+
+  function renderGrid(){
+    var list=CARDS.filter(function(c){ return filter==='tous'||c.m===filter; }).slice().sort(function(a,b){
+      if(sort==='reps') return b.t-a.t; if(sort==='recent') return b.z.localeCompare(a.z); return a.n.localeCompare(b.n,'fr'); });
+    $('grid').innerHTML = list.length ? list.map(function(c,i){
+      var p=nextPal(c.t), pct=p?(c.t-p.prev)/(p.v-p.prev):1;
+      return '<button class="tile" type="button" data-id="'+c.id+'" style="animation-delay:'+(i*40)+'ms"><span class="glyph" aria-hidden="true">'+GL[c.f]+'</span>'+
+        '<span class="v" data-to="'+c.t+'">0</span><span class="name">'+c.n+'</span>'+
+        '<span><span class="pal"><span>'+(p?'Vers '+nf(p.v):'Tous atteints')+'</span><span>'+(p?Math.round(pct*100)+'%':'')+'</span></span><span class="bar"><i style="--p:'+pct+'"></i></span></span></button>';
+    }).join('') : '<p style="grid-column:1/-1;color:var(--muted);font-size:14px;margin:8px 2px">Aucun exercice Tracking pour l’instant.</p>';
+    $('grid').querySelectorAll('.v').forEach(function(el,i){ setTimeout(function(){ countUp(el,+el.dataset.to); }, i*40); });
+    growBars($('grid'));
+  }
+
+  function openDetail(id){
+    var c=CARDS.filter(function(x){return x.id===id;})[0], p=nextPal(c.t);
+    var marks=PAL.map(function(v,i){ var prev=i?PAL[i-1]:0, fill=c.t>=v?1:(c.t>prev?(c.t-prev)/(v-prev):0);
+      return '<div class="mark'+(c.t>=v?' hit':'')+'"><i><b style="--p:'+fill+'"></b></i><span>'+(v>=1000?(v/1000)+' k':v)+'</span></div>'; }).join('');
+    $('detail').innerHTML='<button class="back" type="button" id="back" aria-label="Retour aux trophées"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>'+
+      '<div class="d-glyph" aria-hidden="true">'+GL[c.f]+'</div><h2 class="d-name">'+c.n+'</h2>'+
+      '<div class="d-total" id="d-total">0</div><div class="mono" style="margin-top:6px">reps au total</div>'+
+      '<div class="ladder"><div class="mono gold">Paliers</div><div class="marks">'+marks+'</div>'+
+      '<div class="left">'+(p?'<b>'+nf(p.v-c.t)+' reps</b> pour atteindre '+nf(p.v)+'.':'Tous les paliers atteints.')+'</div></div>'+
+      '<div class="facts"><div class="fact"><span>Premier passage</span><span>'+fr(c.a)+'</span></div><div class="fact"><span>Dernier passage</span><span>'+fr(c.z)+'</span></div></div>'+
+      '<button class="btn" type="button">Ajouter des reps</button>';
+    $('list').classList.add('off-left'); $('detail').classList.remove('off-right'); $('detail').scrollTop=0;
+    countUp($('d-total'),c.t);
+    var bs=$('detail').querySelectorAll('.mark b'); bs.forEach(function(b){ b.dataset.p=b.style.getPropertyValue('--p'); b.style.setProperty('--p',0); });
+    setTimeout(function(){ bs.forEach(function(b,i){ b.style.transitionDelay=(i*80)+'ms'; b.style.setProperty('--p',b.dataset.p); }); },120);
+    $('back').onclick=closeDetail;
+  }
+  function closeDetail(){ $('list').classList.remove('off-left'); $('detail').classList.add('off-right'); }
+
+  $('grid').addEventListener('click',function(e){ var t=e.target.closest('.tile'); if(t) openDetail(t.dataset.id); });
+  var SORTS=[['reps','Plus de reps'],['recent','Récent'],['alpha','A → Z']], si=0;
+  $('sortbtn').onclick=function(){
+    si=(si+1)%SORTS.length; sort=SORTS[si][0];
+    var l=$('sortlbl'); l.textContent=SORTS[si][1]; l.classList.remove('flip'); void l.offsetWidth; l.classList.add('flip');
+    this.setAttribute('aria-label','Changer le tri, actuellement : '+SORTS[si][1]);
+    renderGrid();
+  };
+  document.querySelectorAll('[data-filter]').forEach(function(b){ b.onclick=function(){ filter=b.dataset.filter; document.querySelectorAll('[data-filter]').forEach(function(x){ x.setAttribute('aria-pressed',x===b); }); renderGrid(); }; });
+
+  countUp($('total'),97,'<small>reps</small>');
+  renderNext(); growBars($('next')); renderGrid();
+})();
+</script>
