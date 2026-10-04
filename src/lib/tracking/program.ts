@@ -4,14 +4,22 @@ import type { TrackingUnit } from "./db";
 
 export const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"] as const;
 
-export type DayExerciseInput = { name: string; unit: TrackingUnit; setsCount: number; targetValue: number };
-export type DayExercise = DayExerciseInput & { ordre: number };
+// restSeconds null (ou absent) : réglage global « Repos entre séries ».
+export type DayExerciseInput = {
+  name: string;
+  unit: TrackingUnit;
+  setsCount: number;
+  targetValue: number;
+  restSeconds?: number | null;
+};
+export type DayExercise = DayExerciseInput & { ordre: number; restSeconds: number | null };
 export type TrackingProgramDay = { dayOfWeek: number; label: string; isRest: boolean; exercises: DayExercise[] };
 
 function getDayExercises(db: Database.Database, dayOfWeek: number): DayExercise[] {
   return db
     .prepare(
-      `SELECT ordre, exercise_name AS name, unit, sets_count AS setsCount, target_value AS targetValue
+      `SELECT ordre, exercise_name AS name, unit, sets_count AS setsCount, target_value AS targetValue,
+              rest_seconds AS restSeconds
        FROM tracking_program_day_exercises WHERE day_of_week = ? ORDER BY ordre ASC`,
     )
     .all(dayOfWeek) as DayExercise[];
@@ -43,11 +51,11 @@ export function setDayExercises(db: Database.Database, dayOfWeek: number, exerci
   const apply = db.transaction(() => {
     db.prepare(`DELETE FROM tracking_program_day_exercises WHERE day_of_week = ?`).run(dayOfWeek);
     const insert = db.prepare(
-      `INSERT INTO tracking_program_day_exercises (day_of_week, ordre, exercise_name, unit, sets_count, target_value)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO tracking_program_day_exercises (day_of_week, ordre, exercise_name, unit, sets_count, target_value, rest_seconds)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
     );
     exercises.forEach((exercise, ordre) =>
-      insert.run(dayOfWeek, ordre, exercise.name, exercise.unit, exercise.setsCount, exercise.targetValue),
+      insert.run(dayOfWeek, ordre, exercise.name, exercise.unit, exercise.setsCount, exercise.targetValue, exercise.restSeconds ?? null),
     );
   });
   apply();

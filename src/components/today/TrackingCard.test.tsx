@@ -39,7 +39,7 @@ describe("TrackingCard", () => {
             dayOfWeek: 0,
             label: "Lundi",
             isRest: false,
-            exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
+            exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null }],
           },
   programEmpty: false,
         }}
@@ -104,8 +104,8 @@ describe("TrackingCard", () => {
             dayOfWeek: 0,
             dayLabel: "Lundi",
             plannedExercises: [
-              { ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 },
-              { ordre: 1, name: "Gainage", unit: "seconds", setsCount: 2, targetValue: 45 },
+              { ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null },
+              { ordre: 1, name: "Gainage", unit: "seconds", setsCount: 2, targetValue: 45, restSeconds: null },
             ],
             loggedExercises: [{ name: "Dips", unit: "reps", setsCount: 2, totalValue: 24 }],
           },

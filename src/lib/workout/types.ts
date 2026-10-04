@@ -18,6 +18,8 @@ export type Exercise = {
   videoId: string | null;
   sets: number;
   target: ExerciseTarget;
+  // Tracking uniquement : repos entre séries propre à l'exercice.
+  restSeconds?: number;
 };
 
 export type TrainDay = { kind: "train"; label: string; exercises: Exercise[] };

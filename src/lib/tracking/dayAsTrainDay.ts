@@ -18,6 +18,7 @@ export function dayAsTrainDay(day: TrackingProgramDay): TrainDay {
       videoId: null,
       sets: exercise.setsCount,
       target: { unit: exercise.unit, value: exercise.targetValue, maxEffort: false, eachSide: false },
+      ...(exercise.restSeconds != null && { restSeconds: exercise.restSeconds }),
     })),
   };
 }

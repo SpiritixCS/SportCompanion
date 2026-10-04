@@ -43,7 +43,7 @@ describe("loadTrackingScreenState", () => {
       dayOfWeek: 0,
       label: "Lundi",
       isRest: false,
-      exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
+      exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null }],
     });
   });
 
@@ -62,7 +62,7 @@ describe("loadTrackingScreenState", () => {
       id: active.id,
       dayOfWeek: 0,
       dayLabel: "Lundi",
-      plannedExercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }],
+      plannedExercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null }],
       loggedExercises: [{ name: "Dips", unit: "reps", setsCount: 2, totalValue: 24 }],
     });
     expect(state.seances).toHaveLength(1);

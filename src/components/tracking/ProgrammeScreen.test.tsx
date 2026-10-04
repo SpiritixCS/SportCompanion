@@ -40,7 +40,7 @@ describe("ProgrammeScreen", () => {
 
   it("shows the exercise count and a Modifier button for a séance day", () => {
     const days = REST_DAYS.map((d, i) =>
-      i === 0 ? { ...d, isRest: false, exercises: [{ ordre: 0, name: "Dips", unit: "reps" as const, setsCount: 3, targetValue: 12 }] } : d,
+      i === 0 ? { ...d, isRest: false, exercises: [{ ordre: 0, name: "Dips", unit: "reps" as const, setsCount: 3, targetValue: 12, restSeconds: null }] } : d,
     );
     render(<ProgrammeScreen days={days} exerciseSuggestions={[]} />);
     expect(screen.getByText("1 exercice")).toBeInTheDocument();
@@ -49,7 +49,7 @@ describe("ProgrammeScreen", () => {
 
   it("opens the day editor prefilled with its exercises on Modifier", async () => {
     const days = REST_DAYS.map((d, i) =>
-      i === 0 ? { ...d, isRest: false, exercises: [{ ordre: 0, name: "Dips", unit: "reps" as const, setsCount: 3, targetValue: 12 }] } : d,
+      i === 0 ? { ...d, isRest: false, exercises: [{ ordre: 0, name: "Dips", unit: "reps" as const, setsCount: 3, targetValue: 12, restSeconds: null }] } : d,
     );
     render(<ProgrammeScreen days={days} exerciseSuggestions={[]} />);
     await userEvent.click(screen.getByRole("button", { name: "Modifier" }));

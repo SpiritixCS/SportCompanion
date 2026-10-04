@@ -192,7 +192,9 @@ export function PlayerScreen({
   const exercise = day.exercises[exerciseOrder]!;
 
   async function handleCompleteSet(repsActual: number) {
-    const restSeconds = isLastSetOfExercise ? restBetweenExercisesSeconds : restBetweenSetsSeconds;
+    const restSeconds = isLastSetOfExercise
+      ? restBetweenExercisesSeconds
+      : (exercise.restSeconds ?? restBetweenSetsSeconds);
     await onLogSet({
       seanceId,
       exerciseOrder,

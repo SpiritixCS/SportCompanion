@@ -52,7 +52,7 @@ describe("setDayRest", () => {
     setDayExercises(db, 0, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
     setDayRest(db, 0, true);
     const day = setDayRest(db, 0, false);
-    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
+    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null }]);
   });
 });
 
@@ -64,7 +64,16 @@ describe("setDayExercises", () => {
       { name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 },
     ]);
     const updated = setDayExercises(db, 0, [{ name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15 }]);
-    expect(updated.exercises).toEqual([{ ordre: 0, name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15 }]);
+    expect(updated.exercises).toEqual([{ ordre: 0, name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15, restSeconds: null }]);
+  });
+
+  it("stores a per-exercise rest, null meaning the global setting", () => {
+    const db = setup();
+    const updated = setDayExercises(db, 0, [
+      { name: "Tractions", unit: "reps", setsCount: 4, targetValue: 8, restSeconds: 120 },
+      { name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 },
+    ]);
+    expect(updated.exercises.map((e) => e.restSeconds)).toEqual([120, null]);
   });
 
   it("rejects an unknown dayOfWeek", () => {

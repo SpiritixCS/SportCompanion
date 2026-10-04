@@ -112,6 +112,25 @@ describe("PlayerScreen", () => {
     expect(screen.getByText("60")).toBeInTheDocument();
   });
 
+  it("rests for the exercise's own duration between sets, falling back to the global one", async () => {
+    const state: PlayerState = {
+      phase: "in-progress",
+      seanceId: 1,
+      startedAt: STARTED_AT,
+      resumedAt: null,
+      next: { exerciseOrder: 0, setNumber: 1, isLastSetOfExercise: false, isLastExerciseOfDay: false },
+      skippedExerciseOrders: [],
+    };
+    const day = { ...DAY, exercises: DAY.exercises.map((e, i) => (i === 0 ? { ...e, restSeconds: 45 } : e)) };
+    render(<PlayerScreen day={day} state={state} setsLogged={[]} {...actionProps()} restBetweenSetsSeconds={60} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Série terminée" }));
+    await userEvent.click(screen.getByRole("button", { name: "Valider" }));
+
+    expect(onLogSet).toHaveBeenCalledWith(expect.objectContaining({ restSeconds: 45 }));
+    expect(screen.getByText("45")).toBeInTheDocument();
+  });
+
   it("skips the exercise and refreshes", async () => {
     const state: PlayerState = {
       phase: "in-progress",
