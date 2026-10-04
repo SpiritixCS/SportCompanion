@@ -99,7 +99,7 @@ export function PyramidLauncher({
           value={name}
           onChange={(e) => handleName(e.target.value)}
           placeholder="Nom de l'exercice"
-          className="flex-1 min-w-0 h-full bg-transparent text-15 outline-none focus-visible:outline-none"
+          className="field-bare flex-1 min-w-0 h-full bg-transparent text-15 outline-none"
         />
       </div>
       {matches.length > 0 && (

@@ -180,4 +180,18 @@ describe("AujourdhuiScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Lancer une pyramide" }));
     expect(screen.getByRole("dialog", { name: "Pyramide · Lancer" })).toBeInTheDocument();
   });
+
+  it("places the pyramid card second, between the Programme and the Tracking", () => {
+    const { container } = render(
+      <AujourdhuiScreen
+        state={NORMAL_PROGRAMME_STATE}
+        trackingState={TRACKING_REST}
+        user={MATHIS}
+        pyramid={{ suggestions: [], catalog: [], lastPeaks: {} }}
+      />,
+    );
+    const text = container.textContent ?? "";
+    expect(text.indexOf("Monte, redescends")).toBeGreaterThan(text.indexOf("Commencer la séance"));
+    expect(text.indexOf("Monte, redescends")).toBeLessThan(text.lastIndexOf("Tracking"));
+  });
 });

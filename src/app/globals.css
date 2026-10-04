@@ -59,6 +59,11 @@ html, body {
   outline-offset: 2px;
 }
 
+/* Champ texte imbriqué dans une case qui porte déjà l'état actif (filet jade). */
+.field-bare:focus-visible {
+  outline: none;
+}
+
 /* Mouvement Agrès (spec § Mouvement) — état final immédiat si mouvement réduit. */
 @keyframes trait-grow {
   from { transform: scaleX(0); }

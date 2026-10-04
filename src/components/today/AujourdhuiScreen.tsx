@@ -85,8 +85,8 @@ export function AujourdhuiScreen({
             Définir mon point de départ
           </button>
         </Card>
-        <TrackingCard state={trackingState} />
         {pyramidCard}
+        <TrackingCard state={trackingState} />
       </div>
     );
   }
@@ -101,8 +101,8 @@ export function AujourdhuiScreen({
           level={state.level}
           onResolved={() => router.refresh()}
         />
-        <TrackingCard state={trackingState} />
         {pyramidCard}
+        <TrackingCard state={trackingState} />
       </div>
     );
   }
@@ -129,8 +129,9 @@ export function AujourdhuiScreen({
         href={playerHref(state.parcours, state.level, state.dayIndex)}
       />
 
-      <TrackingCard state={trackingState} />
       {pyramidCard}
+
+      <TrackingCard state={trackingState} />
     </div>
   );
 }
