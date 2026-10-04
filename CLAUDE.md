@@ -6,14 +6,14 @@ Contexte permanent du projet. À lire au début de chaque session.
 
 ## 0. Priorités — non négociables
 
-1. **Fidélité au design Claude Design (§4) : c'est un objectif à atteindre, pas une inspiration.** Les tokens, la typo, les espacements, la grille pastille signature, la navigation — tout doit correspondre au brief et au prototype `.dc.html`, pas une réinterprétation « dans l'esprit de ». En cas de doute sur un détail non couvert par le brief, aller relire le prototype avant d'improviser.
+1. **Fidélité au design « Agrès » (§4) : c'est un objectif à atteindre, pas une inspiration.** Tokens, typo, rayons, sept traits, navigation : tout correspond aux maquettes `design/v1/*.html` et à la spec `docs/superpowers/specs/2026-10-04-refonte-graphique-design.md`. En cas de doute sur un détail, relire la maquette avant d'improviser. Mathis préfère le sobre : une animation par élément, pas d'effets empilés.
 2. **Fidélité au programme (données exactes de `workout_curated.json`) et facilité d'usage.** Le contenu du programme ne se négocie pas ; l'UX doit rester simple d'une main, en séance.
 
 ---
 
 ## 1. Ce qu'est ce projet
 
-Une web app personnelle de suivi d'entraînement, à l'origine pensée pour **utilisateur unique** (Mathis). Elle sert maintenant **quelques proches** : toute personne dont l'email est autorisé dans Cloudflare Access obtient son espace personnel au premier accès — un fichier SQLite par email (`data/users/<email>.db`), identité lue dans le JWT Cloudflare vérifié (voir `src/lib/auth/` et `DEPLOYMENT.md`). Pas d'inscription, pas de compte à créer côté app, pas d'admin : la liste blanche, c'est Cloudflare Access. Chacun ne voit que ses données.
+Une web app personnelle de suivi d'entraînement, à l'origine pensée pour **utilisateur unique** (Mathis). Elle sert maintenant **quelques proches** : toute personne dont l'email est autorisé dans Cloudflare Access obtient son espace personnel au premier accès — un fichier SQLite par email (`data/users/<email>.db`), identité tirée du JWT Cloudflare Access, vérifié quand `CF_ACCESS_TEAM_DOMAIN` et `CF_ACCESS_AUD` sont posés, sinon lue dans l'en-tête email (voir `src/lib/auth/resolveEmail.ts` et `DEPLOYMENT.md`). Pas d'inscription, pas de compte à créer côté app, pas d'admin : la liste blanche, c'est Cloudflare Access. Chacun ne voit que ses données.
 
 Deux modules, ouverts à chaque utilisateur :
 
@@ -44,7 +44,7 @@ Le liant entre les deux : une page **Trophées** qui cumule les répétitions al
 | Base de données | SQLite (`better-sqlite3`), un fichier par utilisateur | Volume minuscule, cloisonnement physique des données. Postgres serait de la sur-ingénierie. Pattern repris de la v1. |
 | Build de prod | `output: "standalone"` dans `next.config.ts` | Le service systemd pointe sur `.next/standalone/server.js` (voir `DEPLOYMENT.md`). |
 | Hébergement | VM Oracle Cloud perso, systemd + tunnel Cloudflare existant | Détails complets, accès SSH, script de déploiement : `DEPLOYMENT.md`. Ne pas dupliquer cette info ici. |
-| Auth | Déléguée à Cloudflare Access en amont ; l'app vérifie le JWT Access et en tire l'email | Pas de session ni de mot de passe à gérer côté Next.js. |
+| Auth | Déléguée à Cloudflare Access en amont ; l'app tire l'email du JWT Access (signature vérifiée si `CF_ACCESS_*` est configuré, sinon en-tête email) | Pas de session ni de mot de passe à gérer côté Next.js. |
 | Appareils cibles | iPhone 17 et MacBook Pro 16, **Chrome** sur les deux | Voir contrainte Chrome iOS ci-dessous. |
 | Langue | Français partout — UI et code commenté en français si commentaire nécessaire | Cohérent avec `Objective.md`. |
 
@@ -60,62 +60,65 @@ Chrome sur iOS est un wrapper WebKit : **pas d'installation PWA sur l'écran d'a
 
 ## 4. Design
 
-Système visuel complet défini dans **Claude Design**, projet *BackPainDesign* (`https://claude.ai/design/p/26278c39-f837-45df-9871-0aba27003ad2`). **Source de vérité locale, vendorisée dans ce repo** (le projet Claude Design vit sur un autre compte que celui utilisé par les sessions Claude Code sur ce repo — `mcp__claude-design__read_file` n'y a pas accès) :
+Système visuel « Agrès » (refonte V1). Sources de vérité :
 
-- `design/uploads/claude.md` — brief complet.
-- `design/Suivi Entrainement.dc.html` — prototype visuel (format canvas `sc-if`/`sc-for`, pas du code React directement réutilisable — à traduire en composants réels).
-- `design/support.js` — runtime nécessaire pour ouvrir/rendre le `.dc.html`.
+- `design/v1/{aujourdhui,programme,seance,trophees,tracking,pictos}.html` — maquettes validées par Mathis, une par page.
+- `docs/superpowers/specs/2026-10-04-refonte-graphique-design.md` — spec : tokens, composants partagés, mouvement, repos par exercice.
 
-Ces fichiers sont la référence à relire en cas de doute — ne pas dépendre d'un accès MCP live au projet. Si le projet Claude Design est mis à jour, re-exporter (Share → Export → Project HTML) depuis le compte propriétaire et remplacer ces trois fichiers.
+Le brief et le prototype Claude Design d'origine (`design/uploads/claude.md`, `design/Suivi Entrainement.dc.html`, `design/support.js`) restent pour l'historique ; ils ne font plus référence.
 
 ### Direction artistique
 
-**Light épuré, beaucoup de blanc, qualité d'objet** — référence Apple Fitness. Aucun mode sombre dans cette version. Pas d'ornement, pas de dégradé décoratif, pas de glassmorphism.
+**Sobre, chiffres en grand.** Fond aluminium, cartes blanches, les nombres (jour, objectif, total, minuteur) sont l'élément le plus visible de chaque écran. Seul l'écran de repos est sombre, pour ne jamais se confondre avec l'exercice. Pas d'ornement, pas de dégradé décoratif, pas de glassmorphism.
 
 **La couleur encode le module** — c'est le principe structurant de toute l'app :
 
-- Programme (force) → **Cobalt**
-- Tracking (programme personnel) → **Sauge**
-- Trophées (accompli, cumulé) → **Laiton**
+- Programme (force) → **indigo** (`cobalt`)
+- Tracking (programme personnel) → **jade** (`sage`)
+- Trophées (accompli, cumulé) → **or** (`brass`), réservé aux paliers
 - Le reste de l'interface est neutre en toute circonstance. L'onglet actif dans la nav ne prend jamais la couleur d'accent.
 
 ### Tokens
 
 ```
---paper        #FFFFFF   surfaces, cartes
---canvas       #F6F7F4   fond d'écran
---ink          #111310   texte principal, chiffres
---graphite     #6E736B   texte secondaire, labels
---hairline     #E5E7E1   filets 1px, séparateurs
---cobalt       #1F3BE0   accent programme
---sage         #2E7D63   accent Tracking
---brass        #A9782C   accent trophées et paliers
+--canvas       #EDEFF2   fond d'écran (aluminium)
+--paper        #FFFFFF   cartes, feuilles
+--ink          #0B0D12   texte, nav, bouton principal neutre, fond du repos
+--graphite     #626B78   texte secondaire, étiquettes
+--hairline     #D9DEE5   filets, traits « à venir »
+--cobalt       #2F2BFF   Programme (+ cobalt-soft #E6E5FF)
+--sage         #0F9D74   Tracking (+ sage-soft #DDF3EC, sage-ink #0A5E47, sage-strong #08805F pour le petit texte)
+--brass        #C8961E   Trophées, paliers (+ brass-soft #F6EDD8, brass-ink #8A6410 pour le petit texte)
 --alert        #B3402E   uniquement destructif (réinitialiser, abandonner)
+--rest-surface #1A1E28   boutons et cartes de l'écran de repos (+ rest-line #232733, mist #9AA2AE)
 ```
+
+Valeurs dans `src/app/globals.css` (`@theme`) : c'est le fichier qui fait foi.
 
 Interdits explicites : crème #F4F1EA, terracotta #D97757, vert acide sur fond noir, dégradés violets.
 
 ### Typographie
 
-- **Archivo** (variable) — titres, chiffres, timers, compteurs, eyebrows. Chiffres tabulaires (`font-variant-numeric: tabular-nums`) partout où un chiffre change en direct. Grands nombres en Archivo Expanded 600.
-- **Inter Tight** — corps de texte, listes, descriptions, boutons.
-- Échelle : 44 / 32 / 24 / 18 / 15 / 13 / 11. Le timer de repos et le compteur de reps sortent de l'échelle, jusqu'à 96 px.
+- **Big Shoulders** (`font-display`, 700/800) — titres en capitales et tous les chiffres.
+- **Instrument Sans** (`font-body`) — noms d'exercices, paragraphes, boutons.
+- **IBM Plex Mono** (`font-mono`) — eyebrows en capitales espacées (0,14 em), méta.
+- Chiffres en `tabular-nums` partout où ils changent en direct. Échelle : 11 → 56 px, puis 112 px (objectif, total Trophées) et 120 px (minuteur de repos).
 
 ### Formes
 
-Rayon 20px (cartes) / 14px (champs) / 999px (pastilles, boutons pilule). Pas d'ombre portée diffuse — les cartes se distinguent par contraste `--paper`/`--canvas` + filet `--hairline` 1px. Seule exception : la barre d'action fixe en bas de la vue séance. Grille d'espacement de 4. Cibles tactiles ≥ 44px (56px pour les actions primaires).
+Rayon 22–28 px (cartes, `--radius-card: 24px`) / 14px (champs) / 999px (pilules, nav). Pas d'ombre portée diffuse — les cartes se distinguent par contraste `--paper`/`--canvas` + filet `--hairline` 1px. Seule exception : la barre d'action fixe en bas de la vue séance. Grille d'espacement de 4. Cibles tactiles ≥ 44px (56px pour les actions primaires).
 
-### L'élément signature : la grille de progression
+### L'élément signature : les sept traits
 
-Chaque niveau = **une ligne de 7 pastilles** (un jour = une pastille). États : à venir (contour hairline), aujourd'hui (contour plein 2px accent + halo), fait (rempli accent), sauté (rempli hairline), repos/marche (pastille creuse, point central). Jamais de heatmap façon GitHub, jamais de dégradé d'intensité — état binaire lisible.
+Chaque niveau = **sept traits** (`SeptTraits`, un trait par jour). États : fait (plein accent), aujourd'hui (accent pâle + flèche dessous), à venir (gris), sauté (gris), repos (trait fin gris). Jamais de heatmap façon GitHub, jamais de dégradé d'intensité — état binaire lisible.
 
 ### Navigation
 
-Barre d'onglets fixe en bas, **4 entrées** : `Aujourd'hui` / `Programme` / `Tracking` / `Trophées`. Réglages accessibles par icône dans l'en-tête d'Aujourd'hui, pas un 5ᵉ onglet. Le **mode séance est plein écran**, sans barre d'onglets — sortie par croix avec confirmation si séance entamée. Desktop (≥1024px) : colonne centrée 520px max, rail vertical à gauche au lieu de la barre du bas.
+Pilule `ink` flottante en bas, **4 entrées** : `Aujourd'hui` / `Programme` / `Tracking` / `Trophées`. Réglages accessibles par icône dans l'en-tête d'Aujourd'hui, pas un 5ᵉ onglet. Le **mode séance est plein écran**, sans barre d'onglets — sortie par croix avec confirmation si séance entamée. Desktop (≥1024px) : colonne centrée 520px max, même pilule en rail vertical à gauche.
 
 ### Mouvement
 
-Trois moments animés, pas un de plus : transition entre exercices (glissement horizontal 240ms), arc du timer de repos qui se vide, compteurs de trophées qui roulent de 0 à leur valeur à l'ouverture (600ms, décalé 40ms/carte). Respecter `prefers-reduced-motion` partout.
+Liste fermée (détail dans la spec § Mouvement) : entrée des cartes, étirement des traits, compteurs 0 → valeur (600 ms), feuilles qui montent, pastille de nav qui glisse, bouton qui se remplit (420 ms), glissement entre exercices (240 ms), cercle du minuteur qui se vide, battement des 3 dernières secondes, point du bandeau de reprise. Une animation par élément ; `prefers-reduced-motion` respecté partout (état final immédiat).
 
 ### Ton et écriture
 
@@ -123,7 +126,7 @@ Français, tutoiement, verbes actifs, zéro jargon technique. « Repos » pas «
 
 ### Anti-patterns — ne pas produire
 
-Cartes de métriques inventées (calories, VO2 max, « score de forme »), anneaux de progression concentriques, fil d'actualité / amis / classements / badges à partager, ombres portées diffuses, icônes multicolores dans les réglages, onboarding en plusieurs écrans, mode sombre non demandé, gamification culpabilisante (un jour manqué n'est pas un échec).
+Cartes de métriques inventées (calories, VO2 max, « score de forme »), fil d'actualité / amis / classements / badges à partager, ombres portées diffuses, icônes multicolores dans les réglages, onboarding en plusieurs écrans, mode sombre hors écran de repos, gamification culpabilisante (un jour manqué n'est pas un échec).
 
 ### États obligatoires
 
@@ -182,11 +185,11 @@ Reprise possible si la séance est quittée en cours (bandeau « Reprendre la s�
 
 ## 7. Conventions de travail
 
-- **Git** : le repo n'est **pas encore initialisé** (`git init` à faire avant le premier commit). Une fois fait : commits atomiques, messages en français, à l'impératif. Branches de fonctionnalité, `main` toujours déployable.
+- **Git** : commits atomiques, messages en français, à l'impératif. Branches de fonctionnalité, `main` toujours déployable.
 - Les données de programme (`data.ts` généré) vivent dans un module dédié, séparées de la logique applicative — jamais dupliquées ailleurs dans le code.
 - La logique de progression (montée de niveau, durée active de séance) est **pure et testée unitairement** — c'est le cœur du produit, un bug ici fausse des mois de suivi.
 - Test d'intégration obligatoire sur la persistance du player : enregistrer une série, naviguer ailleurs, revenir, vérifier que l'état est intact (cf. le bug de la v1, §2).
-- Migrations de schéma SQL versionnées (voir pattern v1 : `migrations/0001_init.sql`, etc.), avec sauvegarde avant application.
+- Migrations de schéma SQL versionnées (`migrations/NNNN_nom.sql`, une par changement, testée), avec sauvegarde avant application (faite par `deploy/deploy.sh`).
 
 ---
 
@@ -202,7 +205,8 @@ Tout est dans **`DEPLOYMENT.md`** : accès VM, architecture Cloudflare Tunnel + 
 Objective.md                          objectif produit d'origine (source brute)
 DEPLOYMENT.md                         infra, accès VM, script de déploiement
 deploy/                               deploy.sh + unité systemd
-design/                               brief + prototype Claude Design vendorisés (§4) — source de vérité locale
+design/v1/                            maquettes « Agrès » validées (§4) — source de vérité visuelle
+design/                               brief + prototype Claude Design d'origine (historique)
   uploads/claude.md                   brief complet
   Suivi Entrainement.dc.html          prototype visuel (canvas sc-if/sc-for)
   support.js                          runtime requis pour ouvrir le .dc.html
@@ -216,7 +220,7 @@ Caliathletics/
   download_thumbnails.py              vignettes d'exercices → public/exercises/
 ```
 
-Le code applicatif (Next.js) n'existe pas encore — ce repo contient à ce stade les données, le domaine et l'infra. Prochaine étape naturelle : scaffolder le projet Next.js (`output: "standalone"`, TypeScript) et lancer `generate_data_ts.py` / `download_thumbnails.py` une fois `src/` et `public/` en place.
+Code applicatif : `src/app/` (routes Next.js), `src/components/` (écrans et composants partagés), `src/lib/` (domaine, DB, auth), `migrations/` (schéma SQL), `docs/superpowers/` (specs et plans).
 
 <!-- BEGIN:nextjs-agent-rules -->
 
