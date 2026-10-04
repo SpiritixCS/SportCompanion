@@ -48,16 +48,23 @@ export function findOrCreateLinkedExercise(db: Database.Database, catalog: Catal
     const select = `SELECT id, name, unit, created_at AS createdAt FROM tracking_exercises`;
     const linked = db.prepare(`${select} WHERE catalog_id = ?`).get(catalog.id) as TrackingExercise | undefined;
     if (linked) return linked;
-    const sameName = db.prepare(`${select} WHERE name = ? AND catalog_id IS NULL`).get(catalog.name) as TrackingExercise | undefined;
+    const sameName = db
+      .prepare(`${select} WHERE name = ? COLLATE NOCASE AND unit = 'reps' AND catalog_id IS NULL`)
+      .get(catalog.name) as TrackingExercise | undefined;
     if (sameName) {
       db.prepare(`UPDATE tracking_exercises SET catalog_id = ? WHERE id = ?`).run(catalog.id, sameName.id);
+      // Ses reps hors séance suivent la carte (sinon elles disparaîtraient du total).
+      db.prepare(`UPDATE extra_reps SET card_id = ? WHERE card_id = ?`).run(catalog.id, `tracking-${sameName.id}`);
       return sameName;
     }
+    // Nom déjà pris par un exercice en secondes : on le laisse tel quel.
+    const taken = db.prepare(`SELECT 1 FROM tracking_exercises WHERE name = ?`).get(catalog.name);
+    const name = taken ? `${catalog.name} · reps` : catalog.name;
     const createdAt = new Date().toISOString();
     const result = db
       .prepare(`INSERT INTO tracking_exercises (name, unit, created_at, catalog_id) VALUES (?, 'reps', ?, ?)`)
-      .run(catalog.name, createdAt, catalog.id);
-    return { id: Number(result.lastInsertRowid), name: catalog.name, unit: "reps" as const, createdAt };
+      .run(name, createdAt, catalog.id);
+    return { id: Number(result.lastInsertRowid), name, unit: "reps" as const, createdAt };
   })();
 }
 

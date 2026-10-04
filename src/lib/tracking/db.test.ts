@@ -411,6 +411,31 @@ describe("findOrCreateLinkedExercise", () => {
     expect(db.prepare(`SELECT catalog_id AS c FROM tracking_exercises WHERE id = ?`).get(linked.id)).toEqual({ c: "pull-ups" });
   });
 
+  it("moves the extra reps of an adopted free exercise to the catalogue card", () => {
+    const db = setup();
+    const seance = startSeance(db, null);
+    const [set] = logSetForExercise(db, seance.id, "Pull ups", "reps", 8);
+    db.prepare(`INSERT INTO extra_reps (card_id, amount, logged_at) VALUES (?, 150, '2026-10-01')`).run(`tracking-${set!.exerciseId}`);
+    findOrCreateLinkedExercise(db, pullUps());
+    expect(db.prepare(`SELECT card_id AS c, amount AS a FROM extra_reps`).all()).toEqual([{ c: "pull-ups", a: 150 }]);
+  });
+
+  it("adopts a free exercise whatever the case of its name", () => {
+    const db = setup();
+    const seance = startSeance(db, null);
+    const [set] = logSetForExercise(db, seance.id, "pull ups", "reps", 8);
+    expect(findOrCreateLinkedExercise(db, pullUps()).id).toBe(set!.exerciseId);
+  });
+
+  it("never adopts a free exercise counted in seconds", () => {
+    const db = setup();
+    const seance = startSeance(db, null);
+    const [set] = logSetForExercise(db, seance.id, "Pull ups", "seconds", 30);
+    const linked = findOrCreateLinkedExercise(db, pullUps());
+    expect(linked.id).not.toBe(set!.exerciseId);
+    expect(db.prepare(`SELECT catalog_id AS c FROM tracking_exercises WHERE id = ?`).get(set!.exerciseId)).toEqual({ c: null });
+  });
+
   it("logs a set on the linked exercise when a catalogue entry is given", () => {
     const db = setup();
     const seance = startSeance(db, null);

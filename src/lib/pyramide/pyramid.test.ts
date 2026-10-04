@@ -33,6 +33,7 @@ describe("clampPeak", () => {
     expect(clampPeak(1)).toBe(2);
     expect(clampPeak(99)).toBe(30);
     expect(clampPeak(7.6)).toBe(8);
+    expect(clampPeak(Number.NaN)).toBe(2);
   });
 });
 

@@ -6,6 +6,7 @@ export const PEAK_MIN = 2;
 export const PEAK_MAX = 30;
 
 export function clampPeak(peak: number): number {
+  if (!Number.isFinite(peak)) return PEAK_MIN;
   return Math.min(PEAK_MAX, Math.max(PEAK_MIN, Math.round(peak)));
 }
 
