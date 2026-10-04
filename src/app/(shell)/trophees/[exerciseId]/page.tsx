@@ -5,8 +5,8 @@ import { currentUser } from "@/lib/auth/currentUser";
 import { loadTrophyDetail } from "@/lib/trophies/loadTrophyDetail";
 import { listExtraReps } from "@/lib/extraReps/db";
 import { ExtraRepsSection } from "@/components/trophies/ExtraRepsSection";
-import { Card } from "@/components/Card";
-import { IconClose } from "@/components/icons/IconClose";
+import { TrophyMark } from "@/components/trophies/TrophyCard";
+import { PalierLadder } from "@/components/trophies/PalierLadder";
 
 export const dynamic = "force-dynamic";
 
@@ -27,59 +27,45 @@ export default async function TrophyDetailPage({
 
   if (!detail) notFound();
 
+  const isReps = detail.unit === "reps";
+
   return (
-    <div className="pb-10">
-      <div className="p-5">
-        <Link
-          href="/trophees"
-          aria-label="Retour aux trophées"
-          className="w-11 h-11 rounded-pill border border-hairline bg-paper flex items-center justify-center text-ink"
-        >
-          <IconClose size={18} />
-        </Link>
+    <div className="px-[18px] pt-5 pb-10">
+      <Link
+        href="/trophees"
+        aria-label="Retour aux trophées"
+        className="w-11 h-11 rounded-pill border border-hairline bg-paper grid place-items-center text-ink"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" />
+        </svg>
+      </Link>
+
+      <div className="mt-[18px]">
+        <TrophyMark card={detail} size="lg" />
+      </div>
+      <h1 className="font-display font-extrabold text-44 uppercase leading-[0.9] mt-3.5 [text-wrap:balance]">{detail.name}</h1>
+      <div className="font-display font-extrabold text-[96px] leading-[0.82] tabular-nums mt-3">
+        {detail.total.toLocaleString("fr-FR")}
+      </div>
+      <div className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mt-1.5">
+        {isReps ? "reps" : "secondes"} au total
       </div>
 
-      <div className="px-5">
-        {detail.module === "programme" && (
-          <div className="aspect-[4/3] rounded-card border border-hairline bg-paper overflow-hidden mb-5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/exercises/${detail.id}.jpg`}
-              alt={detail.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
+      {isReps && <PalierLadder total={detail.total} />}
 
-        <h1 className="font-display text-32 font-semibold">{detail.name}</h1>
-        <div className="font-display text-44 font-semibold tabular-nums mt-3">
-          {detail.total}
-          {detail.unit === "seconds" && <span className="text-24 font-medium"> s</span>}
+      <div className="bg-paper rounded-[22px] mt-2.5 px-4 py-0.5">
+        <div className="flex justify-between gap-4 py-[13px] border-b border-hairline text-[14px]">
+          <span className="text-graphite">Premier passage</span>
+          <span className="tabular-nums">{formatDateFr(detail.firstAt)}</span>
         </div>
-
-        <Card className="mt-6 p-4">
-          <div className="flex justify-between py-2">
-            <span className="text-15 text-graphite">Premier passage</span>
-            <span className="text-15 tabular-nums">{formatDateFr(detail.firstAt)}</span>
-          </div>
-          <div className="flex justify-between py-2 border-t border-hairline">
-            <span className="text-15 text-graphite">Dernier passage</span>
-            <span className="text-15 tabular-nums">{formatDateFr(detail.lastAt)}</span>
-          </div>
-          {detail.unit === "reps" && (
-            <div className="flex justify-between py-2 border-t border-hairline">
-              <span className="text-15 text-graphite">Prochain palier</span>
-              <span className="text-15 tabular-nums">
-                {detail.prochainPalier === null
-                  ? "Tous les paliers atteints"
-                  : `${detail.resteAParcourir} restants pour atteindre ${detail.prochainPalier}`}
-              </span>
-            </div>
-          )}
-        </Card>
-
-        <ExtraRepsSection cardId={detail.id} unit={detail.unit} entries={listExtraReps(db, detail.id)} />
+        <div className="flex justify-between gap-4 py-[13px] text-[14px]">
+          <span className="text-graphite">Dernier passage</span>
+          <span className="tabular-nums">{formatDateFr(detail.lastAt)}</span>
+        </div>
       </div>
+
+      <ExtraRepsSection cardId={detail.id} unit={detail.unit} entries={listExtraReps(db, detail.id)} />
     </div>
   );
 }

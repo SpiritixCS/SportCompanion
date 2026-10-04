@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/Card";
+import { FillButton } from "@/components/FillButton";
 import { Sheet } from "@/components/Sheet";
 import { addExtraRepsAction, deleteExtraRepsAction } from "@/lib/extraReps/actions";
 import type { ExtraRepsEntry } from "@/lib/extraReps/db";
@@ -70,7 +70,7 @@ export function ExtraRepsSection({
           setFailed(false);
           setAddOpen(true);
         }}
-        className="mt-4 h-14 w-full rounded-pill bg-paper border border-hairline text-ink font-body text-15 font-semibold"
+        className="mt-3 h-[54px] w-full rounded-pill bg-paper border border-hairline text-ink font-body text-15 font-semibold"
       >
         Ajouter des {noun}
       </button>
@@ -80,13 +80,13 @@ export function ExtraRepsSection({
           <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
             Hors séance
           </h2>
-          <Card className="overflow-hidden">
+          <div className="bg-paper rounded-[22px] overflow-hidden">
             {entries.map((entry, i) => (
               <div
                 key={entry.id}
                 className={`min-h-14 px-4 flex items-center justify-between gap-4 ${i > 0 ? "border-t border-hairline" : ""}`}
               >
-                <span className="font-body text-15 font-semibold tabular-nums">+{entry.amount}</span>
+                <span className="font-display font-bold text-24 tabular-nums">+{entry.amount}</span>
                 <span className="text-15 text-graphite flex-1">{formatDateFr(entry.loggedAt)}</span>
                 <button
                   type="button"
@@ -101,7 +101,7 @@ export function ExtraRepsSection({
                 </button>
               </div>
             ))}
-          </Card>
+          </div>
         </section>
       )}
 
@@ -116,18 +116,15 @@ export function ExtraRepsSection({
           pattern="[0-9]*"
           value={draft}
           onChange={(e) => setDraft(e.target.value.trim())}
-          className="w-full h-14 rounded-field border border-hairline bg-paper px-4 font-display text-24 font-semibold tabular-nums"
+          className="w-full h-16 rounded-[18px] border border-hairline bg-paper px-4 font-display font-extrabold text-44 tabular-nums"
         />
         <p className="text-13 text-graphite mt-2">Compté aujourd&apos;hui, hors séance.</p>
         {failed && <p className="text-13 text-graphite mt-2">Impossible d&apos;enregistrer. Réessaie.</p>}
-        <button
-          type="button"
-          onClick={handleAdd}
-          disabled={!valid || busy}
-          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-body text-15 font-semibold disabled:opacity-40"
-        >
-          Ajouter
-        </button>
+        <div className="mt-6">
+          <FillButton accent="brass" onClick={handleAdd} disabled={!valid || busy}>
+            Ajouter
+          </FillButton>
+        </div>
       </Sheet>
 
       <Sheet open={toDelete !== null} onClose={() => setToDelete(null)} title="Supprimer l'ajout">
