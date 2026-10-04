@@ -233,7 +233,7 @@ export function DayEditor({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Nom de l'exercice"
-              className="mt-2 w-full h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-15"
+              className="mt-2 w-full h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-[16px]"
             />
             <datalist id="day-exercise-suggestions">
               {exerciseSuggestions.map((e) => (

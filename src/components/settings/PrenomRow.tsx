@@ -35,7 +35,7 @@ export function PrenomRow({ prenom, onConfirm }: { prenom: string; onConfirm: (n
           maxLength={40}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          className="w-full h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-15"
+          className="w-full h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-[16px]"
         />
         <div className="mt-6">
           <FillButton

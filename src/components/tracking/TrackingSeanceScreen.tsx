@@ -184,7 +184,7 @@ export function TrackingSeanceScreen({
           value={exerciseName}
           onChange={(e) => setExerciseName(e.target.value)}
           placeholder="Nom de l'exercice"
-          className="h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-15"
+          className="h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-[16px]"
         />
         <datalist id="tracking-exercise-suggestions">
           {exerciseSuggestions.map((e) => (

@@ -43,7 +43,7 @@ export function PrenomScreen() {
           maxLength={40}
           value={prenom}
           onChange={(e) => setPrenom(e.target.value)}
-          className="h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-15 mt-2"
+          className="h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-[16px] mt-2"
         />
         {error && <p className="text-13 text-graphite mt-3">Impossible d&apos;enregistrer. Réessaie.</p>}
         <button
