@@ -1,6 +1,6 @@
-import type { Accent, PastilleState } from "./Pastille";
+import type { Accent, DayState } from "@/components/accent";
 
-const LABELS: Record<PastilleState, string> = {
+const LABELS: Record<DayState, string> = {
   done: "Fait",
   today: "Aujourd'hui",
   upcoming: "À venir",
@@ -12,7 +12,7 @@ const LABELS: Record<PastilleState, string> = {
 const ACCENT_FILL: Record<Accent, string> = { cobalt: "bg-cobalt", sage: "bg-sage", brass: "bg-brass" };
 const ACCENT_TEXT: Record<Accent, string> = { cobalt: "text-cobalt", sage: "text-sage", brass: "text-brass" };
 
-function traitClass(state: PastilleState, accent: Accent): string {
+function traitClass(state: DayState, accent: Accent): string {
   switch (state) {
     case "done":
       return ACCENT_FILL[accent];
@@ -34,7 +34,7 @@ export function SeptTraits({
   showNumbers = false,
   todayCaret = false,
 }: {
-  states: PastilleState[];
+  states: DayState[];
   accent?: Accent;
   size?: "lg" | "sm";
   showNumbers?: boolean;

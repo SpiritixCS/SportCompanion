@@ -1,6 +1,5 @@
 "use client";
 
-import { Card } from "@/components/Card";
 
 export default function ErrorPage({
   error,
@@ -10,12 +9,12 @@ export default function ErrorPage({
   retry: () => void;
 }) {
   return (
-    <div className="p-5">
-      <Card className="p-6">
+    <div className="px-[18px] pt-5">
+      <div className="bg-paper rounded-[28px] p-6">
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-graphite">
           Erreur
         </span>
-        <div className="font-display text-24 font-semibold mt-3 leading-[1.15]">
+        <div className="font-display font-extrabold text-32 uppercase leading-[0.92] mt-2">
           Une erreur est survenue.
         </div>
         <div className="text-15 text-graphite mt-3">{error.message || "Impossible de charger cette page."}</div>
@@ -26,7 +25,7 @@ export default function ErrorPage({
         >
           Réessayer
         </button>
-      </Card>
+      </div>
     </div>
   );
 }

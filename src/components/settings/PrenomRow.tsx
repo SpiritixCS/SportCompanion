@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Sheet } from "@/components/Sheet";
+import { FillButton } from "@/components/FillButton";
 
 export function PrenomRow({ prenom, onConfirm }: { prenom: string; onConfirm: (next: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -18,10 +19,10 @@ export function PrenomRow({ prenom, onConfirm }: { prenom: string; onConfirm: (n
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Prénom"
-        className="w-full min-h-14 px-5 flex items-center justify-between gap-4"
+        className="w-full min-h-14 px-4 flex items-center justify-between gap-4"
       >
         <span className="text-15">Prénom</span>
-        <span className="font-display text-15 font-medium text-graphite">{prenom}</span>
+        <span className="text-15 text-graphite">{prenom}</span>
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title="Prénom">
         <label htmlFor="reglages-prenom" className="sr-only">
@@ -34,19 +35,19 @@ export function PrenomRow({ prenom, onConfirm }: { prenom: string; onConfirm: (n
           maxLength={40}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          className="w-full h-14 rounded-field border border-hairline bg-paper px-4 text-15"
+          className="w-full h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-15"
         />
-        <button
-          type="button"
-          disabled={blank}
-          onClick={() => {
-            onConfirm(draft);
-            setOpen(false);
-          }}
-          className="mt-6 h-14 w-full rounded-pill bg-ink text-paper font-body text-15 font-semibold disabled:opacity-40"
-        >
-          Valider
-        </button>
+        <div className="mt-6">
+          <FillButton
+            disabled={blank}
+            onClick={() => {
+              onConfirm(draft);
+              setOpen(false);
+            }}
+          >
+            Valider
+          </FillButton>
+        </div>
       </Sheet>
     </>
   );

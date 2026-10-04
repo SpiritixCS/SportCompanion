@@ -3,11 +3,12 @@ import { render, screen } from "@testing-library/react";
 import { Card } from "./Card";
 
 describe("Card", () => {
-  it("renders children inside a paper surface with hairline border and card radius", () => {
+  it("renders children inside a borderless paper surface with card radius", () => {
     render(<Card>contenu</Card>);
     const card = screen.getByText("contenu");
     expect(card).toBeInTheDocument();
-    expect(card).toHaveClass("bg-paper", "border-hairline", "rounded-card");
+    expect(card).toHaveClass("bg-paper", "rounded-card");
+    expect(card).not.toHaveClass("border");
   });
 
   it("merges a custom className", () => {

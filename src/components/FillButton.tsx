@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Accent } from "./Pastille";
+import type { Accent } from "@/components/accent";
 
 const SWEEP_MS = 420;
 

@@ -57,7 +57,7 @@ export function AujourdhuiScreen({
     return (
       <div className="px-[18px] pt-5 pb-4 flex flex-col gap-4">
         <div className="mb-2"><AujourdhuiHeader userLabel={user.label} onOpenReglages={() => setReglagesOpen(true)} /></div>
-        <Card className="rounded-[28px] border-0 p-6">
+        <Card className="rounded-[28px] p-6">
           <span className="font-mono text-11 uppercase tracking-[0.14em] text-cobalt">
             Premier jour
           </span>

@@ -9,7 +9,7 @@ import { Sheet } from "@/components/Sheet";
 import { REST_BETWEEN_SETS_SECONDS, REST_BETWEEN_EXERCISES_SECONDS } from "@/lib/player/constants";
 import { useWakeLock } from "@/lib/player/useWakeLock";
 import { activeDurationSeconds, isInactive } from "@/lib/player/activeDuration";
-import type { Accent } from "@/components/Pastille";
+import type { Accent } from "@/components/accent";
 import type { TrainDay } from "@/lib/workout/types";
 import type { PlayerState } from "@/lib/player/loadPlayerState";
 import type { SetLoggedRecord } from "@/lib/player/db";

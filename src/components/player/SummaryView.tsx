@@ -4,7 +4,7 @@ import { useCountUp } from "@/components/trophies/useCountUp";
 import type { MovementFamily } from "@/lib/trophies/movementFamily";
 import { formatClock } from "@/lib/player/formatClock";
 import { palierAtteint } from "@/lib/trophies/paliers";
-import type { Accent } from "@/components/Pastille";
+import type { Accent } from "@/components/accent";
 import type { Exercise } from "@/lib/workout/types";
 import type { SetLoggedRecord } from "@/lib/player/db";
 

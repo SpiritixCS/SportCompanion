@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sheet } from "@/components/Sheet";
 import { FillButton } from "@/components/FillButton";
-import type { Accent } from "@/components/Pastille";
+import type { Accent } from "@/components/accent";
 
 // ponytail: stepper (−/valeur/+) au lieu d'une vraie molette à
 // glisser/snap — le brief design l'appelle "feuille à molette", une

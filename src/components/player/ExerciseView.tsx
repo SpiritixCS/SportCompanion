@@ -5,7 +5,7 @@ import { IconClose } from "@/components/icons/IconClose";
 import { FillButton } from "@/components/FillButton";
 import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
 import { InitialTile } from "@/components/glyphs/InitialTile";
-import type { Accent } from "@/components/Pastille";
+import type { Accent } from "@/components/accent";
 import { RepsSheet } from "./RepsSheet";
 import { formatTarget } from "@/lib/player/formatTarget";
 import { formatClock } from "@/lib/player/formatClock";

@@ -4,19 +4,19 @@ import { useState } from "react";
 import { SeptTraits } from "@/components/SeptTraits";
 import { PARCOURS } from "@/lib/programme/parcours";
 import { DaySheet } from "./DaySheet";
-import type { PastilleState } from "@/components/Pastille";
+import type { DayState } from "@/components/accent";
 import type { ProgrammeLevelRow } from "@/lib/programme/loadProgrammeState";
 
 // dayIndex null : plus aucun jour d'entraînement à faire dans le niveau (fin de niveau).
 type Current = { parcours: string; level: number; dayIndex: number | null } | null;
 
 // Le jour courant reste « fait » s'il est validé ; sinon il passe en « aujourd'hui ».
-function withToday(states: PastilleState[], todayIndex: number | null): PastilleState[] {
+function withToday(states: DayState[], todayIndex: number | null): DayState[] {
   if (todayIndex === null) return states;
   return states.map((s, i) => (i === todayIndex && s === "upcoming" ? "today" : s));
 }
 
-const MARK: Record<PastilleState, string> = {
+const MARK: Record<DayState, string> = {
   done: "bg-cobalt h-1",
   today: "bg-cobalt opacity-35 h-1",
   upcoming: "bg-hairline h-1",

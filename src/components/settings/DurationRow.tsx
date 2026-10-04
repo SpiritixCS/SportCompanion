@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Sheet } from "@/components/Sheet";
-import { Button } from "@/components/Button";
+import { FillButton } from "@/components/FillButton";
 
 const STEP_SECONDS = 15;
 const FLOOR_SECONDS = 15;
@@ -31,36 +31,32 @@ export function DurationRow({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={label}
-        className={`w-full min-h-14 px-5 flex items-center justify-between gap-4 ${
+        className={`w-full min-h-14 px-4 flex items-center justify-between gap-4 ${
           divider ? "border-t border-hairline" : ""
         }`}
       >
         <span className="text-15">{label}</span>
-        <span className="font-display text-15 font-medium text-graphite tabular-nums">{valueSeconds} s</span>
+        <span className="font-mono text-13 text-graphite tabular-nums">{valueSeconds} s</span>
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title={label}>
-        <div className="flex flex-col items-center gap-1 py-4">
-          <div className="flex items-center justify-center gap-6">
-            <Button variant="secondary" onClick={() => setDraft((v) => Math.max(FLOOR_SECONDS, v - STEP_SECONDS))}>
-              −
-            </Button>
-            <span className="font-display text-44 font-semibold tabular-nums w-24 text-center">{draft}</span>
-            <Button variant="secondary" onClick={() => setDraft((v) => v + STEP_SECONDS)}>
-              +
-            </Button>
-          </div>
-          <span className="text-13 text-graphite">secondes</span>
+        <div className="grid grid-cols-[64px_1fr_64px] items-center my-3.5">
+          <button type="button" onClick={() => setDraft((v) => Math.max(FLOOR_SECONDS, v - STEP_SECONDS))} className="w-16 h-16 rounded-pill border border-hairline bg-paper font-body text-[30px] text-ink">
+            −
+          </button>
+          <span className="text-center font-display font-extrabold text-112 leading-[0.85] tabular-nums">{draft}</span>
+          <button type="button" onClick={() => setDraft((v) => v + STEP_SECONDS)} className="w-16 h-16 rounded-pill border border-hairline bg-paper font-body text-[30px] text-ink">
+            +
+          </button>
         </div>
-        <button
-          type="button"
+        <p className="text-center font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-[18px]">secondes</p>
+        <FillButton
           onClick={() => {
             onConfirm(draft);
             setOpen(false);
           }}
-          className="h-14 w-full rounded-pill bg-ink text-paper font-body text-15 font-semibold"
         >
           Valider
-        </button>
+        </FillButton>
       </Sheet>
     </>
   );

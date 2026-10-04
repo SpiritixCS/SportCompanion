@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { setPrenomAction } from "@/lib/profile/actions";
+import { FillButton } from "@/components/FillButton";
 
 // Premier accès d'un nouvel utilisateur : le prénom est demandé une fois,
 // avant tout écran du shell. Le layout le relit en DB après refresh.
@@ -28,11 +29,11 @@ export function PrenomScreen() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col justify-center p-5 max-w-[520px] mx-auto">
+    <main className="min-h-dvh flex flex-col justify-center px-[18px] py-5 max-w-[520px] mx-auto">
       <form onSubmit={handleSubmit} className="flex flex-col">
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-graphite">Bienvenue</span>
-        <h1 className="font-display text-32 font-semibold mt-3">Comment tu t&apos;appelles ?</h1>
-        <label htmlFor="prenom" className="text-13 text-graphite mt-8">
+        <h1 className="font-display font-extrabold text-44 uppercase leading-[0.9] mt-2">Comment tu t&apos;appelles ?</h1>
+        <label htmlFor="prenom" className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mt-8">
           Prénom
         </label>
         <input
@@ -42,7 +43,7 @@ export function PrenomScreen() {
           maxLength={40}
           value={prenom}
           onChange={(e) => setPrenom(e.target.value)}
-          className="h-14 rounded-field border border-hairline bg-paper px-4 text-15 mt-2"
+          className="h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-15 mt-2"
         />
         {error && <p className="text-13 text-graphite mt-3">Impossible d&apos;enregistrer. Réessaie.</p>}
         <button

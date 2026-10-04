@@ -5,7 +5,7 @@ import { estimateDurationMinutes } from "./estimateDuration";
 import { formatTarget } from "@/lib/player/formatTarget";
 import { getActiveSeance, getSetsForSeance, getSkippedExercises } from "@/lib/player/db";
 import { deriveState } from "@/lib/player/deriveState";
-import type { PastilleState } from "@/components/Pastille";
+import type { DayState } from "@/components/accent";
 import type { ParcoursMeta } from "./parcours";
 
 export type TodayState =
@@ -22,7 +22,7 @@ export type TodayState =
       exercises: { id: string; family: string; sets: number; name: string; dose: string }[];
       totalExercises: number;
       durationEstimateMinutes: number;
-      pastilles: PastilleState[];
+      pastilles: DayState[];
       done: boolean;
       doneReps: number | null;
       resume: { exerciseName: string } | null;
@@ -59,7 +59,7 @@ export function loadTodayState(db: Database.Database, allParcours: ParcoursMeta[
   const day = levelDays[position.dayIndex];
   if (!day || day.kind !== "train") return { phase: "empty" };
 
-  const pastilles: PastilleState[] = levelDays.map((d, i) => {
+  const pastilles: DayState[] = levelDays.map((d, i) => {
     if (d.kind === "rest") return "restOrWalk";
     if (isDayValidated(db, position.parcours, position.level, i, position.cycle)) return "done";
     if (i === position.dayIndex) return "today";

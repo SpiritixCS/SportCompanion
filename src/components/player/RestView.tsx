@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { GlyphSvg } from "@/components/glyphs/ExerciseGlyph";
-import type { Accent } from "@/components/Pastille";
+import type { Accent } from "@/components/accent";
 import type { Exercise } from "@/lib/workout/types";
 import type { MovementFamily } from "@/lib/trophies/movementFamily";
 

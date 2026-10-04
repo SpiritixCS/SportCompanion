@@ -2,8 +2,9 @@
 
 export default function TropheesError({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="p-5">
-      <p className="text-15 text-graphite">Impossible de charger les trophées.</p>
+    <div className="px-[18px] pt-5">
+      <span className="font-mono text-11 uppercase tracking-[0.14em] text-brass-ink">Trophées</span>
+      <p className="text-15 text-graphite mt-2">Impossible de charger les trophées.</p>
       <button
         type="button"
         onClick={reset}

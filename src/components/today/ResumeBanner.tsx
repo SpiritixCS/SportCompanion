@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Accent } from "@/components/Pastille";
+import type { Accent } from "@/components/accent";
 
 const DOT: Record<Accent, string> = { cobalt: "bg-cobalt", sage: "bg-sage", brass: "bg-brass" };
 const RING: Record<Accent, string> = { cobalt: "border-cobalt", sage: "border-sage", brass: "border-brass" };

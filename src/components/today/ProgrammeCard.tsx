@@ -7,7 +7,7 @@ import { SeptTraits } from "@/components/SeptTraits";
 import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
 import { FillLink } from "@/components/FillButton";
 import { IconCheck } from "@/components/icons/IconCheck";
-import type { PastilleState } from "@/components/Pastille";
+import type { DayState } from "@/components/accent";
 import type { MovementFamily } from "@/lib/trophies/movementFamily";
 
 const PREVIEW_COUNT = 3;
@@ -28,7 +28,7 @@ export function ProgrammeCard({
   parcoursLabel: string;
   level: number;
   dayTitle: string;
-  pastilles: PastilleState[];
+  pastilles: DayState[];
   exercises: TodayExercise[];
   durationEstimateMinutes: number;
   done: boolean;
@@ -41,7 +41,7 @@ export function ProgrammeCard({
   const dayNumber = pastilles.indexOf("today") + 1 || Number(dayTitle.replace(/\D/g, "")) || 1;
 
   return (
-    <Card className="rounded-[28px] border-0 px-5 pt-[22px] pb-5">
+    <Card className="rounded-[28px] px-5 pt-[22px] pb-5">
       <h2 className="sr-only">
         {parcoursLabel} · Niveau {level + 1} · {dayTitle}
       </h2>

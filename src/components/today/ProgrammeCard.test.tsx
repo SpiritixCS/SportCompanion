@@ -4,9 +4,9 @@ import { render, screen } from "@testing-library/react";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 import userEvent from "@testing-library/user-event";
 import { ProgrammeCard } from "./ProgrammeCard";
-import type { PastilleState } from "@/components/Pastille";
+import type { DayState } from "@/components/accent";
 
-const PASTILLES: PastilleState[] = ["done", "restOrWalk", "today", "upcoming", "restOrWalk", "upcoming", "upcoming"];
+const PASTILLES: DayState[] = ["done", "restOrWalk", "today", "upcoming", "restOrWalk", "upcoming", "upcoming"];
 
 const FIVE_EXERCISES = [
   { id: "push-ups", family: "push", sets: 3, name: "Push ups", dose: "3 × 12" },

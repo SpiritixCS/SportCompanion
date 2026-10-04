@@ -6,7 +6,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`bg-paper border border-hairline rounded-card ${className}`.trim()}>
+    <div className={`bg-paper rounded-card ${className}`.trim()}>
       {children}
     </div>
   );

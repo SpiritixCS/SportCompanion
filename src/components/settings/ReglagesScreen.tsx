@@ -53,8 +53,8 @@ export function ReglagesScreen({
 
   return (
     <div className="fixed inset-0 z-50 bg-canvas flex flex-col">
-      <div className="flex-none p-5 flex items-center justify-between gap-4">
-        <span className="font-display text-24 font-semibold">Réglages</span>
+      <div className="flex-none px-[18px] pt-5 pb-4 flex items-center justify-between gap-4">
+        <h1 className="font-display font-extrabold text-44 uppercase leading-[0.9]">Réglages</h1>
         <button
           type="button"
           onClick={onClose}
@@ -65,9 +65,9 @@ export function ReglagesScreen({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-10 flex flex-col gap-8">
+      <div className="flex-1 overflow-y-auto px-[18px] pb-10 flex flex-col gap-7">
         {error && (
-          <div className="bg-paper border border-hairline rounded-card p-6">
+          <div className="bg-paper rounded-[22px] p-6">
             <p className="text-15 text-graphite">Impossible de charger les réglages.</p>
             <button
               type="button"
@@ -81,8 +81,8 @@ export function ReglagesScreen({
 
         {!error && !state && (
           <div className="flex flex-col gap-8">
-            <div className="h-40 rounded-card bg-paper border border-hairline animate-pulse" />
-            <div className="h-40 rounded-card bg-paper border border-hairline animate-pulse" />
+            <div className="h-40 rounded-[22px] bg-paper animate-pulse" />
+            <div className="h-40 rounded-[22px] bg-paper animate-pulse" />
           </div>
         )}
 
@@ -92,7 +92,7 @@ export function ReglagesScreen({
               <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Profil
               </h2>
-              <div className="bg-paper border border-hairline rounded-card overflow-hidden">
+              <div className="bg-paper rounded-[22px] overflow-hidden">
                 <PrenomRow prenom={state.prenom ?? ""} onConfirm={savePrenom} />
               </div>
             </section>
@@ -101,16 +101,16 @@ export function ReglagesScreen({
               <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Programme
               </h2>
-              <div className="bg-paper border border-hairline rounded-card overflow-hidden">
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4">
+              <div className="bg-paper rounded-[22px] overflow-hidden">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4">
                   <span className="text-15">Parcours actif</span>
-                  <span className="font-display text-15 font-medium text-graphite">
+                  <span className="font-mono text-13 text-graphite">
                     {programmePosition?.parcoursLabel ?? "Non défini"}
                   </span>
                 </div>
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4 border-t border-hairline">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4 border-t border-hairline">
                   <span className="text-15">Position</span>
-                  <span className="font-display text-15 font-medium text-graphite tabular-nums">
+                  <span className="font-mono text-13 text-graphite tabular-nums">
                     {programmePosition
                       ? programmePosition.dayIndex !== null
                         ? `Niveau ${programmePosition.level + 1} · Jour ${programmePosition.dayIndex + 1}`
@@ -121,7 +121,7 @@ export function ReglagesScreen({
                 <button
                   type="button"
                   onClick={onChangePointDepart}
-                  className="w-full min-h-14 px-5 flex items-center justify-between gap-4 border-t border-hairline"
+                  className="w-full min-h-14 px-4 flex items-center justify-between gap-4 border-t border-hairline"
                 >
                   <span className="text-15">Changer mon point de départ</span>
                   <IconChevronRight className="text-graphite flex-none" />
@@ -133,7 +133,7 @@ export function ReglagesScreen({
               <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Séance
               </h2>
-              <div className="bg-paper border border-hairline rounded-card overflow-hidden">
+              <div className="bg-paper rounded-[22px] overflow-hidden">
                 <DurationRow
                   label="Repos entre séries"
                   valueSeconds={state.restBetweenSetsSeconds}
@@ -145,7 +145,7 @@ export function ReglagesScreen({
                   onConfirm={(v) => patch({ restBetweenExercisesSeconds: v })}
                   divider
                 />
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4 border-t border-hairline">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4 border-t border-hairline">
                   <span className="text-15">Décompte sonore</span>
                   <Toggle
                     checked={state.soundCountdownEnabled}
@@ -153,7 +153,7 @@ export function ReglagesScreen({
                     label="Décompte sonore"
                   />
                 </div>
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4 border-t border-hairline">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4 border-t border-hairline">
                   <span className="text-15">Compte à rebours</span>
                   <Toggle
                     checked={state.startCountdownEnabled}
@@ -161,7 +161,7 @@ export function ReglagesScreen({
                     label="Compte à rebours"
                   />
                 </div>
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4 border-t border-hairline">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4 border-t border-hairline">
                   <span className="text-15">Garder l&apos;écran allumé</span>
                   <Toggle
                     checked={state.keepScreenAwakeEnabled}
@@ -176,14 +176,14 @@ export function ReglagesScreen({
               <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 Données
               </h2>
-              <div className="bg-paper border border-hairline rounded-card overflow-hidden">
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4 opacity-40">
+              <div className="bg-paper rounded-[22px] overflow-hidden">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4 opacity-40">
                   <span className="text-15">
                     Exporter
                     <span className="block text-13 text-graphite mt-0.5">Bientôt disponible</span>
                   </span>
                 </div>
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4 border-t border-hairline opacity-40">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4 border-t border-hairline opacity-40">
                   <span className="text-15 text-alert">
                     Réinitialiser la progression
                     <span className="block text-13 text-graphite mt-0.5">Bientôt disponible</span>
@@ -196,10 +196,10 @@ export function ReglagesScreen({
               <h2 className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mb-3">
                 À propos
               </h2>
-              <div className="bg-paper border border-hairline rounded-card overflow-hidden">
-                <div className="min-h-14 px-5 flex items-center justify-between gap-4">
+              <div className="bg-paper rounded-[22px] overflow-hidden">
+                <div className="min-h-14 px-4 flex items-center justify-between gap-4">
                   <span className="text-15">Version</span>
-                  <span className="font-display text-15 font-medium text-graphite tabular-nums">{state.version}</span>
+                  <span className="font-mono text-13 text-graphite tabular-nums">{state.version}</span>
                 </div>
               </div>
             </section>

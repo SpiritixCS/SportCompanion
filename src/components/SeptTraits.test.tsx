@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SeptTraits } from "./SeptTraits";
-import type { PastilleState } from "./Pastille";
+import type { DayState } from "@/components/accent";
 
-const WEEK: PastilleState[] = ["done", "restOrWalk", "done", "restOrWalk", "today", "restOrWalk", "upcoming"];
+const WEEK: DayState[] = ["done", "restOrWalk", "done", "restOrWalk", "today", "restOrWalk", "upcoming"];
 
 describe("SeptTraits", () => {
   it("renders one labelled trait per day", () => {

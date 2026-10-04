@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/Card";
-import { Button } from "@/components/Button";
 import { RepsSheet } from "@/components/player/RepsSheet";
 import { IconClose } from "@/components/icons/IconClose";
 import {
@@ -30,8 +28,8 @@ function groupByExercise(sets: TrackingSetWithExercise[]): ExerciseGroup[] {
   return [...map.values()].sort((a, b) => a.exerciseOrder - b.exerciseOrder);
 }
 
-function pillClass(active: boolean): string {
-  return `h-9 px-3 rounded-pill text-13 font-medium ${active ? "bg-ink text-paper" : "bg-paper border border-hairline text-ink"}`;
+function unitClass(active: boolean): string {
+  return `h-[34px] rounded-pill font-body text-13 font-semibold ${active ? "bg-ink text-paper" : "text-graphite"}`;
 }
 
 export function TrackingSeanceScreen({
@@ -134,19 +132,20 @@ export function TrackingSeanceScreen({
   }
 
   return (
-    <div className="p-5 flex flex-col gap-6">
-      <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
+    <div className="px-[18px] pt-5 pb-10 flex flex-col gap-5">
+      <div>
+        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
+        <h1 className="font-display font-extrabold text-44 uppercase leading-[0.9] mt-1.5">Séance libre</h1>
+      </div>
 
       {error && (
-        <div className="bg-paper border border-hairline rounded-card p-6">
-          <p className="text-15 text-graphite">Une erreur est survenue. Réessaie.</p>
-        </div>
+        <p className="text-13 text-alert">Une erreur est survenue. Réessaie.</p>
       )}
 
       {groups.length === 0 ? (
         <p className="text-15 text-graphite">Ajoute ton premier exercice ci-dessous.</p>
       ) : (
-        <Card className="overflow-hidden">
+        <div className="bg-paper rounded-[22px] overflow-hidden">
           {groups.map((group, i) => (
             <div key={group.exerciseOrder} className={`px-5 py-3.5 ${i > 0 ? "border-t border-hairline" : ""}`}>
               <div className="flex items-center justify-between gap-2">
@@ -166,7 +165,7 @@ export function TrackingSeanceScreen({
                     key={s.id}
                     type="button"
                     onClick={() => setEditingSet(s)}
-                    className="h-7 px-2.5 rounded-pill bg-canvas text-13 tabular-nums"
+                    className="h-[30px] px-3 rounded-pill bg-sage-soft text-sage-ink font-display font-bold text-[16px] tabular-nums"
                   >
                     {s.valeurActual}
                     {group.unit === "seconds" ? " s" : ""}
@@ -175,17 +174,17 @@ export function TrackingSeanceScreen({
               </div>
             </div>
           ))}
-        </Card>
+        </div>
       )}
 
-      <Card className="p-5 flex flex-col gap-4">
+      <div className="bg-paper rounded-[22px] p-4 flex flex-col gap-3">
         <input
           type="text"
           list="tracking-exercise-suggestions"
           value={exerciseName}
           onChange={(e) => setExerciseName(e.target.value)}
           placeholder="Nom de l'exercice"
-          className="h-14 rounded-field border border-hairline px-4 text-15"
+          className="h-[52px] rounded-[14px] border border-hairline bg-paper px-3.5 text-15"
         />
         <datalist id="tracking-exercise-suggestions">
           {exerciseSuggestions.map((e) => (
@@ -196,64 +195,64 @@ export function TrackingSeanceScreen({
         {matchedExercise ? (
           <div className="text-13 text-graphite">Unité : {matchedExercise.unit === "seconds" ? "secondes" : "reps"}</div>
         ) : (
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setUnit("reps")} className={pillClass(unit === "reps")}>
+          <div className="grid grid-cols-2 gap-1 border border-hairline rounded-pill p-1">
+            <button type="button" aria-pressed={unit === "reps"} onClick={() => setUnit("reps")} className={unitClass(unit === "reps")}>
               Reps
             </button>
-            <button type="button" onClick={() => setUnit("seconds")} className={pillClass(unit === "seconds")}>
+            <button type="button" aria-pressed={unit === "seconds"} onClick={() => setUnit("seconds")} className={unitClass(unit === "seconds")}>
               Secondes
             </button>
           </div>
         )}
 
-        <div className="flex items-center justify-center gap-6">
-          <Button variant="secondary" ariaLabel="Diminuer la valeur" onClick={() => setValeur((v) => Math.max(0, v - 1))}>
+        <div className="grid grid-cols-[56px_1fr_56px] items-center">
+          <button type="button" aria-label="Diminuer la valeur" onClick={() => setValeur((v) => Math.max(0, v - 1))} className="w-14 h-14 rounded-pill border border-hairline bg-paper font-body text-[26px] text-ink">
             −
-          </Button>
-          <span className="font-display text-44 font-semibold tabular-nums w-16 text-center">{valeur}</span>
-          <Button variant="secondary" ariaLabel="Augmenter la valeur" onClick={() => setValeur((v) => v + 1)}>
+          </button>
+          <span className="text-center font-display font-extrabold text-72 leading-[0.85] tabular-nums">{valeur}</span>
+          <button type="button" aria-label="Augmenter la valeur" onClick={() => setValeur((v) => v + 1)} className="w-14 h-14 rounded-pill border border-hairline bg-paper font-body text-[26px] text-ink">
             +
-          </Button>
+          </button>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-15 text-graphite">Nombre de séries</span>
+          <span className="text-15">Nombre de séries</span>
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Retirer une série du lot"
               onClick={() => setCount((v) => Math.max(1, v - 1))}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
+              className="w-10 h-10 rounded-pill border border-hairline bg-paper font-body text-[20px] font-medium"
             >
               −
             </button>
-            <span className="font-display text-18 font-semibold tabular-nums w-6 text-center">{count}</span>
+            <b className="font-display font-extrabold text-[28px] min-w-11 text-center tabular-nums">{count}</b>
             <button
               type="button"
               aria-label="Ajouter une série au lot"
               onClick={() => setCount((v) => v + 1)}
-              className="w-9 h-9 rounded-pill border border-hairline flex items-center justify-center font-display text-15"
+              className="w-10 h-10 rounded-pill border border-hairline bg-paper font-body text-[20px] font-medium"
             >
               +
             </button>
           </div>
         </div>
 
-        <Button
-          variant="primary"
-          accent="sage"
+        <button
+          type="button"
           onClick={handleAddSet}
           disabled={saving || exerciseName.trim() === ""}
+          className="h-14 w-full rounded-pill bg-sage-strong text-paper font-body text-15 font-semibold disabled:opacity-40"
         >
           Ajouter la série
-        </Button>
-      </Card>
+        </button>
+      </div>
 
       {!completed && (
         <button
           type="button"
           onClick={handleFinish}
-          className="h-14 rounded-pill border border-hairline flex items-center justify-center font-body text-15 font-semibold"
+          className="h-14 rounded-pill border border-hairline bg-paper flex items-center justify-center font-body text-15 font-semibold"
         >
           Terminer la séance
         </button>

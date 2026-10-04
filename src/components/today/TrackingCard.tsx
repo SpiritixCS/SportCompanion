@@ -32,7 +32,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
     const href =
       activeSeance.dayOfWeek !== null ? `/player/tracking?day=${activeSeance.dayOfWeek}` : `/tracking/${activeSeance.id}`;
     return (
-      <Card className="rounded-[28px] border-0 p-5">
+      <Card className="rounded-[28px] p-5">
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
         <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{activeSeance.dayLabel ?? "Séance en cours"}</div>
 
@@ -79,7 +79,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
   if (state.programEmpty) {
     return (
-      <Card className="rounded-[28px] border-0 p-5">
+      <Card className="rounded-[28px] p-5">
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
         <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">Ton programme sur 7 jours est vide.</div>
         <Link
@@ -94,7 +94,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
   if (programDay.isRest) {
     return (
-      <Card className="rounded-[28px] border-0 p-5">
+      <Card className="rounded-[28px] p-5">
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
         <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{programDay.label} · Repos</div>
         <button
@@ -110,7 +110,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
   }
 
   return (
-    <Card className="rounded-[28px] border-0 p-5">
+    <Card className="rounded-[28px] p-5">
       <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
       <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{programDay.label}</div>
 
