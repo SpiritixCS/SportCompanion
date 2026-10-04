@@ -191,7 +191,7 @@ describe("AujourdhuiScreen", () => {
       />,
     );
     const text = container.textContent ?? "";
-    expect(text.indexOf("Monte, redescends")).toBeGreaterThan(text.indexOf("Commencer la séance"));
-    expect(text.indexOf("Monte, redescends")).toBeLessThan(text.lastIndexOf("Tracking"));
+    expect(text.indexOf("UP, DOWN")).toBeGreaterThan(text.indexOf("Commencer la séance"));
+    expect(text.indexOf("UP, DOWN")).toBeLessThan(text.lastIndexOf("Tracking"));
   });
 });

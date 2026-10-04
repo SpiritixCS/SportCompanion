@@ -19,7 +19,7 @@ export function PyramidCard({ suggestions, catalog, lastPeaks, activeHref }: Pyr
     <>
       <div className="card-rise bg-paper rounded-[28px] p-5">
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Pyramide</span>
-        <h2 className="font-display font-extrabold text-[34px] uppercase leading-[0.92] mt-1.5">Monte, redescends</h2>
+        <h2 className="font-display font-extrabold text-[34px] uppercase leading-[0.92] mt-1.5">UP, DOWN</h2>
         <div aria-hidden="true" className="flex items-end gap-[3px] h-[34px] mt-3 mb-4">
           {pyramidSteps("classic", 5).map((reps, i) => (
             <span key={i} style={{ height: `${reps * 20}%` }} className="flex-1 rounded-[3px] bg-sage-soft" />
