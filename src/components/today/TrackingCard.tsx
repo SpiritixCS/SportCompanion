@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { advanceProgramDayAction } from "@/lib/tracking/actions";
 import { doseLabel } from "@/lib/tracking/dose";
+import { activeSeanceHref } from "@/lib/tracking/activeSeanceHref";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 
 export function TrackingCard({ state }: { state: TrackingScreenState }) {
@@ -26,12 +27,11 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
 
   if (state.activeSeance !== null) {
     const { activeSeance } = state;
-    const href =
-      activeSeance.dayOfWeek !== null ? `/player/tracking?day=${activeSeance.dayOfWeek}` : `/tracking/${activeSeance.id}`;
+    const href = activeSeanceHref(activeSeance);
     return (
       <Card className="rounded-[28px] p-5">
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
-        <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{activeSeance.dayLabel ?? "Séance en cours"}</div>
+        <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">{activeSeance.pyramid ? `Pyramide · ${activeSeance.pyramid.exerciseName}` : (activeSeance.dayLabel ?? "Séance en cours")}</div>
 
         {activeSeance.plannedExercises !== null ? (
           activeSeance.plannedExercises.length > 0 && (

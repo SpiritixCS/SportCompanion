@@ -1,6 +1,6 @@
 // src/lib/tracking/loadTrackingScreenState.ts
 import type Database from "better-sqlite3";
-import { getActiveSeance, getSetsForSeance, listCompletedSeances, type TrackingSeanceSummary, type TrackingSetWithExercise, type TrackingUnit } from "./db";
+import { getActiveSeance, getPyramid, getSetsForSeance, listCompletedSeances, type PyramidConfig, type TrackingSeanceSummary, type TrackingSetWithExercise, type TrackingUnit } from "./db";
 import { getPointer, getProgramDay, getProgramDays, type DayExercise, type TrackingProgramDay } from "./program";
 
 type ActiveSeanceExercise = { name: string; unit: TrackingUnit; setsCount: number; totalValue: number };
@@ -16,6 +16,7 @@ export type TrackingScreenState = {
     dayLabel: string | null;
     plannedExercises: DayExercise[] | null;
     loggedExercises: ActiveSeanceExercise[];
+    pyramid?: PyramidConfig | null;
   } | null;
   seances: TrackingSeanceSummary[];
 };
@@ -55,6 +56,7 @@ export function loadTrackingScreenState(db: Database.Database): TrackingScreenSt
           dayLabel: activeDay?.label ?? null,
           plannedExercises: activeDay?.exercises ?? null,
           loggedExercises: summarizeActiveSets(getSetsForSeance(db, active.id)),
+          pyramid: getPyramid(db, active.id),
         }
       : null,
     seances: listCompletedSeances(db),

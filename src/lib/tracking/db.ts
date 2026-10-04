@@ -273,3 +273,16 @@ export function deleteActiveSeance(db: Database.Database, seanceId: number): voi
     deleteSeance(db, seanceId);
   })();
 }
+
+// Dernier sommet terminé par exercice (nom en minuscules) : préremplit le lancement.
+export function lastPeaks(db: Database.Database): Record<string, number> {
+  const rows = db
+    .prepare(
+      `SELECT lower(trim(tp.exercise_name)) AS name, tp.peak FROM tracking_pyramids tp
+       JOIN tracking_seances s ON s.id = tp.seance_id
+       WHERE s.completed_at IS NOT NULL
+       ORDER BY s.completed_at ASC, s.id ASC`,
+    )
+    .all() as { name: string; peak: number }[];
+  return Object.fromEntries(rows.map((r) => [r.name, r.peak]));
+}

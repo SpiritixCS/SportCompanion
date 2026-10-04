@@ -9,6 +9,10 @@ import { Sheet } from "@/components/Sheet";
 import { FillLink } from "@/components/FillButton";
 import { InitialTile } from "@/components/glyphs/InitialTile";
 import { DayEditor } from "./DayEditor";
+import { PyramidLauncher } from "./PyramidLauncher";
+import { activeSeanceHref } from "@/lib/tracking/activeSeanceHref";
+import { pyramidSteps } from "@/lib/pyramide/pyramid";
+import type { CatalogExercise } from "@/lib/pyramide/catalog";
 import { formatClock } from "@/lib/player/formatClock";
 import { doseLabel } from "@/lib/tracking/dose";
 import { advanceProgramDayAction, deleteTrackingSeanceAction, saveDayAction } from "@/lib/tracking/actions";
@@ -28,11 +32,15 @@ export function TrackingScreen({
   days,
   exerciseSuggestions,
   globalRestSeconds,
+  lastPeaks = {},
+  catalog = [],
 }: {
   state: TrackingScreenState;
   days: TrackingProgramDay[];
   exerciseSuggestions: { name: string; unit: TrackingUnit }[];
   globalRestSeconds: number;
+  lastPeaks?: Record<string, number>;
+  catalog?: CatalogExercise[];
 }) {
   const router = useRouter();
   const [error, setError] = useState(false);
@@ -40,6 +48,8 @@ export function TrackingScreen({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [advancing, setAdvancing] = useState(false);
+  const [launcherOpen, setLauncherOpen] = useState(false);
+  const activeHref = state.activeSeance ? activeSeanceHref(state.activeSeance) : null;
 
   const pointer = state.programDay.dayOfWeek;
   const next = state.programDay;
@@ -98,11 +108,7 @@ export function TrackingScreen({
         <div className="mt-[18px]">
           <ResumeBanner
             exerciseName="ta séance en cours"
-            href={
-              state.activeSeance.dayOfWeek !== null
-                ? `/player/tracking?day=${state.activeSeance.dayOfWeek}`
-                : `/tracking/${state.activeSeance.id}`
-            }
+            href={activeHref!}
             accent="sage"
           />
         </div>
@@ -206,6 +212,19 @@ export function TrackingScreen({
         </div>
       )}
 
+      <div className="card-rise mt-3 bg-paper rounded-[28px] p-5">
+        <span className={`${EYEBROW} text-sage-strong`}>Pyramide</span>
+        <h2 className="font-display font-extrabold text-[34px] uppercase leading-[0.92] mt-1.5">Monte, redescends</h2>
+        <div aria-hidden="true" className="flex items-end gap-[3px] h-[34px] mt-3 mb-4">
+          {pyramidSteps("classic", 5).map((reps, i) => (
+            <span key={i} style={{ height: `${reps * 20}%` }} className="flex-1 rounded-[3px] bg-sage-soft" />
+          ))}
+        </div>
+        <button type="button" onClick={() => setLauncherOpen(true)} className={LINE_BUTTON}>
+          Lancer une pyramide
+        </button>
+      </div>
+
       <section className="mt-[26px]">
         <span className={`${EYEBROW} text-graphite`}>Tes séances</span>
         {state.seances.length === 0 ? (
@@ -214,11 +233,22 @@ export function TrackingScreen({
           state.seances.map((seance) => (
             <div key={seance.id} className="flex items-center gap-2 bg-paper rounded-[18px] pl-4 pr-2 py-3.5 mt-2">
               <Link href={`/tracking/${seance.id}`} className="flex-1 flex items-center justify-between gap-4 min-w-0">
-                <span>
+                <span className="min-w-0">
                   <span className="block text-15 font-medium">{formatDateFr(seance.completedAt)}</span>
-                  <span className="block text-13 text-graphite mt-0.5">
-                    {seance.exerciseCount} exercice{seance.exerciseCount > 1 ? "s" : ""}
-                  </span>
+                  {seance.pyramid ? (
+                    <span className="block text-13 text-graphite mt-0.5">
+                      <span>Pyramide · {seance.pyramid.exerciseName}</span>{" "}
+                      <span className="font-mono text-11 tracking-[0.06em]">
+                        {seance.pyramid.shape === "classic"
+                          ? `1→${seance.pyramid.peak}→1`
+                          : `${seance.pyramid.peak}→1→${seance.pyramid.peak}`}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="block text-13 text-graphite mt-0.5">
+                      {seance.exerciseCount} exercice{seance.exerciseCount > 1 ? "s" : ""}
+                    </span>
+                  )}
                 </span>
                 <span className="text-right">
                   {seance.totalReps > 0 && (
@@ -247,6 +277,17 @@ export function TrackingScreen({
           ))
         )}
       </section>
+
+      {launcherOpen && (
+        <Sheet open onClose={() => setLauncherOpen(false)} eyebrow="Pyramide" title="Lancer" accent="sage">
+          <PyramidLauncher
+            suggestions={[...new Set([...catalog.map((c) => c.name), ...exerciseSuggestions.map((e) => e.name)])]}
+            catalog={catalog}
+            lastPeaks={lastPeaks}
+            activeHref={activeHref}
+          />
+        </Sheet>
+      )}
 
       {editingDay && (
         <Sheet open onClose={() => setEditing(null)} eyebrow="Modifier le jour" title={editingDay.label} accent="sage">

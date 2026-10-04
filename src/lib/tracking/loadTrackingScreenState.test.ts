@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
-import { startSeance, logSetForExercise, completeSeance } from "./db";
+import { startSeance, logSetForExercise, completeSeance, startPyramidSeance } from "./db";
 import { setDayRest, setDayExercises, advancePointer } from "./program";
 import { loadTrackingScreenState } from "./loadTrackingScreenState";
 
@@ -64,6 +64,7 @@ describe("loadTrackingScreenState", () => {
       dayLabel: "Lundi",
       plannedExercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null, pyramid: null }],
       loggedExercises: [{ name: "Dips", unit: "reps", setsCount: 2, totalValue: 24 }],
+      pyramid: null,
     });
     expect(state.seances).toHaveLength(1);
     expect(state.seances[0]!.id).toBe(past.id);
@@ -81,6 +82,7 @@ describe("loadTrackingScreenState", () => {
       dayLabel: null,
       plannedExercises: null,
       loggedExercises: [{ name: "Squats", unit: "reps", setsCount: 3, totalValue: 30 }],
+      pyramid: null,
     });
   });
 
@@ -103,6 +105,7 @@ describe("loadTrackingScreenState", () => {
       dayLabel: null,
       plannedExercises: null,
       loggedExercises: [{ name: "Squats", unit: "reps", setsCount: 3, totalValue: 30 }],
+      pyramid: null,
     });
   });
 });
@@ -117,5 +120,13 @@ describe("loadTrackingScreenState — programEmpty", () => {
     const db = setup();
     setDayExercises(db, 2, [{ name: "Tractions", unit: "reps", setsCount: 3, targetValue: 8 }]);
     expect(loadTrackingScreenState(db).programEmpty).toBe(false);
+  });
+});
+
+describe("loadTrackingScreenState — pyramide", () => {
+  it("exposes the configuration of an active pyramid", () => {
+    const db = setup();
+    startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 5 });
+    expect(loadTrackingScreenState(db).activeSeance?.pyramid).toEqual({ exerciseName: "Dips", shape: "classic", peak: 5 });
   });
 });

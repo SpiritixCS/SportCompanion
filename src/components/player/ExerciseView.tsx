@@ -66,7 +66,8 @@ export function ExerciseView({
   const stepTarget = setTarget(exercise, setNumber);
   const pyramid = exercise.pyramid;
   const setWord = pyramid ? "Marche" : "Série";
-  const isTracking = accent === "sage";
+  // Exercice libre du Tracking : initiale ; une pyramide liée au catalogue garde son picto.
+  const isTracking = accent === "sage" && exercise.movementFamily === "other";
 
   return (
     <div className="h-dvh flex flex-col bg-canvas overflow-hidden">
@@ -105,7 +106,7 @@ export function ExerciseView({
             {isTracking ? (
               <InitialTile name={exercise.name} size="lg" />
             ) : (
-              <ExerciseGlyph exerciseId={exercise.id} family={exercise.movementFamily as MovementFamily} size="lg" />
+              <ExerciseGlyph exerciseId={exercise.id} family={exercise.movementFamily as MovementFamily} accent={accent === "sage" ? "sage" : "cobalt"} size="lg" />
             )}
           </div>
           <h1 className="font-display font-extrabold text-44 uppercase leading-[0.92] mt-[18px] [text-wrap:balance]">

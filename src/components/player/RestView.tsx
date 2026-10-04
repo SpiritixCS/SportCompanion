@@ -133,7 +133,7 @@ export function RestView({
             aria-hidden="true"
             className="w-11 h-11 rounded-[12px] bg-rest-surface text-[#B9B7FF] grid place-items-center font-display font-extrabold text-24"
           >
-            {next && accent === "sage" ? (
+            {next && accent === "sage" && next.exercise.movementFamily === "other" ? (
               next.exercise.name.trim().charAt(0).toUpperCase()
             ) : next ? (
               <GlyphSvg exerciseId={next.exercise.id} family={next.exercise.movementFamily as MovementFamily} size={22} />

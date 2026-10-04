@@ -28,6 +28,7 @@ import {
   startPyramidSeance,
   getPyramid,
   lastPeakFor,
+  lastPeaks,
 } from "./db";
 import { findCatalogByName } from "@/lib/pyramide/catalog";
 
@@ -469,5 +470,18 @@ describe("pyramid seances", () => {
     deleteActiveSeance(db, pyr.id);
     expect(getPyramid(db, pyr.id)).toBeNull();
     expect(getActiveSeance(db)).toBeNull();
+  });
+});
+
+describe("lastPeaks", () => {
+  it("maps each pyramid exercise (lowercased) to its last completed peak", () => {
+    const db = setup();
+    const a = startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 5 });
+    completeSeance(db, a.id);
+    const b = startPyramidSeance(db, { exerciseName: "dips", shape: "classic", peak: 8 });
+    completeSeance(db, b.id);
+    const c = startPyramidSeance(db, { exerciseName: "Pull ups", shape: "inverted", peak: 4 });
+    completeSeance(db, c.id);
+    expect(lastPeaks(db)).toEqual({ dips: 8, "pull ups": 4 });
   });
 });

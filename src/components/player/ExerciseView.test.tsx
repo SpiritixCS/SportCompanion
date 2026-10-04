@@ -100,4 +100,9 @@ describe("ExerciseView", () => {
     expect(bars.map((b) => b.getAttribute("data-state"))).toEqual(["done", "current", "upcoming", "upcoming", "upcoming"]);
     expect(screen.queryAllByTestId("set-bar")).toHaveLength(0);
   });
+
+  it("shows the catalogue picto, not an initial, for a Tracking pyramid on a catalogue exercise", () => {
+    renderView({ accent: "sage", exercise: { ...EXERCISE, movementFamily: "pull", sets: 5, pyramid: { shape: "classic", peak: 3 } } });
+    expect(screen.queryByTestId("initial-tile")).not.toBeInTheDocument();
+  });
 });

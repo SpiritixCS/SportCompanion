@@ -6,7 +6,7 @@ import { TrackingScreen } from "./TrackingScreen";
 import type { TrackingProgramDay } from "@/lib/tracking/program";
 
 const refresh = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push: vi.fn() }) }));
 
 const deleteTrackingSeanceAction = vi.fn();
 const saveDayAction = vi.fn();
@@ -14,6 +14,7 @@ const advanceProgramDayAction = vi.fn();
 vi.mock("@/lib/tracking/actions", () => ({
   deleteTrackingSeanceAction: (...args: unknown[]) => deleteTrackingSeanceAction(...args),
   saveDayAction: (...args: unknown[]) => saveDayAction(...args),
+  startPyramidAction: vi.fn(),
   advanceProgramDayAction: (...args: unknown[]) => advanceProgramDayAction(...args),
 }));
 
@@ -34,7 +35,7 @@ const WED: TrackingProgramDay = {
     { ordre: 1, name: "Gainage", unit: "seconds", setsCount: 3, targetValue: 45, restSeconds: null, pyramid: null },
   ],
 };
-const BASE = { days: REST_DAYS, exerciseSuggestions: [], globalRestSeconds: 90 };
+const BASE = { days: REST_DAYS, exerciseSuggestions: [], globalRestSeconds: 90, lastPeaks: {} };
 
 describe("TrackingScreen", () => {
   it("shows the empty state with no history", () => {
@@ -213,5 +214,40 @@ describe("TrackingScreen", () => {
     render(<TrackingScreen {...BASE} days={REST_DAYS.map((d) => (d.dayOfWeek === 2 ? pyr : d))} state={{ ...EMPTY_STATE, programDay: pyr }} />);
     expect(screen.getByText("Pyramide 1→5→1")).toBeInTheDocument();
     expect(screen.getByText("Repos auto")).toBeInTheDocument();
+  });
+
+  it("offers to launch a pyramid", async () => {
+    render(<TrackingScreen {...BASE} state={EMPTY_STATE} />);
+    await userEvent.click(screen.getByRole("button", { name: "Lancer une pyramide" }));
+    expect(screen.getByRole("dialog", { name: "Pyramide · Lancer" })).toBeInTheDocument();
+  });
+
+  it("shows a pyramid in the history with its shape and total", () => {
+    render(
+      <TrackingScreen
+        {...BASE}
+        state={{
+          ...EMPTY_STATE,
+          seances: [
+            { id: 9, startedAt: "2026-10-04T08:00:00.000Z", completedAt: "2026-10-04T08:20:00.000Z", totalReps: 49, totalSeconds: 0, exerciseCount: 1, pyramid: { exerciseName: "Pull ups", shape: "classic", peak: 7 } },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText("Pyramide · Pull ups")).toBeInTheDocument();
+    expect(screen.getByText("1→7→1")).toBeInTheDocument();
+  });
+
+  it("resumes an active pyramid in the pyramid player", () => {
+    render(
+      <TrackingScreen
+        {...BASE}
+        state={{
+          ...EMPTY_STATE,
+          activeSeance: { id: 9, dayOfWeek: null, dayLabel: null, plannedExercises: null, loggedExercises: [], pyramid: { exerciseName: "Dips", shape: "classic", peak: 5 } },
+        }}
+      />,
+    );
+    expect(screen.getAllByRole("link", { name: /Reprendre/ })[0]).toHaveAttribute("href", "/player/pyramide");
   });
 });

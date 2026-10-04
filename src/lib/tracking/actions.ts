@@ -2,6 +2,7 @@
 
 import { getDbForUser } from "@/lib/db/client";
 import { findCatalogByName } from "@/lib/pyramide/catalog";
+import { clampPeak, type PyramidShape } from "@/lib/pyramide/pyramid";
 import { currentUser } from "@/lib/auth/currentUser";
 import {
   getOrStartSeance,
@@ -14,6 +15,9 @@ import {
   skipExercise as skipExerciseDb,
   resumeSeance as resumeSeanceDb,
   deleteActiveSeance,
+  getActiveSeance,
+  getPyramid,
+  startPyramidSeance,
   type TrackingSetWithExercise,
   type TrackingUnit,
 } from "./db";
@@ -125,4 +129,33 @@ export async function resumeDaySeanceAction(seanceId: number): Promise<void> {
 // N'avance pas le pointeur : le jour reste à faire.
 export async function discardDaySeanceAction(seanceId: number): Promise<void> {
   deleteActiveSeance(await db(), seanceId);
+}
+
+// Pyramide libre : une seule séance Tracking active à la fois (startPyramidSeance refuse sinon).
+export async function startPyramidAction(input: { exerciseName: string; shape: PyramidShape; peak: number }): Promise<void> {
+  const exerciseName = input.exerciseName.trim();
+  if (!exerciseName) throw new Error("Nom d'exercice requis");
+  if (input.shape !== "classic" && input.shape !== "inverted") throw new Error("Forme inconnue");
+  startPyramidSeance(await db(), { exerciseName, shape: input.shape, peak: clampPeak(input.peak) });
+}
+
+export async function logPyramidSetAction(params: {
+  seanceId: number;
+  exerciseOrder: number;
+  exerciseId: string;
+  setNumber: number;
+  repsTarget: string;
+  repsActual: number;
+  restSeconds: number;
+}): Promise<void> {
+  const database = await db();
+  const config = getPyramid(database, params.seanceId);
+  if (!config || getActiveSeance(database)?.id !== params.seanceId) throw new Error("Pyramide introuvable");
+  const catalog = findCatalogByName(config.exerciseName) ?? undefined;
+  logSetForExercise(database, params.seanceId, config.exerciseName, "reps", params.repsActual, 1, 0, catalog);
+}
+
+// N'avance pas le pointeur du programme : une pyramide libre est hors semaine.
+export async function completePyramidAction(seanceId: number): Promise<void> {
+  completeSeanceDb(await db(), seanceId);
 }
