@@ -10,6 +10,8 @@ import { SetupFlow } from "@/components/setup/SetupFlow";
 import { AujourdhuiHeader } from "./AujourdhuiHeader";
 import { ReglagesScreen } from "@/components/settings/ReglagesScreen";
 import { TrackingCard } from "./TrackingCard";
+import { PyramidCard, type PyramidCardProps } from "@/components/tracking/PyramidCard";
+import { activeSeanceHref } from "@/lib/tracking/activeSeanceHref";
 import type { TodayState } from "@/lib/programme/loadTodayState";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 
@@ -21,14 +23,22 @@ export function AujourdhuiScreen({
   state,
   trackingState,
   user,
+  pyramid,
 }: {
   state: TodayState;
   trackingState: TrackingScreenState;
   user: { label: string };
+  pyramid?: PyramidCardProps;
 }) {
   const router = useRouter();
   const [setupOpen, setSetupOpen] = useState(false);
   const [reglagesOpen, setReglagesOpen] = useState(false);
+  const pyramidCard = pyramid ? (
+    <PyramidCard
+      {...pyramid}
+      activeHref={trackingState.activeSeance ? activeSeanceHref(trackingState.activeSeance) : null}
+    />
+  ) : null;
 
   if (setupOpen) {
     return <SetupFlow onClose={() => setSetupOpen(false)} />;
@@ -76,6 +86,7 @@ export function AujourdhuiScreen({
           </button>
         </Card>
         <TrackingCard state={trackingState} />
+        {pyramidCard}
       </div>
     );
   }
@@ -91,6 +102,7 @@ export function AujourdhuiScreen({
           onResolved={() => router.refresh()}
         />
         <TrackingCard state={trackingState} />
+        {pyramidCard}
       </div>
     );
   }
@@ -118,6 +130,7 @@ export function AujourdhuiScreen({
       />
 
       <TrackingCard state={trackingState} />
+      {pyramidCard}
     </div>
   );
 }

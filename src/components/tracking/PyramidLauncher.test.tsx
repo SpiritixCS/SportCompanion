@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 function renderLauncher(props: Partial<React.ComponentProps<typeof PyramidLauncher>> = {}) {
-  return render(<PyramidLauncher suggestions={["Pull ups", "Dips"]} lastPeaks={{ "pull ups": 7 }} activeHref={null} {...props} />);
+  return render(<PyramidLauncher suggestions={["Pull ups", "Push ups", "Australian pull ups", "Dips", "Élévations"]} lastPeaks={{ "pull ups": 7 }} activeHref={null} {...props} />);
 }
 
 describe("PyramidLauncher", () => {
@@ -53,5 +53,30 @@ describe("PyramidLauncher", () => {
     renderLauncher({ activeHref: "/player/tracking?day=2" });
     expect(screen.queryByRole("button", { name: "Lancer" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Reprendre ta séance en cours" })).toHaveAttribute("href", "/player/tracking?day=2");
+  });
+
+  it("narrows the exercise list as letters are typed, names starting with them first", async () => {
+    renderLauncher();
+    const input = screen.getByPlaceholderText("Nom de l'exercice");
+    await userEvent.type(input, "pu");
+    const options = screen.getAllByRole("option").map((o) => o.textContent);
+    expect(options).toEqual(["Pull ups", "Push ups", "Australian pull ups"]);
+    await userEvent.type(input, "l");
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Pull ups", "Australian pull ups"]);
+  });
+
+  it("ignores accents and case while narrowing", async () => {
+    renderLauncher();
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "elev");
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual(["Élévations"]);
+  });
+
+  it("fills the name when a suggestion is chosen, and closes the list", async () => {
+    renderLauncher();
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "pul");
+    await userEvent.click(screen.getByRole("option", { name: "Pull ups" }));
+    expect(screen.getByPlaceholderText("Nom de l'exercice")).toHaveValue("Pull ups");
+    expect(screen.queryAllByRole("option")).toHaveLength(0);
+    expect(screen.getByText("49 reps · 13 marches")).toBeInTheDocument();
   });
 });

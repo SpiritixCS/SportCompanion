@@ -9,9 +9,8 @@ import { Sheet } from "@/components/Sheet";
 import { FillLink } from "@/components/FillButton";
 import { InitialTile } from "@/components/glyphs/InitialTile";
 import { DayEditor } from "./DayEditor";
-import { PyramidLauncher } from "./PyramidLauncher";
+import { PyramidCard } from "./PyramidCard";
 import { activeSeanceHref } from "@/lib/tracking/activeSeanceHref";
-import { pyramidSteps } from "@/lib/pyramide/pyramid";
 import type { CatalogExercise } from "@/lib/pyramide/catalog";
 import { formatClock } from "@/lib/player/formatClock";
 import { doseLabel } from "@/lib/tracking/dose";
@@ -48,7 +47,6 @@ export function TrackingScreen({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [advancing, setAdvancing] = useState(false);
-  const [launcherOpen, setLauncherOpen] = useState(false);
   const activeHref = state.activeSeance ? activeSeanceHref(state.activeSeance) : null;
 
   const pointer = state.programDay.dayOfWeek;
@@ -212,17 +210,13 @@ export function TrackingScreen({
         </div>
       )}
 
-      <div className="card-rise mt-3 bg-paper rounded-[28px] p-5">
-        <span className={`${EYEBROW} text-sage-strong`}>Pyramide</span>
-        <h2 className="font-display font-extrabold text-[34px] uppercase leading-[0.92] mt-1.5">Monte, redescends</h2>
-        <div aria-hidden="true" className="flex items-end gap-[3px] h-[34px] mt-3 mb-4">
-          {pyramidSteps("classic", 5).map((reps, i) => (
-            <span key={i} style={{ height: `${reps * 20}%` }} className="flex-1 rounded-[3px] bg-sage-soft" />
-          ))}
-        </div>
-        <button type="button" onClick={() => setLauncherOpen(true)} className={LINE_BUTTON}>
-          Lancer une pyramide
-        </button>
+      <div className="mt-3">
+        <PyramidCard
+          suggestions={[...new Set([...catalog.map((c) => c.name), ...exerciseSuggestions.map((e) => e.name)])]}
+          catalog={catalog}
+          lastPeaks={lastPeaks}
+          activeHref={activeHref}
+        />
       </div>
 
       <section className="mt-[26px]">
@@ -277,17 +271,6 @@ export function TrackingScreen({
           ))
         )}
       </section>
-
-      {launcherOpen && (
-        <Sheet open onClose={() => setLauncherOpen(false)} eyebrow="Pyramide" title="Lancer" accent="sage">
-          <PyramidLauncher
-            suggestions={[...new Set([...catalog.map((c) => c.name), ...exerciseSuggestions.map((e) => e.name)])]}
-            catalog={catalog}
-            lastPeaks={lastPeaks}
-            activeHref={activeHref}
-          />
-        </Sheet>
-      )}
 
       {editingDay && (
         <Sheet open onClose={() => setEditing(null)} eyebrow="Modifier le jour" title={editingDay.label} accent="sage">

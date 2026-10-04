@@ -25,7 +25,7 @@ vi.mock("@/lib/settings/actions", () => ({
   updateSettingsAction: vi.fn(),
 }));
 vi.mock("@/lib/profile/actions", () => ({ setPrenomAction: vi.fn() }));
-vi.mock("@/lib/tracking/actions", () => ({ advanceProgramDayAction: vi.fn() }));
+vi.mock("@/lib/tracking/actions", () => ({ advanceProgramDayAction: vi.fn(), startPyramidAction: vi.fn() }));
 
 const MATHIS = { slug: "mathis" as const, label: "Mathis" };
 const CLEMENT = { slug: "clement" as const, label: "Clément" };
@@ -166,5 +166,18 @@ describe("AujourdhuiScreen", () => {
     );
     expect(screen.getByText("Débutant · Niveau 1 terminé")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Reprendre" })).toHaveAttribute("href", "/tracking/3");
+  });
+
+  it("offers to launch a pyramid from Aujourd'hui", async () => {
+    render(
+      <AujourdhuiScreen
+        state={NORMAL_PROGRAMME_STATE}
+        trackingState={TRACKING_REST}
+        user={MATHIS}
+        pyramid={{ suggestions: ["Pull ups"], catalog: [], lastPeaks: {} }}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Lancer une pyramide" }));
+    expect(screen.getByRole("dialog", { name: "Pyramide · Lancer" })).toBeInTheDocument();
   });
 });

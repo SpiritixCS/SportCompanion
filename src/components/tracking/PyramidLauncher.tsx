@@ -17,6 +17,17 @@ const SHAPES: { value: PyramidShape; label: string }[] = [
 ];
 const DEFAULT_PEAK = 5;
 const key = (name: string) => name.trim().toLowerCase();
+// Recherche sans casse ni accents (« elev » trouve « Élévations »).
+const fold = (name: string) => key(name).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const MAX_SUGGESTIONS = 6;
+
+function narrow(suggestions: string[], query: string): string[] {
+  const q = fold(query);
+  if (!q) return [];
+  const starts = suggestions.filter((s) => fold(s).startsWith(q));
+  const contains = suggestions.filter((s) => !fold(s).startsWith(q) && fold(s).includes(q));
+  return [...starts, ...contains].slice(0, MAX_SUGGESTIONS);
+}
 
 // Contenu de la feuille « Lancer une pyramide » (page Tracking).
 export function PyramidLauncher({
@@ -36,11 +47,14 @@ export function PyramidLauncher({
   const [peak, setPeak] = useState(DEFAULT_PEAK);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
+  const matches = listOpen ? narrow(suggestions, name) : [];
   const linked = catalog.find((c) => key(c.name) === key(name)) ?? null;
   const steps = pyramidSteps(shape, peak);
 
   function handleName(next: string) {
     setName(next);
+    setListOpen(true);
     const last = lastPeaks[key(next)];
     if (last !== undefined) setPeak(last);
   }
@@ -65,7 +79,7 @@ export function PyramidLauncher({
       <label htmlFor="pyramid-exercise" className="font-mono text-11 uppercase tracking-[0.14em] text-graphite">
         Exercice
       </label>
-      <div className="mt-2 flex items-center gap-3 h-[52px] rounded-[14px] border border-hairline bg-paper px-2">
+      <div className="mt-2 flex items-center gap-3 h-[52px] rounded-[14px] border border-hairline bg-paper px-2 focus-within:border-sage">
         {name.trim() ? (
           linked ? (
             <ExerciseGlyph exerciseId={linked.id} family={linked.movementFamily} accent="sage" />
@@ -78,19 +92,35 @@ export function PyramidLauncher({
         <input
           id="pyramid-exercise"
           type="text"
-          list="pyramid-suggestions"
+          role="combobox"
+          aria-expanded={matches.length > 0}
+          aria-controls="pyramid-suggestions"
           autoComplete="off"
           value={name}
           onChange={(e) => handleName(e.target.value)}
           placeholder="Nom de l'exercice"
-          className="flex-1 min-w-0 h-full bg-transparent text-15 outline-none"
+          className="flex-1 min-w-0 h-full bg-transparent text-15 outline-none focus-visible:outline-none"
         />
       </div>
-      <datalist id="pyramid-suggestions">
-        {suggestions.map((s) => (
-          <option key={s} value={s} />
-        ))}
-      </datalist>
+      {matches.length > 0 && (
+        <div id="pyramid-suggestions" role="listbox" className="mt-1.5 bg-paper border border-hairline rounded-[14px] overflow-hidden">
+          {matches.map((m, i) => (
+            <button
+              key={m}
+              type="button"
+              role="option"
+              aria-selected={false}
+              onClick={() => {
+                handleName(m);
+                setListOpen(false);
+              }}
+              className={`w-full text-left px-3.5 min-h-11 text-15 ${i > 0 ? "border-t border-hairline" : ""}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex justify-between items-center mt-3.5">
         <span className="text-15">Forme</span>
