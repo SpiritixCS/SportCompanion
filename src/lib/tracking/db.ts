@@ -1,4 +1,6 @@
 import type Database from "better-sqlite3";
+import { clampPeak, type PyramidShape } from "@/lib/pyramide/pyramid";
+import type { CatalogExercise } from "@/lib/pyramide/catalog";
 
 export type TrackingUnit = "reps" | "seconds";
 export type TrackingExercise = { id: number; name: string; unit: TrackingUnit; createdAt: string };
@@ -14,6 +16,7 @@ export type TrackingSetWithExercise = {
   valeurActual: number;
   completedAt: string;
 };
+export type PyramidConfig = { exerciseName: string; shape: PyramidShape; peak: number };
 export type TrackingSeanceSummary = {
   id: number;
   startedAt: string;
@@ -21,6 +24,7 @@ export type TrackingSeanceSummary = {
   totalReps: number;
   totalSeconds: number;
   exerciseCount: number;
+  pyramid: PyramidConfig | null;
 };
 
 export function findOrCreateExercise(db: Database.Database, name: string, unit: TrackingUnit = "reps"): TrackingExercise {
@@ -34,6 +38,27 @@ export function findOrCreateExercise(db: Database.Database, name: string, unit: 
     .prepare(`INSERT INTO tracking_exercises (name, unit, created_at) VALUES (?, ?, ?)`)
     .run(name, unit, createdAt);
   return { id: Number(result.lastInsertRowid), name, unit, createdAt };
+}
+
+// Exercice Tracking lié à un exercice du catalogue : retrouvé par son lien,
+// sinon on adopte la ligne libre du même nom (ses séries rejoignent la carte
+// du catalogue), sinon on la crée.
+export function findOrCreateLinkedExercise(db: Database.Database, catalog: CatalogExercise): TrackingExercise {
+  return db.transaction(() => {
+    const select = `SELECT id, name, unit, created_at AS createdAt FROM tracking_exercises`;
+    const linked = db.prepare(`${select} WHERE catalog_id = ?`).get(catalog.id) as TrackingExercise | undefined;
+    if (linked) return linked;
+    const sameName = db.prepare(`${select} WHERE name = ? AND catalog_id IS NULL`).get(catalog.name) as TrackingExercise | undefined;
+    if (sameName) {
+      db.prepare(`UPDATE tracking_exercises SET catalog_id = ? WHERE id = ?`).run(catalog.id, sameName.id);
+      return sameName;
+    }
+    const createdAt = new Date().toISOString();
+    const result = db
+      .prepare(`INSERT INTO tracking_exercises (name, unit, created_at, catalog_id) VALUES (?, 'reps', ?, ?)`)
+      .run(catalog.name, createdAt, catalog.id);
+    return { id: Number(result.lastInsertRowid), name: catalog.name, unit: "reps" as const, createdAt };
+  })();
 }
 
 export function listExercises(db: Database.Database): { name: string; unit: TrackingUnit }[] {
@@ -95,8 +120,9 @@ export function logSetForExercise(
   valeurActual: number,
   count: number = 1,
   exerciseOrder?: number,
+  catalog?: CatalogExercise,
 ): TrackingSetWithExercise[] {
-  const exercise = findOrCreateExercise(db, exerciseName, unit);
+  const exercise = catalog ? findOrCreateLinkedExercise(db, catalog) : findOrCreateExercise(db, exerciseName, unit);
   const seanceSets = getSetsForSeance(db, seanceId);
   const existingForExercise = seanceSets.filter((s) => s.exerciseId === exercise.id);
   const resolvedOrder =
@@ -144,6 +170,7 @@ export function deleteSetsForExercise(db: Database.Database, seanceId: number, e
 }
 
 export function deleteSeance(db: Database.Database, seanceId: number): void {
+  db.prepare(`DELETE FROM tracking_pyramids WHERE seance_id = ?`).run(seanceId);
   db.prepare(`DELETE FROM tracking_sets_logged WHERE seance_id = ?`).run(seanceId);
   db.prepare(`DELETE FROM tracking_skipped_exercises WHERE seance_id = ?`).run(seanceId);
   db.prepare(`DELETE FROM tracking_seances WHERE id = ?`).run(seanceId);
@@ -159,15 +186,61 @@ export function listCompletedSeances(db: Database.Database): TrackingSeanceSumma
       `SELECT s.id, s.started_at AS startedAt, s.completed_at AS completedAt,
               COALESCE(SUM(CASE WHEN te.unit = 'reps' THEN sl.valeur_actual ELSE 0 END), 0) AS totalReps,
               COALESCE(SUM(CASE WHEN te.unit = 'seconds' THEN sl.valeur_actual ELSE 0 END), 0) AS totalSeconds,
-              COUNT(DISTINCT sl.exercise_id) AS exerciseCount
+              COUNT(DISTINCT sl.exercise_id) AS exerciseCount,
+              tp.exercise_name AS pyramidName, tp.shape AS pyramidShape, tp.peak AS pyramidPeak
        FROM tracking_seances s
+       LEFT JOIN tracking_pyramids tp ON tp.seance_id = s.id
        LEFT JOIN tracking_sets_logged sl ON sl.seance_id = s.id
        LEFT JOIN tracking_exercises te ON te.id = sl.exercise_id
        WHERE s.completed_at IS NOT NULL
        GROUP BY s.id
        ORDER BY s.completed_at DESC, s.id DESC`,
     )
-    .all() as TrackingSeanceSummary[];
+    .all()
+    .map((row) => {
+      const { pyramidName, pyramidShape, pyramidPeak, ...rest } = row as Omit<TrackingSeanceSummary, "pyramid"> & {
+        pyramidName: string | null;
+        pyramidShape: PyramidShape | null;
+        pyramidPeak: number | null;
+      };
+      return {
+        ...rest,
+        pyramid: pyramidName !== null ? { exerciseName: pyramidName, shape: pyramidShape!, peak: pyramidPeak! } : null,
+      };
+    });
+}
+
+export function startPyramidSeance(db: Database.Database, config: PyramidConfig): TrackingSeance {
+  return db.transaction(() => {
+    if (getActiveSeance(db)) throw new Error("Une séance Tracking est déjà en cours");
+    const seance = startSeance(db, null);
+    db.prepare(`INSERT INTO tracking_pyramids (seance_id, exercise_name, shape, peak) VALUES (?, ?, ?, ?)`).run(
+      seance.id,
+      config.exerciseName.trim(),
+      config.shape,
+      clampPeak(config.peak),
+    );
+    return seance;
+  })();
+}
+
+export function getPyramid(db: Database.Database, seanceId: number): PyramidConfig | null {
+  const row = db
+    .prepare(`SELECT exercise_name AS exerciseName, shape, peak FROM tracking_pyramids WHERE seance_id = ?`)
+    .get(seanceId) as PyramidConfig | undefined;
+  return row ?? null;
+}
+
+// Préremplissage du lancement : sommet de la dernière pyramide terminée pour cet exercice.
+export function lastPeakFor(db: Database.Database, exerciseName: string): number | null {
+  const row = db
+    .prepare(
+      `SELECT tp.peak FROM tracking_pyramids tp JOIN tracking_seances s ON s.id = tp.seance_id
+       WHERE s.completed_at IS NOT NULL AND lower(trim(tp.exercise_name)) = lower(trim(?))
+       ORDER BY s.completed_at DESC, s.id DESC LIMIT 1`,
+    )
+    .get(exerciseName) as { peak: number } | undefined;
+  return row?.peak ?? null;
 }
 
 export function skipExercise(db: Database.Database, seanceId: number, exerciseOrder: number): void {

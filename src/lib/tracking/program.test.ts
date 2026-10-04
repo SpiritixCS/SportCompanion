@@ -52,7 +52,7 @@ describe("setDayRest", () => {
     setDayExercises(db, 0, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
     setDayRest(db, 0, true);
     const day = setDayRest(db, 0, false);
-    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null }]);
+    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null, pyramid: null }]);
   });
 });
 
@@ -64,7 +64,7 @@ describe("setDayExercises", () => {
       { name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 },
     ]);
     const updated = setDayExercises(db, 0, [{ name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15 }]);
-    expect(updated.exercises).toEqual([{ ordre: 0, name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15, restSeconds: null }]);
+    expect(updated.exercises).toEqual([{ ordre: 0, name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15, restSeconds: null, pyramid: null }]);
   });
 
   it("stores a per-exercise rest, null meaning the global setting", () => {
@@ -102,7 +102,7 @@ describe("saveDay", () => {
     const db = setup();
     const day = saveDay(db, 1, false, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: 90 }]);
     expect(day.isRest).toBe(false);
-    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: 90 }]);
+    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: 90, pyramid: null }]);
   });
 
   it("keeps the exercises when the day goes back to rest", () => {
@@ -111,5 +111,20 @@ describe("saveDay", () => {
     const day = saveDay(db, 1, true, []);
     expect(day.isRest).toBe(true);
     expect(day.exercises.map((e) => e.name)).toEqual(["Dips"]);
+  });
+});
+
+describe("pyramid day exercises", () => {
+  it("stores a pyramid exercise as reps, steps as sets and the peak as target", () => {
+    const db = setup();
+    const day = setDayExercises(db, 0, [
+      { name: "Pull ups", unit: "seconds", setsCount: 1, targetValue: 1, restSeconds: 60, pyramid: { shape: "inverted", peak: 6 } },
+      { name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 },
+    ]);
+    expect(day.exercises[0]).toEqual({
+      ordre: 0, name: "Pull ups", unit: "reps", setsCount: 11, targetValue: 6, restSeconds: null,
+      pyramid: { shape: "inverted", peak: 6 },
+    });
+    expect(day.exercises[1]!.pyramid).toBeNull();
   });
 });

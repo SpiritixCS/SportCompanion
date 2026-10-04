@@ -24,7 +24,12 @@ import {
   getSkippedExercises,
   resumeSeance,
   deleteActiveSeance,
+  findOrCreateLinkedExercise,
+  startPyramidSeance,
+  getPyramid,
+  lastPeakFor,
 } from "./db";
+import { findCatalogByName } from "@/lib/pyramide/catalog";
 
 let tmpDir: string;
 
@@ -380,5 +385,89 @@ describe("deleteActiveSeance", () => {
     deleteActiveSeance(db, seance.id);
     expect(getSeanceById(db, seance.id)).not.toBeNull();
     expect(getSetsForSeance(db, seance.id)).toHaveLength(1);
+  });
+});
+
+describe("findOrCreateLinkedExercise", () => {
+  const pullUps = () => findCatalogByName("Pull ups")!;
+
+  it("creates the Tracking exercise linked to its catalogue entry, then reuses it", () => {
+    const db = setup();
+    const first = findOrCreateLinkedExercise(db, pullUps());
+    const again = findOrCreateLinkedExercise(db, pullUps());
+    expect(first).toMatchObject({ name: "Pull ups", unit: "reps" });
+    expect(again.id).toBe(first.id);
+    expect(db.prepare(`SELECT catalog_id AS c FROM tracking_exercises WHERE id = ?`).get(first.id)).toEqual({ c: "pull-ups" });
+  });
+
+  it("adopts a free exercise of the same name, keeping its sets", () => {
+    const db = setup();
+    const seance = startSeance(db, null);
+    const [set] = logSetForExercise(db, seance.id, "Pull ups", "reps", 8);
+    const linked = findOrCreateLinkedExercise(db, pullUps());
+    expect(linked.id).toBe(set!.exerciseId);
+    expect(getSetsForSeance(db, seance.id).map((s) => s.valeurActual)).toEqual([8]);
+    expect(db.prepare(`SELECT catalog_id AS c FROM tracking_exercises WHERE id = ?`).get(linked.id)).toEqual({ c: "pull-ups" });
+  });
+
+  it("logs a set on the linked exercise when a catalogue entry is given", () => {
+    const db = setup();
+    const seance = startSeance(db, null);
+    const [set] = logSetForExercise(db, seance.id, "pull ups", "reps", 3, 1, 0, pullUps());
+    expect(set).toMatchObject({ exerciseName: "Pull ups", exerciseOrder: 0, setNumber: 1, valeurActual: 3 });
+  });
+});
+
+describe("pyramid seances", () => {
+  it("starts a pyramid seance with its configuration", () => {
+    const db = setup();
+    const seance = startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 7 });
+    expect(getActiveSeance(db)?.id).toBe(seance.id);
+    expect(getPyramid(db, seance.id)).toEqual({ exerciseName: "Dips", shape: "classic", peak: 7 });
+    expect(getPyramid(db, seance.id + 1)).toBeNull();
+  });
+
+  it("refuses a second active Tracking seance", () => {
+    const db = setup();
+    startSeance(db, 2);
+    expect(() => startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 5 })).toThrow(
+      "Une séance Tracking est déjà en cours",
+    );
+  });
+
+  it("clamps the peak between 2 and 30", () => {
+    const db = setup();
+    const seance = startPyramidSeance(db, { exerciseName: "Dips", shape: "inverted", peak: 99 });
+    expect(getPyramid(db, seance.id)?.peak).toBe(30);
+  });
+
+  it("remembers the last completed peak for an exercise, whatever the case", () => {
+    const db = setup();
+    const a = startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 5 });
+    completeSeance(db, a.id);
+    const b = startPyramidSeance(db, { exerciseName: "Dips", shape: "inverted", peak: 7 });
+    completeSeance(db, b.id);
+    startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 12 });
+    expect(lastPeakFor(db, "dips")).toBe(7);
+    expect(lastPeakFor(db, "Tractions")).toBeNull();
+  });
+
+  it("lists a completed pyramid with its configuration, other seances without", () => {
+    const db = setup();
+    const day = startSeance(db, 1);
+    completeSeance(db, day.id);
+    const pyr = startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 4 });
+    completeSeance(db, pyr.id);
+    const byId = Object.fromEntries(listCompletedSeances(db).map((s) => [s.id, s.pyramid]));
+    expect(byId[pyr.id]).toEqual({ exerciseName: "Dips", shape: "classic", peak: 4 });
+    expect(byId[day.id]).toBeNull();
+  });
+
+  it("deletes the pyramid configuration with its seance", () => {
+    const db = setup();
+    const pyr = startPyramidSeance(db, { exerciseName: "Dips", shape: "classic", peak: 4 });
+    deleteActiveSeance(db, pyr.id);
+    expect(getPyramid(db, pyr.id)).toBeNull();
+    expect(getActiveSeance(db)).toBeNull();
   });
 });

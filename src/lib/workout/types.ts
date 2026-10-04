@@ -20,6 +20,8 @@ export type Exercise = {
   target: ExerciseTarget;
   // Tracking uniquement : repos entre séries propre à l'exercice.
   restSeconds?: number;
+  // Mode pyramide : une série par marche, cible propre à chaque marche.
+  pyramid?: { shape: "classic" | "inverted"; peak: number };
 };
 
 export type TrainDay = { kind: "train"; label: string; exercises: Exercise[] };

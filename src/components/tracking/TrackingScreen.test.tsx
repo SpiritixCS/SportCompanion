@@ -30,8 +30,8 @@ const WED: TrackingProgramDay = {
   label: "Mercredi",
   isRest: false,
   exercises: [
-    { ordre: 0, name: "Tractions", unit: "reps", setsCount: 4, targetValue: 8, restSeconds: 120 },
-    { ordre: 1, name: "Gainage", unit: "seconds", setsCount: 3, targetValue: 45, restSeconds: null },
+    { ordre: 0, name: "Tractions", unit: "reps", setsCount: 4, targetValue: 8, restSeconds: 120, pyramid: null },
+    { ordre: 1, name: "Gainage", unit: "seconds", setsCount: 3, targetValue: 45, restSeconds: null, pyramid: null },
   ],
 };
 const BASE = { days: REST_DAYS, exerciseSuggestions: [], globalRestSeconds: 90 };
@@ -48,7 +48,7 @@ describe("TrackingScreen", () => {
         {...BASE}
         state={{
           ...EMPTY_STATE,
-          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3, pyramid: null }],
         }}
       />,
     );
@@ -62,7 +62,7 @@ describe("TrackingScreen", () => {
         {...BASE}
         state={{
           ...EMPTY_STATE,
-          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 90, exerciseCount: 4 }],
+          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 90, exerciseCount: 4, pyramid: null }],
         }}
       />,
     );
@@ -76,7 +76,7 @@ describe("TrackingScreen", () => {
         {...BASE}
         state={{
           ...EMPTY_STATE,
-          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 0, totalSeconds: 60, exerciseCount: 1 }],
+          seances: [{ id: 1, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 0, totalSeconds: 60, exerciseCount: 1, pyramid: null }],
         }}
       />,
     );
@@ -90,7 +90,7 @@ describe("TrackingScreen", () => {
         {...BASE}
         state={{
           ...EMPTY_STATE,
-          seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3, pyramid: null }],
         }}
       />,
     );
@@ -103,7 +103,7 @@ describe("TrackingScreen", () => {
         {...BASE}
         state={{
           ...EMPTY_STATE,
-          seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3, pyramid: null }],
         }}
       />,
     );
@@ -119,7 +119,7 @@ describe("TrackingScreen", () => {
         {...BASE}
         state={{
           ...EMPTY_STATE,
-          seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3 }],
+          seances: [{ id: 5, startedAt: "2026-08-10T18:00:00.000Z", completedAt: "2026-08-10T18:40:00.000Z", totalReps: 42, totalSeconds: 0, exerciseCount: 3, pyramid: null }],
         }}
       />,
     );
@@ -194,7 +194,7 @@ describe("TrackingScreen", () => {
     await userEvent.click(screen.getByRole("button", { name: "Retirer Gainage" }));
     await userEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
     expect(saveDayAction).toHaveBeenCalledWith(2, false, [
-      { name: "Tractions", unit: "reps", setsCount: 4, targetValue: 8, restSeconds: 120 },
+      { name: "Tractions", unit: "reps", setsCount: 4, targetValue: 8, restSeconds: 120, pyramid: null },
     ]);
     expect(refresh).toHaveBeenCalled();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

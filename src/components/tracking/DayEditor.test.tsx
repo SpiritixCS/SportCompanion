@@ -10,8 +10,8 @@ const DIPS_DAY: TrackingProgramDay = {
   label: "Mercredi",
   isRest: false,
   exercises: [
-    { ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null },
-    { ordre: 1, name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15, restSeconds: 120 },
+    { ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: null, pyramid: null },
+    { ordre: 1, name: "Pompes", unit: "reps", setsCount: 3, targetValue: 15, restSeconds: 120, pyramid: null },
   ],
 };
 
