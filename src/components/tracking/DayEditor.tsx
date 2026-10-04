@@ -74,10 +74,15 @@ export function DayEditor({
   const effectiveUnit = matchedExercise?.unit ?? unit;
   const restOf = (e: DayExerciseInput) => e.restSeconds ?? globalRestSeconds;
 
+  const pending: DayExerciseInput | null = name.trim()
+    ? { name: name.trim(), unit: effectiveUnit, setsCount, targetValue, restSeconds }
+    : null;
+  // Un exercice tapé mais pas encore ajouté part avec l'enregistrement.
+  const toSave = pending && !isRest ? [...exercises, pending] : exercises;
+
   function handleAddExercise() {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    setExercises((prev) => [...prev, { name: trimmed, unit: effectiveUnit, setsCount, targetValue, restSeconds }]);
+    if (!pending) return;
+    setExercises((prev) => [...prev, pending]);
     setName("");
     setSetsCount(3);
     setTargetValue(10);
@@ -95,8 +100,13 @@ export function DayEditor({
   }
 
   function handleStepRest(index: number, direction: -1 | 1) {
+    // Revenu sur le réglage global : null, pour continuer à le suivre s'il change.
     setExercises((prev) =>
-      prev.map((e, i) => (i === index ? { ...e, restSeconds: clampRest(restOf(e) + direction * 15) } : e)),
+      prev.map((e, i) => {
+        if (i !== index) return e;
+        const next = clampRest(restOf(e) + direction * 15);
+        return { ...e, restSeconds: next === globalRestSeconds ? null : next };
+      }),
     );
   }
 
@@ -265,7 +275,7 @@ export function DayEditor({
       )}
 
       <div className="mt-4">
-        <FillButton accent="sage" onClick={() => onSave(isRest, exercises)} disabled={saving || (!isRest && exercises.length === 0)}>
+        <FillButton accent="sage" onClick={() => onSave(isRest, toSave)} disabled={saving || (!isRest && toSave.length === 0)}>
           Enregistrer
         </FillButton>
       </div>

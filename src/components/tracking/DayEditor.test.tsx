@@ -100,4 +100,34 @@ describe("DayEditor", () => {
     await userEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
     expect(onSave).toHaveBeenCalledWith(true, [expect.objectContaining({ name: "Dips" }), expect.objectContaining({ name: "Pompes" })]);
   });
+
+  it("keeps following the global rest when tuned back to it", async () => {
+    const onSave = renderEditor(DIPS_DAY);
+    await userEvent.click(screen.getByRole("button", { name: "Repos 1:00" }));
+    await userEvent.click(screen.getByRole("button", { name: "Dips : repos plus 15 secondes" }));
+    await userEvent.click(screen.getByRole("button", { name: "Dips : repos moins 15 secondes" }));
+    await userEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(onSave).toHaveBeenCalledWith(false, [
+      expect.objectContaining({ name: "Dips", restSeconds: null }),
+      expect.objectContaining({ name: "Pompes", restSeconds: 120 }),
+    ]);
+  });
+
+  it("saves an exercise typed but not yet added", async () => {
+    const onSave = renderEditor(DIPS_DAY);
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Squats");
+    await userEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(onSave).toHaveBeenCalledWith(false, [
+      expect.objectContaining({ name: "Dips" }),
+      expect.objectContaining({ name: "Pompes" }),
+      { name: "Squats", unit: "reps", setsCount: 3, targetValue: 10, restSeconds: 90 },
+    ]);
+  });
+
+  it("can save a new day from a typed exercise alone", async () => {
+    const onSave = renderEditor(EMPTY_DAY);
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Squats");
+    await userEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(onSave).toHaveBeenCalledWith(false, [expect.objectContaining({ name: "Squats" })]);
+  });
 });
