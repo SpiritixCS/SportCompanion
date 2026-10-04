@@ -83,7 +83,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
         <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
         <div className="font-display font-extrabold text-[26px] uppercase leading-none mt-3">Ton programme sur 7 jours est vide.</div>
         <Link
-          href="/tracking/programme"
+          href="/tracking"
           className="mt-5 h-14 rounded-pill bg-sage-strong text-paper flex items-center justify-center font-body text-15 font-semibold"
         >
           Composer mon programme
@@ -131,7 +131,7 @@ export function TrackingCard({ state }: { state: TrackingScreenState }) {
         <>
           <p className="mt-5 text-15 text-graphite">Aucun exercice configuré pour ce jour.</p>
           <Link
-            href="/tracking/programme"
+            href="/tracking"
             className="mt-5 h-14 rounded-pill bg-sage-strong text-paper flex items-center justify-center font-body text-15 font-semibold"
           >
             Configurer le programme

@@ -62,6 +62,21 @@ export function setDayExercises(db: Database.Database, dayOfWeek: number, exerci
   return getProgramDay(db, dayOfWeek);
 }
 
+// Enregistrement de la feuille « Modifier le jour ». Passer en repos garde les
+// exercices du jour (on les retrouve en repassant en séance).
+export function saveDay(
+  db: Database.Database,
+  dayOfWeek: number,
+  isRest: boolean,
+  exercises: DayExerciseInput[],
+): TrackingProgramDay {
+  db.transaction(() => {
+    setDayRest(db, dayOfWeek, isRest);
+    if (!isRest) setDayExercises(db, dayOfWeek, exercises);
+  })();
+  return getProgramDay(db, dayOfWeek);
+}
+
 export function getPointer(db: Database.Database): number {
   const row = db.prepare(`SELECT pointer_day_of_week AS pointerDayOfWeek FROM tracking_program_state WHERE id = 1`).get() as {
     pointerDayOfWeek: number;

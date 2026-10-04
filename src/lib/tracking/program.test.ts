@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { getDb } from "@/lib/db/client";
 import { runMigrations } from "@/lib/db/migrate";
-import { getProgramDays, getProgramDay, setDayRest, setDayExercises, getPointer, advancePointer, WEEKDAY_LABELS } from "./program";
+import { getProgramDays, getProgramDay, setDayRest, setDayExercises, saveDay, getPointer, advancePointer, WEEKDAY_LABELS } from "./program";
 
 let tmpDir: string;
 
@@ -94,5 +94,22 @@ describe("pointer", () => {
       expect(advancePointer(db)).toBe(expected);
     }
     expect(advancePointer(db)).toBe(0);
+  });
+});
+
+describe("saveDay", () => {
+  it("turns a rest day into a séance with its exercises in one go", () => {
+    const db = setup();
+    const day = saveDay(db, 1, false, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: 90 }]);
+    expect(day.isRest).toBe(false);
+    expect(day.exercises).toEqual([{ ordre: 0, name: "Dips", unit: "reps", setsCount: 3, targetValue: 12, restSeconds: 90 }]);
+  });
+
+  it("keeps the exercises when the day goes back to rest", () => {
+    const db = setup();
+    saveDay(db, 1, false, [{ name: "Dips", unit: "reps", setsCount: 3, targetValue: 12 }]);
+    const day = saveDay(db, 1, true, []);
+    expect(day.isRest).toBe(true);
+    expect(day.exercises.map((e) => e.name)).toEqual(["Dips"]);
   });
 });

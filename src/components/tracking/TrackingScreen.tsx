@@ -3,19 +3,50 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/Card";
 import { ResumeBanner } from "@/components/today/ResumeBanner";
 import { IconClose } from "@/components/icons/IconClose";
-import { deleteTrackingSeanceAction } from "@/lib/tracking/actions";
+import { Sheet } from "@/components/Sheet";
+import { FillLink } from "@/components/FillButton";
+import { InitialTile } from "@/components/glyphs/InitialTile";
+import { DayEditor } from "./DayEditor";
+import { formatClock } from "@/lib/player/formatClock";
+import { advanceProgramDayAction, deleteTrackingSeanceAction, saveDayAction } from "@/lib/tracking/actions";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
+import type { DayExerciseInput, TrackingProgramDay } from "@/lib/tracking/program";
+import type { TrackingUnit } from "@/lib/tracking/db";
 
 function formatDateFr(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(new Date(iso));
 }
 
-export function TrackingScreen({ state }: { state: TrackingScreenState }) {
+function dose(e: { setsCount: number; targetValue: number; unit: TrackingUnit }): string {
+  return `${e.setsCount} × ${e.targetValue}${e.unit === "seconds" ? " s" : ""}`;
+}
+
+const EYEBROW = "font-mono text-11 uppercase tracking-[0.14em]";
+const LINE_BUTTON = "h-14 w-full rounded-pill border border-hairline bg-paper font-body text-15 font-semibold disabled:opacity-40";
+
+export function TrackingScreen({
+  state,
+  days,
+  exerciseSuggestions,
+  globalRestSeconds,
+}: {
+  state: TrackingScreenState;
+  days: TrackingProgramDay[];
+  exerciseSuggestions: { name: string; unit: TrackingUnit }[];
+  globalRestSeconds: number;
+}) {
   const router = useRouter();
   const [error, setError] = useState(false);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
+
+  const pointer = state.programDay.dayOfWeek;
+  const next = state.programDay;
+  const editingDay = editing === null ? null : days.find((d) => d.dayOfWeek === editing) ?? null;
 
   async function handleDeleteSeance(seanceId: number) {
     setError(false);
@@ -27,68 +58,185 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
     }
   }
 
+  async function handleAdvance() {
+    if (advancing) return;
+    setAdvancing(true);
+    setError(false);
+    try {
+      await advanceProgramDayAction();
+      router.refresh();
+    } catch {
+      setError(true);
+    } finally {
+      setAdvancing(false);
+    }
+  }
+
+  async function handleSave(isRest: boolean, exercises: DayExerciseInput[]) {
+    if (editing === null) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      await saveDayAction(editing, isRest, exercises);
+      setEditing(null);
+      router.refresh();
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function openEditor(dayOfWeek: number) {
+    setSaveError(false);
+    setEditing(dayOfWeek);
+  }
+
   return (
-    <div className="p-5 flex flex-col gap-8">
-      <div>
-        <span className="font-mono text-11 uppercase tracking-[0.14em] text-sage-strong">Tracking</span>
-        <div className="font-display text-32 font-semibold leading-[1.05] mt-2">Tes séances</div>
-      </div>
+    <div className="px-[18px] pt-5 pb-10">
+      <span className={`${EYEBROW} text-sage-strong`}>Programme perso</span>
+      <h1 className="font-display font-extrabold text-[56px] uppercase leading-[0.9] mt-1.5">Tracking</h1>
 
       {state.activeSeance !== null && (
-        <ResumeBanner
-          exerciseName="ta séance en cours"
-          href={
-            state.activeSeance.dayOfWeek !== null
-              ? `/player/tracking?day=${state.activeSeance.dayOfWeek}`
-              : `/tracking/${state.activeSeance.id}`
-          }
-          accent="sage"
-        />
-      )}
-
-      {error && (
-        <div className="bg-paper border border-hairline rounded-card p-6">
-          <p className="text-15 text-graphite">Une erreur est survenue. Réessaie.</p>
+        <div className="mt-[18px]">
+          <ResumeBanner
+            exerciseName="ta séance en cours"
+            href={
+              state.activeSeance.dayOfWeek !== null
+                ? `/player/tracking?day=${state.activeSeance.dayOfWeek}`
+                : `/tracking/${state.activeSeance.id}`
+            }
+            accent="sage"
+          />
         </div>
       )}
 
-      <Link
-        href="/tracking/programme"
-        className="h-14 rounded-pill border border-hairline flex items-center justify-center font-body text-15 font-semibold"
-      >
-        Mon programme
-      </Link>
-
-      {state.seances.length === 0 ? (
-        <p className="text-15 text-graphite">Aucune séance enregistrée pour l&apos;instant.</p>
-      ) : (
-        <Card className="overflow-hidden">
-          {state.seances.map((seance, i) => (
-            <div
-              key={seance.id}
-              className={`flex items-center gap-2 px-5 py-3.5 ${i > 0 ? "border-t border-hairline" : ""}`}
+      <div role="group" aria-label="Tes 7 jours" className="grid grid-cols-7 gap-1.5 mt-[18px]">
+        {days.map((d) => {
+          const isPointer = d.dayOfWeek === pointer && !state.programEmpty;
+          const count = d.exercises.length;
+          return (
+            <button
+              key={d.dayOfWeek}
+              type="button"
+              onClick={() => openEditor(d.dayOfWeek)}
+              aria-label={`${d.label}, ${d.isRest ? "repos" : `${count} exercice${count > 1 ? "s" : ""}`}${
+                isPointer ? " · prochaine séance" : ""
+              }`}
+              className={`relative rounded-2xl pt-2.5 pb-[9px] flex flex-col items-center gap-[7px] ${
+                isPointer ? "bg-ink text-paper" : "bg-paper"
+              }`}
             >
-              <Link href={`/tracking/${seance.id}`} className="flex-1 flex items-center justify-between gap-4 min-w-0">
-                <div>
-                  <div className="text-15 font-medium">{formatDateFr(seance.completedAt)}</div>
-                  <div className="text-13 text-graphite mt-0.5">
-                    {seance.exerciseCount} exercice{seance.exerciseCount > 1 ? "s" : ""}
+              <span className={`font-mono text-11 ${isPointer ? "text-mist" : "text-graphite"}`}>{d.label.slice(0, 3)}</span>
+              {d.isRest ? (
+                <span className="font-mono text-[10px] h-5 flex items-center text-graphite">repos</span>
+              ) : (
+                <span className={`font-display font-extrabold text-[22px] leading-[0.9] ${count === 0 ? "text-hairline" : ""}`}>
+                  {count}
+                </span>
+              )}
+              {isPointer && (
+                <span aria-hidden="true" className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-pill bg-sage" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {error && <p className="text-13 text-alert mt-4">Une erreur est survenue. Réessaie.</p>}
+
+      {state.programEmpty ? (
+        <div className="card-rise mt-[22px] bg-paper rounded-[28px] px-5 py-[22px]">
+          <span className={`${EYEBROW} text-sage-strong`}>Pour commencer</span>
+          <h2 className="font-display font-extrabold text-[34px] uppercase leading-[0.92] mt-1.5">Ta semaine est vide</h2>
+          <p className="text-[14px] text-graphite mt-1.5 mb-4">
+            Touche un jour pour y mettre tes exercices, ou laisse-le en repos.
+          </p>
+          <button
+            type="button"
+            onClick={() => openEditor(0)}
+            className="h-14 w-full rounded-pill bg-sage-strong text-paper font-body text-15 font-semibold"
+          >
+            Composer lundi
+          </button>
+        </div>
+      ) : (
+        <div className="card-rise mt-[22px] bg-paper rounded-[28px] p-5">
+          <span className={`${EYEBROW} text-sage-strong`}>Prochaine séance</span>
+          <h2 className="font-display font-extrabold text-[40px] uppercase leading-[0.9] mt-1.5">{next.label}</h2>
+          {next.isRest ? (
+            <>
+              <p className="text-15 text-graphite mt-2 mb-4">Jour de repos.</p>
+              <button type="button" onClick={handleAdvance} disabled={advancing} className={LINE_BUTTON}>
+                Jour suivant
+              </button>
+            </>
+          ) : next.exercises.length === 0 ? (
+            <>
+              <p className="text-15 text-graphite mt-2 mb-4">Aucun exercice ce jour-là.</p>
+              <button type="button" onClick={() => openEditor(next.dayOfWeek)} className={LINE_BUTTON}>
+                Ajouter des exercices
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="mt-2">
+                {next.exercises.map((e) => (
+                  <div
+                    key={e.ordre}
+                    className="grid grid-cols-[36px_1fr_auto] gap-3 items-center py-3 border-b border-hairline last:border-b-0"
+                  >
+                    <InitialTile name={e.name} />
+                    <span className="min-w-0">
+                      <span className="block text-15 truncate">{e.name}</span>
+                      <span className="block font-mono text-11 uppercase tracking-[0.06em] text-graphite mt-0.5">
+                        Repos {formatClock(e.restSeconds ?? globalRestSeconds)}
+                      </span>
+                    </span>
+                    <span className="font-display font-bold text-[20px] tracking-[0.02em] tabular-nums whitespace-nowrap">
+                      {dose(e)}
+                    </span>
                   </div>
-                </div>
-                <div className="text-right">
+                ))}
+              </div>
+              <div className="mt-3.5">
+                <FillLink href={`/player/tracking?day=${next.dayOfWeek}`} accent="sage" base="accent">
+                  Commencer la séance
+                </FillLink>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <section className="mt-[26px]">
+        <span className={`${EYEBROW} text-graphite`}>Tes séances</span>
+        {state.seances.length === 0 ? (
+          <p className="text-[14px] text-graphite mt-2.5 mx-0.5">Aucune séance enregistrée pour l&apos;instant.</p>
+        ) : (
+          state.seances.map((seance) => (
+            <div key={seance.id} className="flex items-center gap-2 bg-paper rounded-[18px] pl-4 pr-2 py-3.5 mt-2">
+              <Link href={`/tracking/${seance.id}`} className="flex-1 flex items-center justify-between gap-4 min-w-0">
+                <span>
+                  <span className="block text-15 font-medium">{formatDateFr(seance.completedAt)}</span>
+                  <span className="block text-13 text-graphite mt-0.5">
+                    {seance.exerciseCount} exercice{seance.exerciseCount > 1 ? "s" : ""}
+                  </span>
+                </span>
+                <span className="text-right">
                   {seance.totalReps > 0 && (
-                    <div className="font-display text-18 font-semibold tabular-nums">{seance.totalReps}</div>
+                    <span className="block font-display font-bold text-[22px] tabular-nums">{seance.totalReps}</span>
                   )}
                   {seance.totalSeconds > 0 && (
-                    <div
-                      className={`font-display tabular-nums ${
-                        seance.totalReps > 0 ? "text-13 text-graphite" : "text-18 font-semibold"
+                    <span
+                      className={`block font-display tabular-nums ${
+                        seance.totalReps > 0 ? "text-13 text-graphite" : "font-bold text-[22px]"
                       }`}
                     >
                       {seance.totalSeconds} s
-                    </div>
+                    </span>
                   )}
-                </div>
+                </span>
               </Link>
               <button
                 type="button"
@@ -99,8 +247,22 @@ export function TrackingScreen({ state }: { state: TrackingScreenState }) {
                 <IconClose size={16} />
               </button>
             </div>
-          ))}
-        </Card>
+          ))
+        )}
+      </section>
+
+      {editingDay && (
+        <Sheet open onClose={() => setEditing(null)} eyebrow="Modifier le jour" title={editingDay.label}>
+          <DayEditor
+            key={editingDay.dayOfWeek}
+            day={editingDay}
+            globalRestSeconds={globalRestSeconds}
+            exerciseSuggestions={exerciseSuggestions}
+            saving={saving}
+            error={saveError}
+            onSave={handleSave}
+          />
+        </Sheet>
       )}
     </div>
   );

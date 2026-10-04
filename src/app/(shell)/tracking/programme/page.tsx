@@ -1,13 +1,6 @@
-import { getDbForUser } from "@/lib/db/client";
-import { currentUser } from "@/lib/auth/currentUser";
-import { getProgramDays } from "@/lib/tracking/program";
-import { listExercises } from "@/lib/tracking/db";
-import { ProgrammeScreen } from "@/components/tracking/ProgrammeScreen";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function TrackingProgrammePage() {
-  const user = await currentUser();
-  const db = getDbForUser(user);
-  return <ProgrammeScreen days={getProgramDays(db)} exerciseSuggestions={listExercises(db)} />;
+// L'édition du programme vit maintenant sur /tracking (feuille « Modifier le jour »).
+export default function TrackingProgrammePage() {
+  redirect("/tracking");
 }

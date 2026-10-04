@@ -66,7 +66,7 @@ describe("TrackingCard", () => {
     expect(screen.queryByRole("link", { name: "Commencer" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Configurer le programme" })).toHaveAttribute(
       "href",
-      "/tracking/programme",
+      "/tracking",
     );
   });
 
@@ -146,7 +146,7 @@ describe("TrackingCard", () => {
 describe("TrackingCard — programme vide", () => {
   it("invites to compose the programme instead of showing a rest day", () => {
     render(<TrackingCard state={{ ...REST_STATE, programEmpty: true }} />);
-    expect(screen.getByRole("link", { name: "Composer mon programme" })).toHaveAttribute("href", "/tracking/programme");
+    expect(screen.getByRole("link", { name: "Composer mon programme" })).toHaveAttribute("href", "/tracking");
     expect(screen.queryByRole("button", { name: "Jour suivant" })).not.toBeInTheDocument();
   });
 });

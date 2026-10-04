@@ -20,6 +20,7 @@ import {
   getProgramDay,
   setDayRest as setDayRestDb,
   setDayExercises as setDayExercisesDb,
+  saveDay as saveDayDb,
   advancePointer,
   type TrackingProgramDay,
   type DayExerciseInput,
@@ -65,6 +66,14 @@ export async function setDayRestAction(dayOfWeek: number, isRest: boolean): Prom
 
 export async function setDayExercisesAction(dayOfWeek: number, exercises: DayExerciseInput[]): Promise<TrackingProgramDay> {
   return setDayExercisesDb(await db(), dayOfWeek, exercises);
+}
+
+export async function saveDayAction(
+  dayOfWeek: number,
+  isRest: boolean,
+  exercises: DayExerciseInput[],
+): Promise<TrackingProgramDay> {
+  return saveDayDb(await db(), dayOfWeek, isRest, exercises);
 }
 
 // Avance le pointeur sans passer par une séance — utilisée par le bouton
