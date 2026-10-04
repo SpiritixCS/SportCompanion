@@ -1,6 +1,7 @@
 import type Database from "better-sqlite3";
 import { getParcours } from "@/lib/programme/parcours";
 import type { MovementFamily } from "./movementFamily";
+import { findCatalogById } from "@/lib/pyramide/catalog";
 
 export type TrophyCard = {
   id: string;
@@ -74,25 +75,44 @@ export function computeTrophies(db: Database.Database): TrophyCard[] {
 
   const trackingRows = db
     .prepare(
-      `SELECT tsl.exercise_id AS exerciseId, te.name AS exerciseName, te.unit AS unit,
+      `SELECT tsl.exercise_id AS exerciseId, te.name AS exerciseName, te.unit AS unit, te.catalog_id AS catalogId,
               tsl.valeur_actual AS valeurActual, tsl.completed_at AS completedAt
        FROM tracking_sets_logged tsl JOIN tracking_exercises te ON tsl.exercise_id = te.id`,
     )
-    .all() as { exerciseId: number; exerciseName: string; unit: "reps" | "seconds"; valeurActual: number; completedAt: string }[];
+    .all() as {
+    exerciseId: number;
+    exerciseName: string;
+    unit: "reps" | "seconds";
+    catalogId: string | null;
+    valeurActual: number;
+    completedAt: string;
+  }[];
 
   for (const row of trackingRows) {
-    const id = `tracking-${row.exerciseId}`;
+    // Exercice lié au catalogue (pyramide) : crédite la carte de l'exercice Caliathletics.
+    const catalog = row.catalogId ? findCatalogById(row.catalogId) : null;
+    const id = catalog ? catalog.id : `tracking-${row.exerciseId}`;
     let entry = acc.get(id);
     if (!entry) {
-      entry = {
-        module: "tracking",
-        name: row.exerciseName,
-        unit: row.unit,
-        movementFamily: "other",
-        total: 0,
-        firstAt: row.completedAt,
-        lastAt: row.completedAt,
-      };
+      entry = catalog
+        ? {
+            module: "programme",
+            name: catalog.name,
+            unit: "reps",
+            movementFamily: catalog.movementFamily,
+            total: 0,
+            firstAt: row.completedAt,
+            lastAt: row.completedAt,
+          }
+        : {
+            module: "tracking",
+            name: row.exerciseName,
+            unit: row.unit,
+            movementFamily: "other",
+            total: 0,
+            firstAt: row.completedAt,
+            lastAt: row.completedAt,
+          };
       acc.set(id, entry);
     }
     touch(entry, row.valeurActual, row.completedAt);

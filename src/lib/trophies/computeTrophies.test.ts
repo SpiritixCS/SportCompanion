@@ -7,6 +7,7 @@ import { runMigrations } from "@/lib/db/migrate";
 import { startSeance, logSet } from "@/lib/player/db";
 import { logSetForExercise, startSeance as startTrackingSeance } from "@/lib/tracking/db";
 import { computeTrophies } from "./computeTrophies";
+import { findCatalogByName } from "@/lib/pyramide/catalog";
 
 let tmpDir: string;
 
@@ -114,5 +115,35 @@ describe("computeTrophies — movementFamily", () => {
 
     const cards = computeTrophies(db).filter((c) => c.module === "tracking");
     expect(cards[0]?.movementFamily).toBe("other");
+  });
+});
+
+describe("computeTrophies — pyramides liées au catalogue", () => {
+  const squatsCatalog = () => findCatalogByName("Squats")!;
+
+  it("adds linked Tracking sets to the catalogue card, alongside Programme sets", () => {
+    const db = setup();
+    const seance = startSeance(db, "beginner", 0, 0);
+    logSet(db, { seanceId: seance.id, exerciseOrder: 6, setNumber: 1, repsTarget: "15", repsActual: 15, restSeconds: 90 });
+    const pyramid = startTrackingSeance(db);
+    logSetForExercise(db, pyramid.id, "Squats", "reps", 3, 1, 0, squatsCatalog());
+
+    const cards = computeTrophies(db);
+    expect(cards.filter((c) => c.id === "squats")).toEqual([expect.objectContaining({ module: "programme", total: 18 })]);
+    expect(cards.some((c) => c.module === "tracking")).toBe(false);
+  });
+
+  it("creates the catalogue card from linked sets alone", () => {
+    const db = setup();
+    const pyramid = startTrackingSeance(db);
+    logSetForExercise(db, pyramid.id, "squats", "reps", 5, 1, 0, squatsCatalog());
+
+    expect(computeTrophies(db).find((c) => c.id === "squats")).toMatchObject({
+      module: "programme",
+      name: "Squats",
+      movementFamily: "squat",
+      unit: "reps",
+      total: 5,
+    });
   });
 });
