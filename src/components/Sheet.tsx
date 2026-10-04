@@ -8,12 +8,14 @@ export function Sheet({
   onClose,
   title,
   eyebrow,
+  accent = "cobalt",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   eyebrow?: string;
+  accent?: "cobalt" | "sage";
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -39,7 +41,7 @@ export function Sheet({
         <div className="flex items-start justify-between gap-4 mb-4">
           <span>
             {eyebrow && (
-              <span className="block font-mono text-11 uppercase tracking-[0.14em] text-cobalt mb-1.5">{eyebrow}</span>
+              <span className={`block font-mono text-11 uppercase tracking-[0.14em] mb-1.5 ${accent === "sage" ? "text-sage-strong" : "text-cobalt"}`}>{eyebrow}</span>
             )}
             <span className="block font-display font-extrabold text-32 uppercase leading-[0.9]">{title}</span>
           </span>

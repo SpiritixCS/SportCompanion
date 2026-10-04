@@ -55,4 +55,13 @@ describe("Sheet", () => {
     expect(eyebrow.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("dialog", { name: "Débutant · Niveau 3 · Jour 5" })).toBeInTheDocument();
   });
+
+  it("colours the eyebrow with the module accent", () => {
+    render(
+      <Sheet open onClose={() => {}} eyebrow="Modifier le jour" title="Lundi" accent="sage">
+        x
+      </Sheet>,
+    );
+    expect(screen.getByText("Modifier le jour")).toHaveClass("text-sage-strong");
+  });
 });

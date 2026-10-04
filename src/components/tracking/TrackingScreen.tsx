@@ -252,7 +252,7 @@ export function TrackingScreen({
       </section>
 
       {editingDay && (
-        <Sheet open onClose={() => setEditing(null)} eyebrow="Modifier le jour" title={editingDay.label}>
+        <Sheet open onClose={() => setEditing(null)} eyebrow="Modifier le jour" title={editingDay.label} accent="sage">
           <DayEditor
             key={editingDay.dayOfWeek}
             day={editingDay}
