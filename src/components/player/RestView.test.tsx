@@ -112,4 +112,10 @@ describe("RestView", () => {
     });
     expect(screen.getByText("3")).toHaveClass("beat");
   });
+
+  it("speaks of steps during a pyramid", () => {
+    render(<RestView durationSeconds={30} nextLabel="Pull ups" variant="betweenSets" {...PROGRESS} stepWord="Marche" onComplete={() => {}} />);
+    expect(screen.getByText("Repos entre marches")).toBeInTheDocument();
+    expect(screen.getByText("Exercice 2 / 5 · Marche 2 / 4")).toBeInTheDocument();
+  });
 });

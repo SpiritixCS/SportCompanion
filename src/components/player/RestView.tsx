@@ -34,6 +34,7 @@ export function RestView({
   setNumber,
   totalSets,
   accent = "cobalt",
+  stepWord = "Série",
   onComplete,
 }: {
   durationSeconds: number;
@@ -45,6 +46,7 @@ export function RestView({
   setNumber: number;
   totalSets: number;
   accent?: Accent;
+  stepWord?: "Série" | "Marche";
   onComplete: () => void;
 }) {
   const [msLeft, setMsLeft] = useState(durationSeconds * 1000);
@@ -90,11 +92,11 @@ export function RestView({
   return (
     <div data-testid="rest-screen" className="fixed inset-0 z-40 bg-ink text-paper flex flex-col">
       <div className="flex-none flex justify-between items-center gap-3 px-[18px] pt-[22px] font-mono text-11 uppercase tracking-[0.14em] text-mist">
-        <span>{variant === "betweenExercises" ? "Exercice suivant" : "Repos entre séries"}</span>
+        <span>{variant === "betweenExercises" ? "Exercice suivant" : stepWord === "Marche" ? "Repos entre marches" : "Repos entre séries"}</span>
         <span className="tabular-nums text-right">
           {variant === "betweenExercises"
             ? `Exercice ${exerciseIndex + 1} / ${totalExercises} terminé`
-            : `Exercice ${exerciseIndex + 1} / ${totalExercises} · Série ${setNumber} / ${totalSets}`}
+            : `Exercice ${exerciseIndex + 1} / ${totalExercises} · ${stepWord} ${setNumber} / ${totalSets}`}
         </span>
       </div>
 
@@ -131,7 +133,7 @@ export function RestView({
         <div className="w-full mt-7 grid grid-cols-[44px_1fr] items-center gap-3 rounded-[22px] border border-rest-line p-4">
           <span
             aria-hidden="true"
-            className="w-11 h-11 rounded-[12px] bg-rest-surface text-[#B9B7FF] grid place-items-center font-display font-extrabold text-24"
+            className={`w-11 h-11 rounded-[12px] bg-rest-surface grid place-items-center font-display font-extrabold text-24 ${accent === "sage" ? "text-[#9EE6CF]" : "text-[#B9B7FF]"}`}
           >
             {next && accent === "sage" && next.exercise.movementFamily === "other" ? (
               next.exercise.name.trim().charAt(0).toUpperCase()

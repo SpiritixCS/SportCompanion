@@ -250,6 +250,7 @@ export function PlayerScreen({
         setNumber={setNumber}
         totalSets={exercise.sets}
         accent={accent}
+        stepWord={exercise.pyramid ? "Marche" : "Série"}
         onComplete={() => {
           setLocalPhase({ kind: "exercise" });
           router.refresh();
