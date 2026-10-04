@@ -102,7 +102,7 @@ Interdits explicites : crème #F4F1EA, terracotta #D97757, vert acide sur fond n
 - **Big Shoulders** (`font-display`, 700/800) — titres en capitales et tous les chiffres.
 - **Instrument Sans** (`font-body`) — noms d'exercices, paragraphes, boutons.
 - **IBM Plex Mono** (`font-mono`) — eyebrows en capitales espacées (0,14 em), méta.
-- Chiffres en `tabular-nums` partout où ils changent en direct. Échelle : 11 → 56 px, puis 112 px (objectif, total Trophées) et 120 px (minuteur de repos).
+- Chiffres en `tabular-nums` partout où ils changent en direct. Échelle : 11 → 64 px, puis 112 px (objectif, total Trophées) et 120 px (minuteur de repos).
 
 ### Formes
 
