@@ -8,8 +8,8 @@ import { FillButton } from "@/components/FillButton";
 // Les trois modules, dans leur couleur (CLAUDE.md §4 : la couleur encode le module).
 const MODULES = [
   { label: "Programme", text: "Trois parcours au poids du corps.", bar: "bg-cobalt", ink: "text-cobalt" },
-  { label: "Tracking", text: "Ta semaine, composée par toi.", bar: "bg-sage", ink: "text-sage-strong" },
-  { label: "Trophées", text: "Chaque rep comptée, à vie.", bar: "bg-brass", ink: "text-brass-ink" },
+  { label: "Tracking", text: "Compose ta propre semaine d'entraînement.", bar: "bg-sage", ink: "text-sage-strong" },
+  { label: "Trophées", text: "Garde une trace de tes perfs.", bar: "bg-brass", ink: "text-brass-ink" },
 ] as const;
 
 // Premier accès d'un nouvel utilisateur : le prénom est demandé une fois,
