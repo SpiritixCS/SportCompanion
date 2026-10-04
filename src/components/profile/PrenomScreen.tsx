@@ -47,24 +47,12 @@ export function PrenomScreen() {
       <span className="font-mono text-11 uppercase tracking-[0.14em] text-graphite mt-6">Bienvenue</span>
       <h1 className="font-display font-extrabold text-[56px] uppercase leading-[0.88] mt-2">Comment tu t&apos;appelles ?</h1>
 
-      <ul className="card-rise bg-paper rounded-card mt-8 px-5">
-        {MODULES.map((m, i) => (
-          <li key={m.label} className={`flex gap-4 py-4 ${i > 0 ? "border-t border-hairline" : ""}`}>
-            <span className={`w-1 rounded-pill flex-none ${m.bar}`} aria-hidden="true" />
-            <div>
-              <span className={`font-mono text-11 uppercase tracking-[0.14em] ${m.ink}`}>{m.label}</span>
-              <p className="text-15 mt-0.5">{m.text}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-
       <form
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
-        className="flex flex-col mt-auto pt-8"
+        className="flex flex-col mt-6"
       >
         <div className="bg-paper rounded-card px-5 pt-4 pb-3 border border-transparent focus-within:border-ink transition-colors">
           <label htmlFor="prenom" className="font-mono text-11 uppercase tracking-[0.14em] text-graphite">
@@ -88,6 +76,18 @@ export function PrenomScreen() {
           </FillButton>
         </div>
       </form>
+
+      <ul className="card-rise bg-paper rounded-card mt-8 px-5">
+        {MODULES.map((m, i) => (
+          <li key={m.label} className={`flex gap-4 py-4 ${i > 0 ? "border-t border-hairline" : ""}`}>
+            <span className={`w-1 rounded-pill flex-none ${m.bar}`} aria-hidden="true" />
+            <div>
+              <span className={`font-mono text-11 uppercase tracking-[0.14em] ${m.ink}`}>{m.label}</span>
+              <p className="text-15 mt-0.5">{m.text}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
