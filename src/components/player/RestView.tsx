@@ -5,6 +5,7 @@ import { GlyphSvg } from "@/components/glyphs/ExerciseGlyph";
 import type { Accent } from "@/components/accent";
 import type { Exercise } from "@/lib/workout/types";
 import type { MovementFamily } from "@/lib/trophies/movementFamily";
+import { setTarget } from "@/lib/pyramide/pyramid";
 
 const R = 88;
 const CIRCUMFERENCE = 2 * Math.PI * R;
@@ -147,7 +148,9 @@ export function RestView({
             </span>
             {next && (
               <span className="block font-mono text-11 uppercase tracking-[0.1em] text-mist mt-0.5">
-                Série {next.setNumber} / {next.exercise.sets} · {targetLabel(next.exercise)}
+                {next.exercise.pyramid
+                  ? `Marche ${next.setNumber} / ${next.exercise.sets} · ${setTarget(next.exercise, next.setNumber)} reps`
+                  : `Série ${next.setNumber} / ${next.exercise.sets} · ${targetLabel(next.exercise)}`}
               </span>
             )}
           </span>

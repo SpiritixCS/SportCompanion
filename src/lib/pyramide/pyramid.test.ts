@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { clampPeak, pyramidLabel, pyramidRestSeconds, pyramidSteps, pyramidTotal } from "./pyramid";
+import { clampPeak, pyramidLabel, pyramidRestSeconds, pyramidSteps, pyramidTotal, setTarget } from "./pyramid";
 
 describe("pyramidSteps", () => {
   it("climbs to the peak and back down for a classic pyramid", () => {
@@ -40,5 +40,16 @@ describe("pyramidLabel", () => {
   it("names the shape by its steps", () => {
     expect(pyramidLabel("classic", 7)).toBe("Pyramide 1→7→1");
     expect(pyramidLabel("inverted", 7)).toBe("Pyramide 7→1→7");
+  });
+});
+
+describe("setTarget", () => {
+  it("gives each step its own target in a pyramid", () => {
+    const ex = { pyramid: { shape: "classic" as const, peak: 3 } };
+    expect([1, 2, 3, 4, 5].map((s) => setTarget(ex, s))).toEqual([1, 2, 3, 2, 1]);
+  });
+
+  it("is null outside a pyramid", () => {
+    expect(setTarget({}, 1)).toBeNull();
   });
 });

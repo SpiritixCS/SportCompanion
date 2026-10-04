@@ -29,3 +29,9 @@ export function pyramidRestSeconds(reps: number, peak: number): number {
 export function pyramidLabel(shape: PyramidShape, peak: number): string {
   return shape === "classic" ? `Pyramide 1→${peak}→1` : `Pyramide ${peak}→1→${peak}`;
 }
+
+// Cible de la marche `setNumber` (1-based) d'un exercice en pyramide ; null hors pyramide.
+export function setTarget(exercise: { pyramid?: { shape: PyramidShape; peak: number } }, setNumber: number): number | null {
+  if (!exercise.pyramid) return null;
+  return pyramidSteps(exercise.pyramid.shape, exercise.pyramid.peak)[setNumber - 1] ?? null;
+}

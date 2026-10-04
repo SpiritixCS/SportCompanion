@@ -92,4 +92,11 @@ describe("SummaryView", () => {
     );
     expect(screen.queryByText(/Palier franchi/)).not.toBeInTheDocument();
   });
+
+  it("names the pyramid on its exercise line", () => {
+    const exercises = [{ ...EXERCISES[0]!, sets: 5, pyramid: { shape: "classic" as const, peak: 3 } }];
+    const setsLogged = [1, 2, 3, 2, 1].map((r, i) => set({ exerciseOrder: 0, setNumber: i + 1, repsActual: r }));
+    render(<SummaryView exercises={exercises} setsLogged={setsLogged} durationSeconds={300} allTimeTotals={[]} onFinish={() => {}} />);
+    expect(screen.getByText("Pyramide 1→3→1")).toBeInTheDocument();
+  });
 });

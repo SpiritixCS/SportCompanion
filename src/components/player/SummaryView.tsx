@@ -1,3 +1,4 @@
+import { pyramidLabel } from "@/lib/pyramide/pyramid";
 import { FillButton } from "@/components/FillButton";
 import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
 import { useCountUp } from "@/components/trophies/useCountUp";
@@ -96,7 +97,14 @@ export function SummaryView({
                   family={row.exercise.movementFamily as MovementFamily}
                   accent={accent === "sage" ? "sage" : "cobalt"}
                 />
-                <span className="text-15 leading-tight">{row.exercise.name}</span>
+                <span className="text-15 leading-tight">
+                  {row.exercise.name}
+                  {row.exercise.pyramid && (
+                    <span className="block font-mono text-11 uppercase tracking-[0.06em] text-graphite mt-0.5">
+                      {pyramidLabel(row.exercise.pyramid.shape, row.exercise.pyramid.peak)}
+                    </span>
+                  )}
+                </span>
                 <span className="font-display font-bold text-[20px] tracking-[0.02em] tabular-nums text-right">
                   +{row.reps} reps{row.allTime !== undefined ? ` · ${row.allTime} au total` : ""}
                 </span>

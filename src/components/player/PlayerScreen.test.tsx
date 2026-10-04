@@ -131,6 +131,50 @@ describe("PlayerScreen", () => {
     expect(screen.getByText("45")).toBeInTheDocument();
   });
 
+  it("plays a pyramid step by step with its own target and rest", async () => {
+    const pyramidDay: TrainDay = {
+      ...DAY,
+      exercises: [{ ...DAY.exercises[0]!, sets: 5, target: { unit: "reps", value: 3, maxEffort: false, eachSide: false }, pyramid: { shape: "classic", peak: 3 } }, DAY.exercises[1]!],
+    };
+    const state: PlayerState = {
+      phase: "in-progress",
+      seanceId: 1,
+      startedAt: STARTED_AT,
+      resumedAt: null,
+      next: { exerciseOrder: 0, setNumber: 2, isLastSetOfExercise: false, isLastExerciseOfDay: false },
+      skippedExerciseOrders: [],
+    };
+    render(<PlayerScreen day={pyramidDay} state={state} setsLogged={[]} {...actionProps()} restBetweenSetsSeconds={90} />);
+
+    expect(screen.getByText("Marche 2 / 5")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Marche terminée" }));
+    expect(screen.getByText("2", { selector: "span.text-112" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Valider" }));
+
+    expect(onLogSet).toHaveBeenCalledWith(expect.objectContaining({ setNumber: 2, repsTarget: "2", repsActual: 2, restSeconds: 75 }));
+    expect(screen.getByText("75")).toBeInTheDocument();
+    expect(screen.getByText(/Marche 3 \/ 5 · 3 reps/)).toBeInTheDocument();
+  });
+
+  it("rests between exercises after the last step of a pyramid", async () => {
+    const pyramidDay: TrainDay = {
+      ...DAY,
+      exercises: [{ ...DAY.exercises[0]!, sets: 5, pyramid: { shape: "classic", peak: 3 } }, DAY.exercises[1]!],
+    };
+    const state: PlayerState = {
+      phase: "in-progress",
+      seanceId: 1,
+      startedAt: STARTED_AT,
+      resumedAt: null,
+      next: { exerciseOrder: 0, setNumber: 5, isLastSetOfExercise: true, isLastExerciseOfDay: false },
+      skippedExerciseOrders: [],
+    };
+    render(<PlayerScreen day={pyramidDay} state={state} setsLogged={[]} {...actionProps()} restBetweenExercisesSeconds={150} />);
+    await userEvent.click(screen.getByRole("button", { name: "Marche terminée" }));
+    await userEvent.click(screen.getByRole("button", { name: "Valider" }));
+    expect(onLogSet).toHaveBeenCalledWith(expect.objectContaining({ repsActual: 1, restSeconds: 150 }));
+  });
+
   it("skips the exercise and refreshes", async () => {
     const state: PlayerState = {
       phase: "in-progress",

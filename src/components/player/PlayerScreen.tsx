@@ -9,6 +9,7 @@ import { Sheet } from "@/components/Sheet";
 import { REST_BETWEEN_SETS_SECONDS, REST_BETWEEN_EXERCISES_SECONDS } from "@/lib/player/constants";
 import { useWakeLock } from "@/lib/player/useWakeLock";
 import { activeDurationSeconds, isInactive } from "@/lib/player/activeDuration";
+import { pyramidRestSeconds, setTarget } from "@/lib/pyramide/pyramid";
 import type { Accent } from "@/components/accent";
 import type { TrainDay } from "@/lib/workout/types";
 import type { PlayerState } from "@/lib/player/loadPlayerState";
@@ -192,15 +193,19 @@ export function PlayerScreen({
   const exercise = day.exercises[exerciseOrder]!;
 
   async function handleCompleteSet(repsActual: number) {
+    // Pyramide : repos selon la hauteur de la marche qui vient d'être faite.
+    const stepTarget = setTarget(exercise, setNumber);
     const restSeconds = isLastSetOfExercise
       ? restBetweenExercisesSeconds
-      : (exercise.restSeconds ?? restBetweenSetsSeconds);
+      : exercise.pyramid && stepTarget !== null
+        ? pyramidRestSeconds(stepTarget, exercise.pyramid.peak)
+        : (exercise.restSeconds ?? restBetweenSetsSeconds);
     await onLogSet({
       seanceId,
       exerciseOrder,
       exerciseId: exercise.id,
       setNumber,
-      repsTarget: JSON.stringify(exercise.target.value),
+      repsTarget: stepTarget !== null ? String(stepTarget) : JSON.stringify(exercise.target.value),
       repsActual,
       restSeconds,
     });

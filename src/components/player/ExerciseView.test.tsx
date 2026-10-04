@@ -90,4 +90,14 @@ describe("ExerciseView", () => {
     await userEvent.click(screen.getByRole("button", { name: "Série terminée" }));
     expect(screen.getByText("Secondes tenues")).toBeInTheDocument();
   });
+
+  it("draws the pyramid and names the step for a pyramid exercise", () => {
+    renderView({ exercise: { ...EXERCISE, sets: 5, pyramid: { shape: "classic", peak: 3 } }, setNumber: 2 });
+    expect(screen.getByText("Marche 2 / 5")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Marche terminée" })).toBeInTheDocument();
+    expect(screen.getByTestId("pyramid-target")).toHaveTextContent("2");
+    const bars = screen.getAllByTestId("pyramid-bar");
+    expect(bars.map((b) => b.getAttribute("data-state"))).toEqual(["done", "current", "upcoming", "upcoming", "upcoming"]);
+    expect(screen.queryAllByTestId("set-bar")).toHaveLength(0);
+  });
 });

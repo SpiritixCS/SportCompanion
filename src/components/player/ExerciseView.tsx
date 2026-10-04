@@ -7,6 +7,8 @@ import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
 import { InitialTile } from "@/components/glyphs/InitialTile";
 import type { Accent } from "@/components/accent";
 import { RepsSheet } from "./RepsSheet";
+import { PyramidBars } from "./PyramidBars";
+import { setTarget } from "@/lib/pyramide/pyramid";
 import { formatTarget } from "@/lib/player/formatTarget";
 import { formatClock } from "@/lib/player/formatClock";
 import type { Exercise } from "@/lib/workout/types";
@@ -61,6 +63,9 @@ export function ExerciseView({
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const target = splitTarget(formatTarget(exercise.sets, exercise.target));
+  const stepTarget = setTarget(exercise, setNumber);
+  const pyramid = exercise.pyramid;
+  const setWord = pyramid ? "Marche" : "Série";
   const isTracking = accent === "sage";
 
   return (
@@ -108,30 +113,41 @@ export function ExerciseView({
           </h1>
 
           <div className="mt-auto pt-6 w-full">
-            <div className={`font-display font-extrabold leading-[0.8] tracking-[-0.01em] tabular-nums ${target.size}`}>
-              {target.main}
-              {target.suffix && <span className="text-[32px] text-graphite ml-1.5">{target.suffix}</span>}
-            </div>
-            <div className="flex gap-1.5 mt-4">
-              {Array.from({ length: exercise.sets }, (_, i) => {
-                const state = i + 1 < setNumber ? "done" : i + 1 === setNumber ? "current" : "upcoming";
-                return (
-                  <span
-                    key={i}
-                    data-testid="set-bar"
-                    data-state={state}
-                    className={`relative flex-1 h-2 rounded-pill overflow-hidden ${
-                      state === "done" ? DONE[accent] : state === "current" ? SOFT[accent] : "bg-hairline"
-                    }`}
-                  >
-                    {state === "current" && <span className={`set-pulse absolute inset-0 ${DONE[accent]}`} />}
-                  </span>
-                );
-              })}
-            </div>
+            {pyramid ? (
+              <div className="font-display font-extrabold leading-[0.8] tracking-[-0.01em] tabular-nums text-112">
+                <span data-testid="pyramid-target">{stepTarget}</span>
+                <span className="text-[32px] text-graphite ml-1.5">reps</span>
+              </div>
+            ) : (
+              <div className={`font-display font-extrabold leading-[0.8] tracking-[-0.01em] tabular-nums ${target.size}`}>
+                {target.main}
+                {target.suffix && <span className="text-[32px] text-graphite ml-1.5">{target.suffix}</span>}
+              </div>
+            )}
+            {pyramid ? (
+              <PyramidBars shape={pyramid.shape} peak={pyramid.peak} setNumber={setNumber} accent={accent} />
+            ) : (
+              <div className="flex gap-1.5 mt-4">
+                {Array.from({ length: exercise.sets }, (_, i) => {
+                  const state = i + 1 < setNumber ? "done" : i + 1 === setNumber ? "current" : "upcoming";
+                  return (
+                    <span
+                      key={i}
+                      data-testid="set-bar"
+                      data-state={state}
+                      className={`relative flex-1 h-2 rounded-pill overflow-hidden ${
+                        state === "done" ? DONE[accent] : state === "current" ? SOFT[accent] : "bg-hairline"
+                      }`}
+                    >
+                      {state === "current" && <span className={`set-pulse absolute inset-0 ${DONE[accent]}`} />}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
             <div className="flex justify-between gap-3 mt-2.5 font-mono text-11 uppercase tracking-[0.14em] text-graphite">
               <span className="tabular-nums">
-                Série {setNumber} / {exercise.sets}
+                {setWord} {setNumber} / {exercise.sets}
               </span>
               <span className="truncate">{nextExerciseName ? `Puis ${nextExerciseName}` : "Dernier exercice"}</span>
             </div>
@@ -141,7 +157,7 @@ export function ExerciseView({
 
       <div className="flex-none flex flex-col gap-1.5 px-[18px] pt-3.5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <FillButton accent={accent} onClick={() => setSheetOpen(true)}>
-          Série terminée
+          {setWord} terminée
         </FillButton>
         <button type="button" onClick={onSkipExercise} className="h-11 font-body text-15 font-medium text-graphite">
           Passer l&apos;exercice
@@ -151,7 +167,7 @@ export function ExerciseView({
       <RepsSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
-        initialValue={targetDefaultReps(exercise)}
+        initialValue={stepTarget ?? targetDefaultReps(exercise)}
         accent={accent}
         title={exercise.target.unit === "seconds" ? "Secondes tenues" : "Reps faites"}
         onConfirm={(value) => {
