@@ -1,55 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Card } from "@/components/Card";
 import { useCountUp } from "./useCountUp";
-import { ExerciseFamilyIcon } from "./ExerciseFamilyIcon";
-import { palierAtteint } from "@/lib/trophies/paliers";
+import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
+import { InitialTile } from "@/components/glyphs/InitialTile";
+import { palierProgress } from "@/lib/trophies/paliers";
 import type { TrophyCard as TrophyCardData } from "@/lib/trophies/computeTrophies";
 
+export function TrophyMark({ card, size = "md" }: { card: TrophyCardData; size?: "md" | "lg" }) {
+  return card.module === "tracking" ? (
+    <InitialTile name={card.name} size={size} />
+  ) : (
+    <ExerciseGlyph exerciseId={card.id} family={card.movementFamily} size={size} />
+  );
+}
+
 export function TrophyCard({ card, index }: { card: TrophyCardData; index: number }) {
-  const [imageFailed, setImageFailed] = useState(false);
   const total = useCountUp(card.total, index * 40);
-  const palier = card.unit === "seconds" ? null : palierAtteint(card.total);
-  const hasImage = card.module === "programme" && !imageFailed;
+  const isReps = card.unit === "reps";
+  const progress = isReps ? palierProgress(card.total) : null;
 
   return (
-    <Link href={`/trophees/${card.id}`} className="block">
-      <Card className="overflow-hidden h-full">
-        {hasImage ? (
-          <div className="aspect-square bg-canvas">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/exercises/${card.id}.jpg`}
-              alt={card.name}
-              className="w-full h-full object-cover"
-              onError={() => setImageFailed(true)}
+    <Link
+      href={`/trophees/${card.id}`}
+      style={{ animationDelay: `${index * 40}ms` }}
+      className="card-rise bg-paper rounded-[22px] p-3.5 flex flex-col gap-2.5 min-w-0"
+    >
+      <TrophyMark card={card} />
+      <span className="font-display font-extrabold text-44 leading-[0.85] tabular-nums">
+        {total.toLocaleString("fr-FR")}
+        {!isReps && <span className="text-24"> s</span>}
+      </span>
+      <span className="text-[14px] leading-[1.25] min-h-[2.5em] break-words">{card.name}</span>
+      {isReps && (
+        <span className="block">
+          <span className="flex justify-between font-mono text-[10px] tracking-[0.06em] text-graphite tabular-nums">
+            <span>{progress ? `Vers ${progress.next.toLocaleString("fr-FR")}` : "Tous atteints"}</span>
+            {progress && <span>{Math.floor(progress.fraction * 100)} %</span>}
+          </span>
+          <span className="block h-1 rounded-pill bg-hairline mt-1 overflow-hidden">
+            <span
+              className="trait-grow block h-full rounded-pill bg-brass"
+              style={{ width: `${(progress?.fraction ?? 1) * 100}%` }}
             />
-          </div>
-        ) : (
-          <div
-            data-testid="exercise-family-icon"
-            className="aspect-square bg-canvas flex items-center justify-center text-graphite"
-          >
-            <ExerciseFamilyIcon family={card.movementFamily} size={40} />
-          </div>
-        )}
-        <div className="p-4">
-          <div className="text-15">{card.name}</div>
-          <div className="font-display text-24 font-semibold tabular-nums mt-2">
-            {total}
-            {card.unit === "seconds" && <span className="text-15 font-medium"> s</span>}
-          </div>
-          {palier !== null && (
-            <div className="mt-2 pt-2 border-t border-brass/30">
-              <span className="font-mono text-11 uppercase tracking-[0.1em] text-brass-ink">
-                Palier {palier.toLocaleString("fr-FR")}
-              </span>
-            </div>
-          )}
-        </div>
-      </Card>
+          </span>
+        </span>
+      )}
     </Link>
   );
 }

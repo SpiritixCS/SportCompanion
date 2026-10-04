@@ -46,8 +46,8 @@ describe("TropheesScreen", () => {
 
   it("shows every card by default", () => {
     render(<TropheesScreen state={STATE} />);
-    expect(screen.getByText("Squats")).toBeInTheDocument();
-    expect(screen.getByText("Fentes")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Squats/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Fentes/ })).toBeInTheDocument();
   });
 
   it("filters to the Tracking module only", async () => {
@@ -56,8 +56,8 @@ describe("TropheesScreen", () => {
     render(<TropheesScreen state={STATE} />);
     await user.click(screen.getByRole("button", { name: "Tracking" }));
     vi.useFakeTimers();
-    expect(screen.queryByText("Squats")).not.toBeInTheDocument();
-    expect(screen.getByText("Fentes")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Squats/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Fentes/ })).toBeInTheDocument();
   });
 
   it("shows the empty state when there are no cards", () => {
@@ -70,7 +70,7 @@ describe("TropheesScreen", () => {
   it("animates the header total from 0 when reduced motion is off (regression: effect ordering race)", () => {
     mockMatchMedia(false);
     const { container } = render(<TropheesScreen state={STATE} />);
-    const headerTotal = container.querySelector(".text-44");
+    const headerTotal = container.querySelector('[data-testid="trophees-total"]');
     expect(headerTotal).toHaveTextContent("0");
     expect(headerTotal).not.toHaveTextContent("420");
   });
@@ -81,5 +81,48 @@ describe("TropheesScreen", () => {
       expect(screen.getByRole("button", { name })).toBeInTheDocument();
     }
     expect(screen.queryByRole("button", { name: "Dos" })).not.toBeInTheDocument();
+  });
+
+  it("shows the exercise closest to its next palier", () => {
+    render(<TropheesScreen state={STATE} />);
+    expect(screen.getByText("Prochain palier")).toBeInTheDocument();
+    expect(screen.getByText("300 / 500")).toBeInTheDocument();
+    expect(screen.getByText("200 restants")).toBeInTheDocument();
+  });
+
+  it("cycles the sort with a single button", async () => {
+    vi.useRealTimers();
+    const user = userEvent.setup();
+    const { container } = render(<TropheesScreen state={STATE} />);
+    const names = () => [...container.querySelectorAll('a[href^="/trophees/"]')].map((a) => a.getAttribute("href"));
+    expect(names()).toEqual(["/trophees/squats", "/trophees/tracking-1"]);
+    await user.click(screen.getByRole("button", { name: "Trier : Plus de reps" }));
+    expect(screen.getByRole("button", { name: "Trier : Récent" })).toBeInTheDocument();
+    expect(names()).toEqual(["/trophees/tracking-1", "/trophees/squats"]);
+    await user.click(screen.getByRole("button", { name: "Trier : Récent" }));
+    expect(screen.getByRole("button", { name: "Trier : A → Z" })).toBeInTheDocument();
+    expect(names()).toEqual(["/trophees/tracking-1", "/trophees/squats"]);
+    vi.useFakeTimers();
+  });
+
+  it("marks the active filter as pressed", async () => {
+    vi.useRealTimers();
+    const user = userEvent.setup();
+    render(<TropheesScreen state={STATE} />);
+    expect(screen.getByRole("button", { name: "Tous" })).toHaveAttribute("aria-pressed", "true");
+    await user.click(screen.getByRole("button", { name: "Programme" }));
+    expect(screen.getByRole("button", { name: "Programme" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Tous" })).toHaveAttribute("aria-pressed", "false");
+    vi.useFakeTimers();
+  });
+
+  it("explains an empty filter without pretending there are no trophies", async () => {
+    vi.useRealTimers();
+    const user = userEvent.setup();
+    render(<TropheesScreen state={{ ...STATE, cards: [STATE.cards[0]!] }} />);
+    await user.click(screen.getByRole("button", { name: "Tracking" }));
+    expect(screen.getByText(/Aucun exercice Tracking/)).toBeInTheDocument();
+    expect(screen.queryByText(/première séance/)).not.toBeInTheDocument();
+    vi.useFakeTimers();
   });
 });

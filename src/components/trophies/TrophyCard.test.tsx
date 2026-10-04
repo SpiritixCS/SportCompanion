@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { TrophyCard } from "./TrophyCard";
 import type { TrophyCard as TrophyCardData } from "@/lib/trophies/computeTrophies";
 
@@ -47,41 +47,37 @@ describe("TrophyCard", () => {
     expect(screen.getByRole("link")).toHaveAttribute("href", "/trophees/squats");
   });
 
-  it("shows a palier mark when a threshold has been reached", () => {
+  it("shows the progress toward the next palier", () => {
     render(<TrophyCard card={PROGRAMME_CARD} index={0} />);
-    expect(screen.getByText(/Palier 100/)).toBeInTheDocument();
+    expect(screen.getByText("Vers 500")).toBeInTheDocument();
+    expect(screen.getByText("60 %")).toBeInTheDocument();
   });
 
-  it("shows no palier mark below the first threshold", () => {
+  it("aims for the first palier below 100", () => {
     render(<TrophyCard card={{ ...PROGRAMME_CARD, total: 42 }} index={0} />);
-    expect(screen.queryByText(/Palier/)).not.toBeInTheDocument();
+    expect(screen.getByText("Vers 100")).toBeInTheDocument();
+    expect(screen.getByText("42 %")).toBeInTheDocument();
   });
 
-  it("renders no image for a Tracking card", () => {
-    render(<TrophyCard card={TRACKING_CARD} index={0} />);
-    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  it("says every palier is reached past 25 000", () => {
+    render(<TrophyCard card={{ ...PROGRAMME_CARD, total: 26000 }} index={0} />);
+    expect(screen.getByText("Tous atteints")).toBeInTheDocument();
   });
 
-  it("shows a family icon in place of a photo for a Tracking card", () => {
-    render(<TrophyCard card={TRACKING_CARD} index={0} />);
-    expect(screen.getByTestId("exercise-family-icon")).toBeInTheDocument();
-  });
-
-  it("shows no family icon while the Programme photo is displayed", () => {
+  it("shows the exercise picto for a Programme card, never a photo", () => {
     render(<TrophyCard card={PROGRAMME_CARD} index={0} />);
-    expect(screen.queryByTestId("exercise-family-icon")).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("initial-tile")).not.toBeInTheDocument();
   });
 
-  it("falls back to the family icon when the Programme photo fails to load", () => {
-    render(<TrophyCard card={PROGRAMME_CARD} index={0} />);
-    fireEvent.error(screen.getByRole("img"));
-    expect(screen.getByTestId("exercise-family-icon")).toBeInTheDocument();
-    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  it("shows the initial on a jade tile for a Tracking card", () => {
+    render(<TrophyCard card={TRACKING_CARD} index={0} />);
+    expect(screen.getByTestId("initial-tile")).toHaveTextContent("F");
   });
 
   it("shows no palier and an 's' suffix for a seconds card, regardless of total", () => {
     render(<TrophyCard card={{ ...PROGRAMME_CARD, id: "tracking-1", module: "tracking", unit: "seconds", total: 900, movementFamily: "other" }} index={0} />);
     expect(screen.getByText("s")).toBeInTheDocument();
-    expect(screen.queryByText(/Palier/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Vers/)).not.toBeInTheDocument();
   });
 });

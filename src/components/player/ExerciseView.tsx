@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IconClose } from "@/components/icons/IconClose";
 import { FillButton } from "@/components/FillButton";
 import { ExerciseGlyph } from "@/components/glyphs/ExerciseGlyph";
+import { InitialTile } from "@/components/glyphs/InitialTile";
 import type { Accent } from "@/components/Pastille";
 import { RepsSheet } from "./RepsSheet";
 import { formatTarget } from "@/lib/player/formatTarget";
@@ -97,12 +98,7 @@ export function ExerciseView({
         <div key={exercise.id} className="ex-slide flex-1 flex flex-col items-start bg-paper rounded-[28px] px-5 py-[22px]">
           <div data-testid="exercise-hero">
             {isTracking ? (
-              <span
-                aria-hidden="true"
-                className="w-[84px] h-[84px] rounded-[24px] bg-sage-soft text-sage-ink grid place-items-center font-display font-extrabold text-44"
-              >
-                {exercise.name.trim().charAt(0).toUpperCase()}
-              </span>
+              <InitialTile name={exercise.name} size="lg" />
             ) : (
               <ExerciseGlyph exerciseId={exercise.id} family={exercise.movementFamily as MovementFamily} size="lg" />
             )}
