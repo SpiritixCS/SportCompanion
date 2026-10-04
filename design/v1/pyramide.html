@@ -1,0 +1,226 @@
+<title>Agrès · Pyramide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EDEFF2; --surface:#FFFFFF; --ink:#0B0D12; --muted:#626B78; --line:#D9DEE5; --mist:#9AA2AE;
+  --jade:#0F9D74; --jade-soft:#DDF3EC; --jade-ink:#0A5E47; --jade-strong:#08805F;
+  --prog:#2F2BFF; --prog-soft:#E6E5FF; --rest:#1A1E28; --rest-line:#232733;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);margin:0;padding-inline:16px;padding-block:24px 48px}
+.stage{display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start;max-width:1280px;margin:0 auto}
+.phone{width:390px;max-width:100%;height:844px;border-radius:44px;box-shadow:0 0 0 10px #0B0D12,0 40px 80px -30px rgba(11,13,18,.45);overflow:hidden;position:relative;background:var(--bg)}
+@media (max-width:480px){.phone{border-radius:0;box-shadow:none;width:100%;height:100dvh}body{padding-inline:0;padding-block:0}.notes{padding:24px 16px 48px}}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.jade{color:var(--jade-strong)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--jade);outline-offset:2px}
+.btn{height:56px;width:100%;border-radius:999px;border:0;font:600 15px var(--body);position:relative;overflow:hidden}
+.btn.ink{background:var(--ink);color:#fff}
+.btn.line{background:var(--surface);border:1px solid var(--line)}
+.btn .fill{position:absolute;inset:0;background:var(--jade);transform:scaleX(0);transform-origin:left}
+.btn.go .fill{transition:transform .42s cubic-bezier(.4,0,.2,1);transform:scaleX(1)}
+.btn span{position:relative}
+/* --- Écran 1 : page Tracking + feuille --- */
+.screen{position:absolute;inset:0;overflow:hidden;padding:20px 18px 120px}
+.title{font-family:var(--display);font-weight:800;font-size:56px;line-height:.9;text-transform:uppercase;margin:6px 0 0}
+.card{background:var(--surface);border-radius:28px;padding:20px;margin-top:16px}
+.card h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:.92;text-transform:uppercase;margin:6px 0 4px}
+.card p{color:var(--muted);font-size:14px;margin:0 0 14px}
+.mini-pyr{display:flex;align-items:flex-end;gap:3px;height:34px;margin:4px 0 14px}
+.mini-pyr i{flex:1;background:var(--jade-soft);border-radius:3px}
+.scrim{position:absolute;inset:0;background:rgba(11,13,18,.4)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:28px 28px 0 0;padding:10px 18px 26px}
+.grab{width:40px;height:4px;border-radius:999px;background:var(--line);margin:0 auto 14px}
+.sheet h3{font-family:var(--display);font-weight:800;font-size:32px;line-height:.9;text-transform:uppercase;margin:6px 0 14px}
+.field{width:100%;height:52px;border-radius:14px;border:1px solid var(--line);padding:0 14px;display:flex;align-items:center;gap:12px;font-size:15px}
+.glyph{width:36px;height:36px;border-radius:10px;background:var(--jade-soft);color:var(--jade-ink);display:grid;place-items:center;flex:none}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.cycle{height:34px;padding:0 14px;border-radius:999px;border:0;background:var(--ink);color:#fff;font:500 13px var(--body);display:inline-flex;align-items:center;gap:7px}
+.step{display:flex;align-items:center;gap:12px}
+.step button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:22px}
+.step b{font-family:var(--display);font-weight:800;font-size:44px;min-width:56px;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
+.preview{display:flex;align-items:flex-end;gap:3px;height:64px;margin:16px 0 6px}
+.preview i{flex:1;background:var(--jade);border-radius:3px;transition:height .3s cubic-bezier(.2,.8,.2,1)}
+.total{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em;margin-bottom:16px}
+.total b{font-family:var(--display);font-weight:800;font-size:22px;color:var(--ink);letter-spacing:0}
+/* --- Écran 2 : marche --- */
+.ex{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+.top{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:18px 18px 0}
+.x{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.excard{flex:1;margin:22px 18px 0;background:var(--surface);border-radius:28px;padding:22px 20px;display:flex;flex-direction:column}
+.big-glyph{width:84px;height:84px;border-radius:24px;background:var(--jade-soft);color:var(--jade-ink);display:grid;place-items:center}
+.name{font-family:var(--display);font-weight:800;font-size:44px;line-height:.92;text-transform:uppercase;margin:18px 0 0}
+.target{margin-top:auto;font-family:var(--display);font-weight:800;font-size:112px;line-height:.8;font-variant-numeric:tabular-nums}
+.target small{font-size:32px;color:var(--muted);margin-left:6px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:70px;margin-top:16px}
+.bars i{flex:1;border-radius:4px;background:var(--line);position:relative;overflow:hidden}
+.bars i.done{background:var(--jade)}
+.bars i.cur{background:var(--jade-soft)}
+.bars i.cur::after{content:"";position:absolute;inset:0;background:var(--jade);transform-origin:bottom;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%{transform:scaleY(0)}60%,100%{transform:scaleY(1);opacity:0}}
+.meta{display:flex;justify-content:space-between;margin-top:10px}
+.actions{padding:14px 18px 26px;display:flex;flex-direction:column;gap:6px}
+.ghost{height:44px;border:0;background:none;color:var(--muted);font:500 15px var(--body)}
+.rest{position:absolute;inset:0;background:var(--ink);color:#fff;display:flex;flex-direction:column}
+.rest[hidden]{display:none}
+.rest .top2{display:flex;justify-content:space-between;padding:22px 18px 0;color:var(--mist)}
+.dial{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 18px}
+.dial .n{font-family:var(--display);font-weight:800;font-size:120px;line-height:.85;font-variant-numeric:tabular-nums}
+.next{width:100%;margin-top:28px;border:1px solid var(--rest-line);border-radius:22px;padding:16px;display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center}
+.next .t{width:44px;height:44px;border-radius:12px;background:var(--rest);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:24px;color:#9EE6CF}
+.rest .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:18px 18px 26px}
+.rest .acts button{height:60px;border-radius:999px;border:0;font:600 16px var(--body)}
+/* --- Notes --- */
+.notes{flex:1 1 300px;max-width:440px}
+.notes h1{font-family:var(--display);font-weight:800;font-size:56px;line-height:.9;text-transform:uppercase;margin:8px 0 6px}
+.notes p,.notes li{font-size:15px;line-height:1.55;color:#2B313B}
+.notes h2{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;font-weight:500}
+.notes ol{padding-left:18px;margin:0}.notes li{margin-bottom:6px}
+.chip{display:inline-block;font-family:var(--mono);font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="stage">
+  <!-- Écran 1 -->
+  <div class="phone" aria-label="Lancement d'une pyramide depuis la page Tracking">
+    <div class="screen">
+      <div class="mono jade">Programme perso</div>
+      <h1 class="title">Tracking</h1>
+      <div class="card">
+        <div class="mono jade">Pyramide</div>
+        <h2>Monte, redescends</h2>
+        <div class="mini-pyr" aria-hidden="true"><i style="height:20%"></i><i style="height:40%"></i><i style="height:60%"></i><i style="height:80%"></i><i style="height:100%"></i><i style="height:80%"></i><i style="height:60%"></i><i style="height:40%"></i><i style="height:20%"></i></div>
+        <button class="btn line" type="button"><span>Lancer une pyramide</span></button>
+      </div>
+    </div>
+    <div class="scrim"></div>
+    <div class="sheet" role="dialog" aria-label="Lancer une pyramide">
+      <div class="grab"></div>
+      <div class="mono jade">Pyramide</div>
+      <h3>Lancer</h3>
+      <label class="mono" for="ex">Exercice</label>
+      <div class="field" style="margin-top:8px">
+        <span class="glyph" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M8 4v5M16 4v5"/><circle cx="12" cy="11" r="2.4"/><path d="M12 13.5v5M9 21l3-2.5 3 2.5"/></svg></span>
+        <span id="ex">Pull ups</span>
+        <span class="mono" style="margin-left:auto;letter-spacing:.06em">catalogue</span>
+      </div>
+      <div class="row">
+        <span>Forme</span>
+        <button class="cycle" id="shape" type="button" aria-label="Forme : Classique"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg><span id="shapelbl">Classique</span></button>
+      </div>
+      <div class="row">
+        <span>Sommet</span>
+        <span class="step"><button type="button" id="minus" aria-label="Sommet moins">−</button><b id="peak">5</b><button type="button" id="plus" aria-label="Sommet plus">+</button></span>
+      </div>
+      <div class="preview" id="preview" aria-hidden="true"></div>
+      <div class="total"><span id="shapeline">1 → 5 → 1</span><span><b id="tot">25</b> reps · <span id="steps">9</span> marches</span></div>
+      <button class="btn ink" id="launch" type="button"><i class="fill"></i><span>Lancer</span></button>
+      <p class="mono" style="margin:10px 0 0;letter-spacing:.06em;text-transform:none">Prérempli : dernier sommet utilisé pour Pull ups.</p>
+    </div>
+  </div>
+
+  <!-- Écran 2 -->
+  <div class="phone" aria-label="Une marche de la pyramide">
+    <div class="ex">
+      <div class="top">
+        <span class="x" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+        <div><div class="mono">Pyramide · Classique · sommet <span id="p2">5</span></div></div>
+        <span class="mono" style="color:var(--ink);font-size:13px">4:12</span>
+      </div>
+      <div class="excard">
+        <span class="big-glyph" aria-hidden="true"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18"/><path d="M8 4v5M16 4v5"/><circle cx="12" cy="11" r="2.4"/><path d="M12 13.5v5M9 21l3-2.5 3 2.5"/></svg></span>
+        <div class="name">Pull ups</div>
+        <div class="target"><span id="tgt">4</span><small>reps</small></div>
+        <div class="bars" id="bars" aria-hidden="true"></div>
+        <div class="meta"><span class="mono" id="stepno">Marche 4 / 9</span><span class="mono" id="done">6 / 25 reps</span></div>
+      </div>
+      <div class="actions">
+        <button class="btn ink" id="stepbtn" type="button"><i class="fill"></i><span>Marche terminée</span></button>
+        <button class="ghost" type="button">Passer l'exercice</button>
+      </div>
+      <div class="rest" id="rest" hidden>
+        <div class="top2 mono"><span>Repos</span><span id="restinfo">Après la marche 4</span></div>
+        <div class="dial"><span class="n" id="restn">60</span><span class="mono" style="color:var(--mist);margin-top:8px">secondes</span>
+          <div class="next"><span class="t" id="nextn">5</span><span><span class="mono" style="color:var(--mist);display:block">Ensuite</span><span style="font-size:16px;font-weight:600" id="nextl">Marche 5 / 9 · le sommet</span></span></div>
+        </div>
+        <div class="acts"><button type="button" style="background:var(--rest);color:#fff">+15 s</button><button type="button" id="skip" style="background:#fff;color:var(--ink)">Passer</button></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    <div class="mono">Mode pyramide · maquette</div>
+    <h1>Pyramide</h1>
+    <p>Deux écrans à valider avant de coder : le lancement depuis la page Tracking, et une marche pendant la séance. Les deux sont interactifs.</p>
+    <h2>Lancement</h2>
+    <ol>
+      <li>Une carte « Pyramide » sous la prochaine séance ouvre la feuille.</li>
+      <li>Exercice du catalogue (picto, compté dans ses Trophées) ou nom libre (initiale jade).</li>
+      <li>Forme en un bouton qui bascule : Classique ↔ Inversée. Sommet de 2 à 30.</li>
+      <li>La silhouette et le total suivent en direct : sommet 5 = 25 reps en classique, 29 en inversée.</li>
+    </ol>
+    <h2>Pendant la séance</h2>
+    <ol>
+      <li>La cible de la marche en très grand, la pyramide en barres : faites en jade, la marche en cours qui se remplit, le reste en gris.</li>
+      <li>« Marche terminée » ouvre la saisie préremplie (comme aujourd'hui). Touche-le ici pour voir le repos.</li>
+      <li>Repos calculé selon la hauteur de la marche : <span class="chip">15 s</span> en bas, <span class="chip">2:00</span> au sommet, arrondi aux 15 s.</li>
+    </ol>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var shape = 'classic', peak = 5;
+  function steps(s, p){ var up=[],i; for(i=1;i<=p;i++) up.push(i); var c=up.concat(up.slice(0,-1).reverse()); return s==='classic'?c:c.map(function(r){return p+1-r;}); }
+  function rest(r, p){ var raw=15+105*Math.pow(Math.min(1,r/p),1.5); return Math.min(120,Math.max(15,Math.round(raw/15)*15)); }
+  function renderSheet(){
+    var st = steps(shape, peak), max = peak;
+    $('peak').textContent = peak;
+    $('tot').textContent = st.reduce(function(a,b){return a+b;},0);
+    $('steps').textContent = st.length;
+    $('shapeline').textContent = shape==='classic' ? '1 → '+peak+' → 1' : peak+' → 1 → '+peak;
+    $('preview').innerHTML = st.map(function(r){ return '<i style="height:'+(r/max*100)+'%"></i>'; }).join('');
+  }
+  $('minus').onclick = function(){ peak=Math.max(2,peak-1); renderSheet(); };
+  $('plus').onclick = function(){ peak=Math.min(30,peak+1); renderSheet(); };
+  $('shape').onclick = function(){ shape = shape==='classic'?'inverted':'classic'; var l = shape==='classic'?'Classique':'Inversée'; $('shapelbl').textContent=l; this.setAttribute('aria-label','Forme : '+l); renderSheet(); };
+  $('launch').onclick = function(){ var b=this; b.classList.add('go'); setTimeout(function(){ b.classList.remove('go'); }, reduce?0:700); };
+  renderSheet();
+
+  // Écran 2 : sommet 5, classique, marche 4 en cours
+  var ex = steps('classic', 5), cur = 3, timer = null;
+  function renderEx(){
+    var done = ex.slice(0,cur).reduce(function(a,b){return a+b;},0);
+    $('tgt').textContent = cur < ex.length ? ex[cur] : '✓';
+    $('stepno').textContent = 'Marche '+Math.min(cur+1,ex.length)+' / '+ex.length;
+    $('done').textContent = done+' / 25 reps';
+    $('bars').innerHTML = ex.map(function(r,i){ return '<i class="'+(i<cur?'done':i===cur?'cur':'')+'" style="height:'+(r/5*100)+'%"></i>'; }).join('');
+  }
+  function endRest(){ clearInterval(timer); $('rest').hidden = true; cur = Math.min(cur+1, ex.length); renderEx(); }
+  $('stepbtn').onclick = function(){
+    if (cur >= ex.length) { cur = 0; renderEx(); return; }
+    var b = this; b.classList.add('go');
+    setTimeout(function(){
+      b.classList.remove('go');
+      var r = rest(ex[cur], 5), left = r, n = ex[cur+1];
+      $('restn').textContent = left;
+      $('restinfo').textContent = 'Après la marche '+(cur+1);
+      $('nextn').textContent = n || '✓';
+      $('nextl').textContent = n ? 'Marche '+(cur+2)+' / '+ex.length+(n===5?' · le sommet':' · '+n+' reps') : 'Fin de la pyramide';
+      $('rest').hidden = false;
+      timer = setInterval(function(){ left--; $('restn').textContent = left; if (left <= 0) endRest(); }, 1000);
+    }, reduce?0:420);
+  };
+  $('skip').onclick = endRest;
+  renderEx();
+})();
+</script>
