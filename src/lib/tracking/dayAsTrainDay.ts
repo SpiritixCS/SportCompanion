@@ -26,8 +26,5 @@ export function dayAsTrainDay(day: TrackingProgramDay): TrainDay {
         ...(exercise.pyramid && { pyramid: exercise.pyramid }),
       };
     }),
-        ...(exercise.pyramid && { pyramid: exercise.pyramid }),
-      };
-    }),
   };
 }
