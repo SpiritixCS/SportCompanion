@@ -130,4 +130,30 @@ describe("DayEditor", () => {
     await userEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
     expect(onSave).toHaveBeenCalledWith(false, [expect.objectContaining({ name: "Squats" })]);
   });
+
+  it("adds a pyramid exercise with its shape and peak instead of sets", async () => {
+    const onSave = renderEditor(EMPTY_DAY);
+    await userEvent.click(screen.getByRole("button", { name: "Pyramide" }));
+    expect(screen.queryByRole("button", { name: "Ajouter une série" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Sommet plus" }));
+    expect(screen.getByText("36 reps · 11 marches")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Forme : Classique" }));
+    expect(screen.getByRole("button", { name: "Forme : Inversée" })).toBeInTheDocument();
+    await userEvent.type(screen.getByPlaceholderText("Nom de l'exercice"), "Pull ups");
+    await userEvent.click(screen.getByRole("button", { name: "Ajouter l'exercice" }));
+    expect(screen.getByText("Pyramide 6→1→6")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Repos/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(onSave).toHaveBeenCalledWith(false, [
+      { name: "Pull ups", unit: "reps", setsCount: 11, targetValue: 6, restSeconds: null, pyramid: { shape: "inverted", peak: 6 } },
+    ]);
+  });
+
+  it("shows an existing pyramid exercise by its shape", () => {
+    renderEditor({
+      ...DIPS_DAY,
+      exercises: [{ ordre: 0, name: "Dips", unit: "reps", setsCount: 9, targetValue: 5, restSeconds: null, pyramid: { shape: "classic", peak: 5 } }],
+    });
+    expect(screen.getByText("Pyramide 1→5→1")).toBeInTheDocument();
+  });
 });

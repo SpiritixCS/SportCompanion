@@ -10,6 +10,7 @@ import { FillLink } from "@/components/FillButton";
 import { InitialTile } from "@/components/glyphs/InitialTile";
 import { DayEditor } from "./DayEditor";
 import { formatClock } from "@/lib/player/formatClock";
+import { doseLabel } from "@/lib/tracking/dose";
 import { advanceProgramDayAction, deleteTrackingSeanceAction, saveDayAction } from "@/lib/tracking/actions";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
 import type { DayExerciseInput, TrackingProgramDay } from "@/lib/tracking/program";
@@ -17,10 +18,6 @@ import type { TrackingUnit } from "@/lib/tracking/db";
 
 function formatDateFr(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(new Date(iso));
-}
-
-function dose(e: { setsCount: number; targetValue: number; unit: TrackingUnit }): string {
-  return `${e.setsCount} × ${e.targetValue}${e.unit === "seconds" ? " s" : ""}`;
 }
 
 const EYEBROW = "font-mono text-11 uppercase tracking-[0.14em]";
@@ -190,11 +187,11 @@ export function TrackingScreen({
                     <span className="min-w-0">
                       <span className="block text-15 truncate">{e.name}</span>
                       <span className="block font-mono text-11 uppercase tracking-[0.06em] text-graphite mt-0.5">
-                        Repos {formatClock(e.restSeconds ?? globalRestSeconds)}
+                        {e.pyramid ? "Repos auto" : `Repos ${formatClock(e.restSeconds ?? globalRestSeconds)}`}
                       </span>
                     </span>
                     <span className="font-display font-bold text-[20px] tracking-[0.02em] tabular-nums whitespace-nowrap">
-                      {dose(e)}
+                      {doseLabel(e)}
                     </span>
                   </div>
                 ))}

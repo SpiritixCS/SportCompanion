@@ -149,4 +149,21 @@ describe("TrackingCard — programme vide", () => {
     expect(screen.getByRole("link", { name: "Composer mon programme" })).toHaveAttribute("href", "/tracking");
     expect(screen.queryByRole("button", { name: "Jour suivant" })).not.toBeInTheDocument();
   });
+
+  it("names a pyramid exercise by its shape", () => {
+    render(
+      <TrackingCard
+        state={{
+          ...REST_STATE,
+          programDay: {
+            dayOfWeek: 0,
+            label: "Lundi",
+            isRest: false,
+            exercises: [{ ordre: 0, name: "Pull ups", unit: "reps", setsCount: 9, targetValue: 5, restSeconds: null, pyramid: { shape: "classic", peak: 5 } }],
+          },
+        }}
+      />,
+    );
+    expect(screen.getByText("Pyramide 1→5→1")).toBeInTheDocument();
+  });
 });

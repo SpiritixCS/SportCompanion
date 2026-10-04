@@ -6,11 +6,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { advanceProgramDayAction } from "@/lib/tracking/actions";
+import { doseLabel } from "@/lib/tracking/dose";
 import type { TrackingScreenState } from "@/lib/tracking/loadTrackingScreenState";
-
-function doseLabel(exercise: { setsCount: number; targetValue: number; unit: "reps" | "seconds" }): string {
-  return `${exercise.setsCount} × ${exercise.targetValue}${exercise.unit === "seconds" ? " s" : ""}`;
-}
 
 export function TrackingCard({ state }: { state: TrackingScreenState }) {
   const router = useRouter();

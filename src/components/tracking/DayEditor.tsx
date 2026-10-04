@@ -4,15 +4,19 @@ import { useState } from "react";
 import { FillButton } from "@/components/FillButton";
 import { InitialTile } from "@/components/glyphs/InitialTile";
 import { formatClock } from "@/lib/player/formatClock";
+import { CycleButton } from "@/components/CycleButton";
+import { doseLabel } from "@/lib/tracking/dose";
+import { clampPeak, pyramidSteps, pyramidTotal, type PyramidShape } from "@/lib/pyramide/pyramid";
 import type { TrackingUnit } from "@/lib/tracking/db";
 import type { DayExerciseInput, TrackingProgramDay } from "@/lib/tracking/program";
 
 export const DEFAULT_REST_SECONDS = 90;
 const clampRest = (s: number) => Math.min(600, Math.max(15, s));
 
-function dose(e: { setsCount: number; targetValue: number; unit: TrackingUnit }): string {
-  return `${e.setsCount} × ${e.targetValue}${e.unit === "seconds" ? " s" : ""}`;
-}
+const SHAPES: { value: PyramidShape; label: string }[] = [
+  { value: "classic", label: "Classique" },
+  { value: "inverted", label: "Inversée" },
+];
 
 function Stepper({
   label,
@@ -69,14 +73,26 @@ export function DayEditor({
   const [setsCount, setSetsCount] = useState(3);
   const [targetValue, setTargetValue] = useState(10);
   const [restSeconds, setRestSeconds] = useState(DEFAULT_REST_SECONDS);
+  const [mode, setMode] = useState<"sets" | "pyramid">("sets");
+  const [shape, setShape] = useState<PyramidShape>("classic");
+  const [peak, setPeak] = useState(5);
 
   const matchedExercise = exerciseSuggestions.find((e) => e.name.trim().toLowerCase() === name.trim().toLowerCase());
   const effectiveUnit = matchedExercise?.unit ?? unit;
   const restOf = (e: DayExerciseInput) => e.restSeconds ?? globalRestSeconds;
 
-  const pending: DayExerciseInput | null = name.trim()
-    ? { name: name.trim(), unit: effectiveUnit, setsCount, targetValue, restSeconds }
-    : null;
+  const pending: DayExerciseInput | null = !name.trim()
+    ? null
+    : mode === "pyramid"
+      ? {
+          name: name.trim(),
+          unit: "reps",
+          setsCount: pyramidSteps(shape, peak).length,
+          targetValue: peak,
+          restSeconds: null,
+          pyramid: { shape, peak },
+        }
+      : { name: name.trim(), unit: effectiveUnit, setsCount, targetValue, restSeconds };
   // Un exercice tapé mais pas encore ajouté part avec l'enregistrement.
   const toSave = pending && !isRest ? [...exercises, pending] : exercises;
 
@@ -149,17 +165,19 @@ export function DayEditor({
                     <InitialTile name={exercise.name} />
                     <span className="min-w-0">
                       <span className="block text-15 truncate">{exercise.name}</span>
-                      <span className="block font-mono text-11 tracking-[0.06em] text-graphite mt-0.5">{dose(exercise)}</span>
-                      <button
-                        type="button"
-                        aria-expanded={openRest === i}
-                        onClick={() => setOpenRest(openRest === i ? null : i)}
-                        className={`mt-1.5 h-[26px] px-2.5 rounded-pill border border-sage font-mono text-11 tracking-[0.04em] tabular-nums ${
-                          openRest === i ? "bg-sage text-paper" : "bg-sage-soft text-sage-ink"
-                        }`}
-                      >
-                        Repos {formatClock(restOf(exercise))}
-                      </button>
+                      <span className="block font-mono text-11 tracking-[0.06em] text-graphite mt-0.5">{doseLabel(exercise)}</span>
+                      {!exercise.pyramid && (
+                        <button
+                          type="button"
+                          aria-expanded={openRest === i}
+                          onClick={() => setOpenRest(openRest === i ? null : i)}
+                          className={`mt-1.5 h-[26px] px-2.5 rounded-pill border border-sage font-mono text-11 tracking-[0.04em] tabular-nums ${
+                            openRest === i ? "bg-sage text-paper" : "bg-sage-soft text-sage-ink"
+                          }`}
+                        >
+                          Repos {formatClock(restOf(exercise))}
+                        </button>
+                      )}
                     </span>
                     <span className="flex gap-1">
                       <button type="button" aria-label={`Monter ${exercise.name}`} disabled={i === 0} onClick={() => handleMove(i, -1)} className={mini}>
@@ -223,45 +241,80 @@ export function DayEditor({
               ))}
             </datalist>
 
-            {matchedExercise ? (
-              <p className="text-13 text-graphite mt-2.5">Unité : {matchedExercise.unit === "seconds" ? "secondes" : "reps"}</p>
-            ) : (
-              <div role="group" aria-label="Unité" className="grid grid-cols-2 gap-1 bg-paper border border-hairline rounded-pill p-1 mt-2.5">
-                {(["reps", "seconds"] as const).map((u) => (
-                  <button
-                    key={u}
-                    type="button"
-                    aria-pressed={unit === u}
-                    onClick={() => setUnit(u)}
-                    className={`h-[34px] rounded-pill font-body text-13 font-semibold ${unit === u ? "bg-ink text-paper" : "text-graphite"}`}
-                  >
-                    {u === "reps" ? "Reps" : "Secondes"}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div role="group" aria-label="Format" className="grid grid-cols-2 gap-1 bg-paper border border-hairline rounded-pill p-1 mt-2.5">
+              {(["sets", "pyramid"] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={mode === m}
+                  onClick={() => setMode(m)}
+                  className={`h-[34px] rounded-pill font-body text-13 font-semibold ${mode === m ? "bg-ink text-paper" : "text-graphite"}`}
+                >
+                  {m === "sets" ? "Séries" : "Pyramide"}
+                </button>
+              ))}
+            </div>
 
-            <Stepper
-              label="Séries"
-              display={setsCount}
-              onStep={(d) => setSetsCount((v) => Math.max(1, v + d))}
-              minusLabel="Retirer une série"
-              plusLabel="Ajouter une série"
-            />
-            <Stepper
-              label="Cible par série"
-              display={targetValue}
-              onStep={(d) => setTargetValue((v) => Math.max(1, v + d))}
-              minusLabel="Diminuer la cible"
-              plusLabel="Augmenter la cible"
-            />
-            <Stepper
-              label="Repos entre séries"
-              display={formatClock(restSeconds)}
-              onStep={(d) => setRestSeconds((v) => clampRest(v + d * 15))}
-              minusLabel="Repos moins 15 secondes"
-              plusLabel="Repos plus 15 secondes"
-            />
+            {mode === "pyramid" ? (
+              <>
+                <div className="flex justify-between items-center mt-2.5">
+                  <span className="text-15">Forme</span>
+                  <CycleButton options={SHAPES} value={shape} onChange={setShape} ariaLabelPrefix="Forme" />
+                </div>
+                <Stepper
+                  label="Sommet"
+                  display={peak}
+                  onStep={(d) => setPeak((v) => clampPeak(v + d))}
+                  minusLabel="Sommet moins"
+                  plusLabel="Sommet plus"
+                />
+                <p className="font-mono text-11 tracking-[0.06em] text-graphite text-right mt-1.5 tabular-nums">
+                  {pyramidTotal(shape, peak)} reps · {pyramidSteps(shape, peak).length} marches
+                </p>
+              </>
+            ) : (
+              <>
+                {matchedExercise ? (
+                  <p className="text-13 text-graphite mt-2.5">Unité : {matchedExercise.unit === "seconds" ? "secondes" : "reps"}</p>
+                ) : (
+                  <div role="group" aria-label="Unité" className="grid grid-cols-2 gap-1 bg-paper border border-hairline rounded-pill p-1 mt-2.5">
+                    {(["reps", "seconds"] as const).map((u) => (
+                      <button
+                        key={u}
+                        type="button"
+                        aria-pressed={unit === u}
+                        onClick={() => setUnit(u)}
+                        className={`h-[34px] rounded-pill font-body text-13 font-semibold ${unit === u ? "bg-ink text-paper" : "text-graphite"}`}
+                      >
+                        {u === "reps" ? "Reps" : "Secondes"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <Stepper
+                  label="Séries"
+                  display={setsCount}
+                  onStep={(d) => setSetsCount((v) => Math.max(1, v + d))}
+                  minusLabel="Retirer une série"
+                  plusLabel="Ajouter une série"
+                />
+                <Stepper
+                  label="Cible par série"
+                  display={targetValue}
+                  onStep={(d) => setTargetValue((v) => Math.max(1, v + d))}
+                  minusLabel="Diminuer la cible"
+                  plusLabel="Augmenter la cible"
+                />
+                <Stepper
+                  label="Repos entre séries"
+                  display={formatClock(restSeconds)}
+                  onStep={(d) => setRestSeconds((v) => clampRest(v + d * 15))}
+                  minusLabel="Repos moins 15 secondes"
+                  plusLabel="Repos plus 15 secondes"
+                />
+              </>
+            )}
             <button
               type="button"
               onClick={handleAddExercise}

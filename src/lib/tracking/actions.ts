@@ -1,6 +1,7 @@
 "use server";
 
 import { getDbForUser } from "@/lib/db/client";
+import { findCatalogByName } from "@/lib/pyramide/catalog";
 import { currentUser } from "@/lib/auth/currentUser";
 import {
   getOrStartSeance,
@@ -102,7 +103,9 @@ export async function logDaySetAction(
   const day = getProgramDay(database, dayOfWeek);
   const exercise = day.exercises.find((e) => e.ordre === params.exerciseOrder);
   if (!exercise) throw new Error("Exercice introuvable pour ce jour");
-  logSetForExercise(database, params.seanceId, exercise.name, exercise.unit, params.repsActual, 1, params.exerciseOrder);
+  // Une pyramide sur un exercice du catalogue crédite sa carte Trophées.
+  const catalog = exercise.pyramid ? (findCatalogByName(exercise.name) ?? undefined) : undefined;
+  logSetForExercise(database, params.seanceId, exercise.name, exercise.unit, params.repsActual, 1, params.exerciseOrder, catalog);
 }
 
 export async function skipDayExerciseAction(seanceId: number, exerciseOrder: number): Promise<void> {

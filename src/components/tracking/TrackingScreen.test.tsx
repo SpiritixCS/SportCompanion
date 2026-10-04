@@ -204,4 +204,14 @@ describe("TrackingScreen", () => {
     render(<TrackingScreen {...BASE} state={EMPTY_STATE} />);
     expect(screen.queryByRole("button", { name: "Enregistrer une séance libre" })).not.toBeInTheDocument();
   });
+
+  it("names a pyramid exercise by its shape in the next séance", () => {
+    const pyr: TrackingProgramDay = {
+      ...WED,
+      exercises: [{ ordre: 0, name: "Pull ups", unit: "reps", setsCount: 9, targetValue: 5, restSeconds: null, pyramid: { shape: "classic", peak: 5 } }],
+    };
+    render(<TrackingScreen {...BASE} days={REST_DAYS.map((d) => (d.dayOfWeek === 2 ? pyr : d))} state={{ ...EMPTY_STATE, programDay: pyr }} />);
+    expect(screen.getByText("Pyramide 1→5→1")).toBeInTheDocument();
+    expect(screen.getByText("Repos auto")).toBeInTheDocument();
+  });
 });
