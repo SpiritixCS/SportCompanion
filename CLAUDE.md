@@ -204,6 +204,7 @@ Tout est dans **`DEPLOYMENT.md`** : accès VM, architecture Cloudflare Tunnel + 
 ```
 Objective.md                          objectif produit d'origine (source brute)
 DEPLOYMENT.md                         infra, accès VM, script de déploiement
+CHANGELOG.md                          journal des changements côté utilisateur — à compléter à chaque mise en prod
 deploy/                               deploy.sh + unité systemd
 design/v1/                            maquettes « Agrès » validées (§4) — source de vérité visuelle
 design/                               brief + prototype Claude Design d'origine (historique)
